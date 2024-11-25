@@ -11,14 +11,33 @@
 <script>
 export default {
   name: "BuildEnv",
+  methods: {
+    sendActions(data) {
+      this.socket.send(JSON.stringify(data));
+    },
+  },
   mounted() {
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
     ifr_window.onload = () => {
       this.api.addActionListener((action) => {
+        this.sendActions({ type: "action", data: action });
         actionListener(action);
       });
       this.api.addEventListener("startScript", console.log);
+    };
+    this.socket = new WebSocket("ws://localhost:8080");
+
+    this.socket.onmessage = (event) => {
+      console.log(event.data);
+    };
+
+    this.socket.onopen = () => {
+      console.log("Connected to the WebSocket server");
+    };
+
+    this.socket.onclose = () => {
+      console.log("Disconnected from the WebSocket server");
     };
   },
 };
