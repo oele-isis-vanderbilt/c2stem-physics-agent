@@ -9,6 +9,9 @@
   ></iframe>
 </template>
 <script>
+import Websockets from "@/services/Websockets";
+// import AST from "@/services/AST";
+import BlockParser from "@/services/BlockParser";
 export default {
   name: "BuildEnv",
   methods: {
@@ -23,21 +26,15 @@ export default {
       this.api.addActionListener((action) => {
         this.sendActions({ type: "action", data: action });
         actionListener(action);
+        // AST.generateDOT();
+        console.log(BlockParser.generate());
       });
       this.api.addEventListener("startScript", console.log);
     };
-    this.socket = new WebSocket("ws://localhost:8080");
 
+    this.socket = Websockets.connect();
     this.socket.onmessage = (event) => {
       console.log(event.data);
-    };
-
-    this.socket.onopen = () => {
-      console.log("Connected to the WebSocket server");
-    };
-
-    this.socket.onclose = () => {
-      console.log("Disconnected from the WebSocket server");
     };
   },
 };
