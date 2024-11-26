@@ -10,13 +10,16 @@
 </template>
 <script>
 import Websockets from "@/services/Websockets";
-// import AST from "@/services/AST";
 import BlockParser from "@/services/BlockParser";
+
 export default {
   name: "BuildEnv",
   methods: {
     sendActions(data) {
       this.socket.send(JSON.stringify(data));
+    },
+    sendState(state) {
+      this.socket.send(JSON.stringify(state));
     },
   },
   mounted() {
@@ -26,8 +29,8 @@ export default {
       this.api.addActionListener((action) => {
         this.sendActions({ type: "action", data: action });
         actionListener(action);
-        // AST.generateDOT();
-        console.log(BlockParser.generate());
+        let state = BlockParser.generate();
+        this.sendState({ type: "state", data: state });
       });
       this.api.addEventListener("startScript", console.log);
     };
@@ -38,6 +41,7 @@ export default {
     };
   },
 };
+
 function normalizeTree(root) {
   if (root.name === "reportGreaterThan") {
     root.name = "reportLessThan";

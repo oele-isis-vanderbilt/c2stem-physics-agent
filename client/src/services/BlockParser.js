@@ -1,4 +1,5 @@
 import MapBlocks from "@/services/MapBlocks";
+
 export default {
   generate() {
     const treeRoots = JSON.parse(window.sessionStorage.getItem("treeRoots"));
@@ -30,6 +31,7 @@ export default {
         parseBlocks(node.next.next);
       }
     }
+
     return finalString;
   },
 };

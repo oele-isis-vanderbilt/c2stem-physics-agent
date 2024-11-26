@@ -1,2 +1,3 @@
 /server/.idea/
 .idea
+server/__pycache__/
