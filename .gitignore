@@ -1,3 +1,4 @@
 /server/.idea/
 .idea
 server/__pycache__/
+node_modules

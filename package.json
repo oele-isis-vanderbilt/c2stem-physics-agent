@@ -1,0 +1,20 @@
+{
+  "name": "c2stem-physics-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "cd client && vue-cli-service serve",
+    "start:server": "python main.py",
+    "dev": "concurrently \"npm run serve\" \"npm run start:server\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oele-isis-vanderbilt/c2stem-physics-agent.git"
+  },
+  "private": true,
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
