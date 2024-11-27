@@ -30,6 +30,13 @@ pip install -r requirements.txt
 ## Running locally
 
 ```sh
-cd client
-npm run app
+cd server
+python main.py
 ```
+
+```sh
+cd client
+npm run serve
+```
+
+The app should be running on http://locahost:8081.
