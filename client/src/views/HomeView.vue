@@ -20,5 +20,7 @@ export default {
   max-width: 100%;
   height: 100%;
   padding: 0;
+  background-color: #1e1e1e;
+  position: relative;
 }
 </style>
