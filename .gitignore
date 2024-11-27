@@ -1,4 +1,5 @@
 /server/.idea/
 .idea
 server/__pycache__/
-*.DS_Store
+node_modules
+.DS_Store
