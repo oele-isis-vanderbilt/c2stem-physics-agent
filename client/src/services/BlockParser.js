@@ -17,16 +17,21 @@ export default {
       if (node.id) {
         rootName = MapBlocks.get(node.name);
       }
-      for (let nextNode of node.next.contained) {
-        if (nextNode) {
-          if (!nextNode.id) {
-            value = nextNode.name ? nextNode.name : "no value";
-          }
+      if (node.next.contained.length !== 0) {
+        for (let nextNode of node.next.contained) {
+          if (nextNode) {
+            if (!nextNode.id) {
+              value = nextNode.name ? nextNode.name : "no value";
+            }
 
-          finalString += rootName.replace("%n", "(" + value + ")") + "\n";
-          parseBlocks(nextNode);
+            finalString += rootName.replace("%n", "(" + value + ")") + "\n";
+            parseBlocks(nextNode);
+          }
         }
+      } else {
+        finalString += rootName + "\n";
       }
+
       if (node.next.next) {
         parseBlocks(node.next.next);
       }

@@ -596,7 +596,7 @@ iframe {
 #collapseWindow {
   position: absolute;
   width: 30%;
-  height: auto;
+  height: 90%;
   margin: 60px;
   left: 60%;
 }
