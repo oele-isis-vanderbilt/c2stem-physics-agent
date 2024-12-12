@@ -13,46 +13,46 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "motion",
-        spec: "turn clockwise %n degrees",
+        spec: "turn %clockwise %n degrees",
         defaults: [15],
       },
       turnLeft: {
         only: "SpriteMorph",
         type: "command",
         category: "motion",
-        spec: "turn counterclockwise %n degrees",
+        spec: "turn %counterclockwise %n degrees",
         defaults: [15],
       },
       setHeading: {
         only: "SpriteMorph",
         type: "command",
         category: "motion",
-        spec: "point in direction %n",
+        spec: "point in direction %dir",
       },
       doFaceTowards: {
         only: "SpriteMorph",
         type: "command",
         category: "motion",
-        spec: "point towards %n",
+        spec: "point towards %dst",
       },
       gotoXY: {
         only: "SpriteMorph",
         type: "command",
         category: "motion",
-        spec: "go to x: %n y: %o",
+        spec: "go to x: %n y: %n",
         defaults: [0, 0],
       },
       doGotoObject: {
         only: "SpriteMorph",
         type: "command",
         category: "motion",
-        spec: "go to %n",
+        spec: "go to %dst",
       },
       doGlide: {
         only: "SpriteMorph",
         type: "command",
         category: "motion",
-        spec: "glide %n secs to x: %o y: %p",
+        spec: "glide %n secs to x: %n y: %n",
         defaults: [1, 0, 0],
       },
       changeXPosition: {
@@ -108,10 +108,11 @@ export default {
         spec: "direction",
       },
 
+      // Looks
       doSwitchToCostume: {
         type: "command",
         category: "looks",
-        spec: "switch to costume %n",
+        spec: "switch to costume %cst",
       },
       doWearNextCostume: {
         type: "command",
@@ -127,40 +128,40 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "looks",
-        spec: "say %n for %o secs",
-        defaults: ["Hello!", 2],
+        spec: "say %s for %n secs",
+        defaults: '[localize("Hello!"), 2]',
       },
       bubble: {
         only: "SpriteMorph",
         type: "command",
         category: "looks",
-        spec: "say %n",
-        defaults: ["Hello!"],
+        spec: "say %s",
+        defaults: '[localize("Hello!")]',
       },
       doThinkFor: {
         only: "SpriteMorph",
         type: "command",
         category: "looks",
-        spec: "think %n for %o secs",
-        defaults: ["Hmm...", 2],
+        spec: "think %s for %n secs",
+        defaults: '[localize("Hmm..."), 2]',
       },
       doThink: {
         only: "SpriteMorph",
         type: "command",
         category: "looks",
-        spec: "think %n",
-        defaults: ["Hmm..."],
+        spec: "think %s",
+        defaults: '[localize("Hmm...")]',
       },
       changeEffect: {
         type: "command",
         category: "looks",
-        spec: "change %n effect by %o",
+        spec: "change %eff effect by %n",
         defaults: [null, 25],
       },
       setEffect: {
         type: "command",
         category: "looks",
-        spec: "set %n effect to %o",
+        spec: "set %eff effect to %n",
         defaults: [null, 0],
       },
       clearEffects: {
@@ -213,6 +214,14 @@ export default {
         spec: "go back %n layers",
         defaults: [1],
       },
+      //doScreenshot: {
+      //type: 'command',
+      //category: 'looks',
+      //spec: 'save %imgsource as costume named %s',
+      //defaults: [['pen trails'], localize('screenshot')]
+      //},
+
+      // Looks - Debugging primitives for development mode
       reportCostumes: {
         dev: true,
         type: "reporter",
@@ -232,6 +241,8 @@ export default {
         category: "looks",
         spec: "console log %mult%s",
       },
+
+      // Sound
       playSound: {
         type: "command",
         category: "sound",
@@ -276,12 +287,16 @@ export default {
         category: "sound",
         spec: "tempo",
       },
+
+      // Sound - Debugging primitives for development mode
       reportSounds: {
         dev: true,
         type: "reporter",
         category: "sound",
         spec: "jukebox",
       },
+
+      // Pen
       clear: {
         type: "command",
         category: "pen",
@@ -303,7 +318,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "pen",
-        spec: "set pen color to %n",
+        spec: "set pen color to %clr",
       },
       changeHue: {
         only: "SpriteMorph",
@@ -359,20 +374,32 @@ export default {
         category: "pen",
         spec: "fill",
       },
+
+      // Control
       receiveGo: {
         type: "hat",
         category: "control",
-        spec: "when greenflag clicked",
+        spec: "when %greenflag clicked",
       },
       receiveKey: {
         type: "hat",
         category: "control",
-        spec: "when keyHat key pressed",
+        spec: "when %keyHat key pressed",
       },
+
+      /* migrated to a newer block version:
+
+          receiveClick: {
+              type: 'hat',
+              category: 'control',
+              spec: 'when I am clicked'
+          },
+      */
+
       receiveInteraction: {
         type: "hat",
         category: "control",
-        spec: "when I am interaction",
+        spec: "when I am %interaction",
         defaults: ["clicked"],
       },
       receiveMessage: {
@@ -383,12 +410,12 @@ export default {
       receiveCondition: {
         type: "hat",
         category: "control",
-        spec: "when %n",
+        spec: "when %b",
       },
       doBroadcast: {
         type: "command",
         category: "control",
-        spec: "broadcast %n",
+        spec: "broadcast %msg",
       },
       doBroadcastAndWait: {
         type: "command",
@@ -409,34 +436,49 @@ export default {
       doWaitUntil: {
         type: "command",
         category: "control",
-        spec: "wait until %n",
+        spec: "wait until %b",
       },
       doForever: {
         type: "command",
         category: "control",
-        spec: "forever %n",
+        spec: "forever %c",
       },
       doRepeat: {
         type: "command",
         category: "control",
-        spec: "repeat %n %o",
+        spec: "repeat %n %c",
         defaults: [10],
       },
       doUntil: {
         type: "command",
         category: "control",
-        spec: "repeat until %n %o",
+        spec: "repeat until %b %c",
       },
       doIf: {
         type: "command",
         category: "control",
-        spec: "if %n %o",
+        spec: "if %b %c",
       },
       doIfElse: {
         type: "command",
         category: "control",
-        spec: "if %n %o else %p",
+        spec: "if %b %c else %c",
       },
+
+      /* migrated to a newer block version:
+
+          doStop: {
+              type: 'command',
+              category: 'control',
+              spec: 'stop script'
+          },
+          doStopAll: {
+              type: 'command',
+              category: 'control',
+              spec: 'stop all %stop'
+          },
+      */
+
       doStopThis: {
         type: "command",
         category: "control",
@@ -462,11 +504,37 @@ export default {
         category: "control",
         spec: "call %repRing %inputs",
       },
+      /*
+          doRunWithInputList: {
+              type: 'command',
+              category: 'control',
+              spec: 'run %cmd with input list %l'
+          },
+
+          forkWithInputList: {
+              type: 'command',
+              category: 'control',
+              spec: 'launch %cmd with input list %l'
+          },
+
+          evaluateWithInputList: {
+              type: 'reporter',
+              category: 'control',
+              spec: 'call %r with input list %l'
+          },
+      */
       doReport: {
         type: "command",
         category: "control",
-        spec: "report %n",
+        spec: "report %s",
       },
+      /*
+          doStopBlock: { // migrated to a newer block version
+              type: 'command',
+              category: 'control',
+              spec: 'stop block'
+          },
+      */
       doCallCC: {
         type: "command",
         category: "control",
@@ -482,6 +550,8 @@ export default {
         category: "other",
         spec: "warp %c",
       },
+
+      // Cloning - very experimental
       receiveOnClone: {
         type: "hat",
         category: "control",
@@ -497,11 +567,17 @@ export default {
         category: "control",
         spec: "delete this clone",
       },
+
+      // Debugging - pausing
+
       doPauseAll: {
         type: "command",
         category: "control",
         spec: "pause all %pause",
       },
+
+      // Sensing
+
       reportTouchingObject: {
         only: "SpriteMorph",
         type: "predicate",
@@ -548,9 +624,10 @@ export default {
         type: "command",
         category: "sensing",
         spec: "ask %s and wait",
-        defaults: ["what's your name?"],
+        defaults: '[localize("what\'s your name?")]',
       },
       reportLastAnswer: {
+        // retained for legacy compatibility
         dev: true,
         type: "reporter",
         category: "sensing",
@@ -592,6 +669,7 @@ export default {
         spec: "reset timer",
       },
       reportTimer: {
+        // retained for legacy compatibility
         dev: true,
         type: "reporter",
         category: "sensing",
@@ -741,6 +819,7 @@ export default {
         alias: "true boolean",
       },
       reportFalse: {
+        // special case for keyboard entry and search
         type: "predicate",
         category: "operators",
         spec: "%bool",
@@ -751,19 +830,19 @@ export default {
         type: "reporter",
         category: "operators",
         spec: "join %words",
-        defaults: ["hello world"],
+        defaults: '[localize("hello") + " ", localize("world")]',
       },
       reportLetter: {
         type: "reporter",
         category: "operators",
         spec: "letter %n of %s",
-        defaults: [1, "world"],
+        defaults: '[1, localize("world")]',
       },
       reportStringSize: {
         type: "reporter",
         category: "operators",
         spec: "length of %s",
-        defaults: ["world"],
+        defaults: '[localize("world")]',
       },
       reportUnicode: {
         type: "reporter",
@@ -792,14 +871,16 @@ export default {
         type: "reporter",
         category: "operators",
         spec: "split %s by %delim",
-        defaults: ["hello world"],
+        defaults: '[localize("hello") + " " + localize("world"), " "]',
       },
       reportJSFunction: {
+        // experimental
         type: "reporter",
         category: "operators",
         spec: "JavaScript function ( %mult%s ) { %code }",
       },
       reportTypeOf: {
+        // only in dev mode for debugging
         dev: true,
         type: "reporter",
         category: "operators",
@@ -807,12 +888,28 @@ export default {
         defaults: [5],
       },
       reportTextFunction: {
+        // only in dev mode - experimental
         dev: true,
         type: "reporter",
         category: "operators",
         spec: "%txtfun of %s",
         defaults: [null, "Abelson & Sussman"],
       },
+
+      /*
+          reportScript: {
+              type: 'reporter',
+              category: 'operators',
+              spec: 'the script %parms %c'
+          },
+          reify: {
+              type: 'reporter',
+              category: 'operators',
+              spec: 'the %f block %parms'
+          },
+      */
+
+      // Variables
       doSetVar: {
         type: "command",
         category: "variables",
@@ -840,11 +937,15 @@ export default {
         category: "other",
         spec: "script variables %scriptVars",
       },
+
+      // inheritance - experimental
       doDeleteAttr: {
         type: "command",
         category: "variables",
         spec: "delete %shd",
       },
+
+      // Lists
       reportNewList: {
         type: "reporter",
         category: "lists",
@@ -875,13 +976,13 @@ export default {
         type: "predicate",
         category: "lists",
         spec: "%l contains %s",
-        defaults: [null, "thing"],
+        defaults: '[null, localize("thing")]',
       },
       doAddToList: {
         type: "command",
         category: "lists",
         spec: "add %s to %l",
-        defaults: ["thing"],
+        defaults: '[localize("thing")]',
       },
       doDeleteFromList: {
         type: "command",
@@ -893,14 +994,16 @@ export default {
         type: "command",
         category: "lists",
         spec: "insert %s at %idx of %l",
-        defaults: ["thing", 1],
+        defaults: '[localize("thing"), 1]',
       },
       doReplaceInList: {
         type: "command",
         category: "lists",
         spec: "replace item %idx of %l with %s",
-        defaults: [1, null, "thing"],
+        defaults: '[1, null, localize("thing")]',
       },
+
+      // MAP - experimental
       reportMap: {
         dev: true,
         type: "reporter",
@@ -912,47 +1015,56 @@ export default {
         type: "command",
         category: "lists",
         spec: "for %upvar in %l %cl",
-        defaults: ["each item"],
+        defaults: '[localize("each item")]',
       },
+
+      // Tables - experimental
+
       doShowTable: {
         dev: true,
         type: "command",
         category: "lists",
         spec: "show table %l",
       },
+
+      // Code mapping - experimental
       doMapCodeOrHeader: {
+        // experimental
         type: "command",
         category: "other",
         spec: "map %cmdRing to %codeKind %code",
       },
       doMapStringCode: {
+        // experimental
         type: "command",
         category: "other",
         spec: "map String to code %code",
         defaults: ["<#1>"],
       },
       doMapListCode: {
+        // experimental
         type: "command",
         category: "other",
-        spec: "map codeListPart of codeListKind to code code",
+        spec: "map %codeListPart of %codeListKind to code %code",
       },
       reportMappedCode: {
+        // experimental
         type: "reporter",
         category: "other",
-        spec: "code of %n",
+        spec: "code of %cmdRing",
       },
       angularForce: {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "apply clockwise torque of %n",
+        spec: "apply %clockwise torque of %n",
         defaults: [1000],
       },
       angularForceLeft: {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "apply counterclockwise torque of %n",
+        spec: "apply %counterclockwise torque of %n",
         defaults: [1000],
       },
       applyForceForward: {
@@ -966,7 +1078,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "apply force %n in direction %o",
+        spec: "apply force %n in direction %dir",
         defaults: [100],
       },
       setMass: {
@@ -988,7 +1100,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "set velocity to x: %n y: %o m/s",
+        spec: "set velocity to x: %n y: %n m/s",
         defaults: [0, 0],
         concepts: ["x_velocity", "y_velocity"],
       },
@@ -1026,7 +1138,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "change velocity by x: %n y: %o m/s",
+        spec: "change velocity by x: %n y: %n m/s",
         defaults: [0, 0],
         concepts: ["x_velocity", "y_velocity"],
       },
@@ -1050,7 +1162,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "set acceleration to x: %n y: %o m/s\u00b2",
+        spec: "set acceleration to x: %n y: %n m/s\u00b2",
         defaults: [0, 0],
         concepts: ["x_acceleration", "y_acceleration"],
       },
@@ -1088,7 +1200,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "set net force to x: %n y: %o N",
+        spec: "set net force to x: %n y: %n N",
         defaults: [0, 0],
         concepts: ["x_net_force", "y_net_force"],
       },
@@ -1126,7 +1238,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "change net force by x: %n y: %o N",
+        spec: "change net force by x: %n y: %n N",
         defaults: [0, 0],
         concepts: ["x_net_force", "y_net_force"],
       },
@@ -1186,7 +1298,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "set position to x: %n y: %o m",
+        spec: "set position to x: %n y: %n m",
         defaults: [0, 0],
         concepts: ["x_position", "y_position"],
       },
@@ -1240,7 +1352,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "change position by x: %n y: %o m",
+        spec: "change position by x: %n y: %n m",
         defaults: [0, 0],
         concepts: ["x_position", "y_position"],
       },
@@ -1308,13 +1420,13 @@ export default {
       getPhysicsAttrOf: {
         type: "reporter",
         category: "simulation",
-        spec: "%n of %o",
+        spec: "%phy of %spr",
         defaults: [["x position"]],
       },
       setPhysicsAttrOf: {
         type: "command",
         category: "simulation",
-        spec: "set %n of %o to %p",
+        spec: "set %phy of %spr to %n",
         defaults: [["x position"], null, [0]],
       },
       graphData: {
@@ -1333,7 +1445,12 @@ export default {
         spec: "record graph data",
       },
     };
-
-    return blocks[blockName].spec;
+    if (blocks[blockName]) {
+      return blocks[blockName].spec;
+    } else if (blockName.includes("var:")) {
+      return blockName.split(" ")[1];
+    } else {
+      return blockName;
+    }
   },
 };
