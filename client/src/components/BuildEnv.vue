@@ -69,10 +69,12 @@ export default {
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
     ifr_window.onload = () => {
       this.api.addActionListener((action) => {
-        this.sendActions({ type: "action", data: action });
-        actionListener(action);
-        let state = BlockParser.generate();
-        this.sendState({ type: "state", data: state });
+        if (action.type !== "openProject") {
+          this.sendActions({ type: "action", data: action });
+          actionListener(action);
+          let state = BlockParser.generate();
+          this.sendState({ type: "state", data: state });
+        }
       });
       this.api.addEventListener("startScript", console.log);
     };
@@ -568,8 +570,8 @@ const actionListener = (action) => {
 
   if (actionRep.valid) actions.push(actionRep);
 
-  console.log(actions);
-  console.log(treeRoots);
+  // console.log(actions);
+  // console.log(treeRoots);
   window.sessionStorage.setItem("blocks", JSON.stringify(blocks));
   window.sessionStorage.setItem("treeRoots", JSON.stringify(treeRoots));
   window.sessionStorage.setItem("actionList", JSON.stringify(actions));
