@@ -1,9 +1,9 @@
 import MapBlocks from "@/services/MapBlocks";
 
 export default {
-  generate() {
+  generate(treeRootsName) {
     // Retrieve Tree root objects from the session storage.
-    const treeRoots = JSON.parse(window.sessionStorage.getItem("treeRoots"));
+    const treeRoots = JSON.parse(window.sessionStorage.getItem(treeRootsName));
 
     /*
      * List of block that require additional handling.
