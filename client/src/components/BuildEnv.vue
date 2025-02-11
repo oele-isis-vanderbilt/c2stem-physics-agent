@@ -74,15 +74,18 @@ export default {
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
     // ifr_window.onload = () => {
-    this.api.addActionListener((action) => {
-      if (action.type !== "openProject") {
-        this.sendActions({ type: "action", data: action });
-        astController.actionListener(action);
-        let state = BlockParser.generate("treeRoots");
-        this.sendState({ type: "state", data: state });
-      }
-    });
-    this.api.addEventListener("startScript", console.log);
+    setTimeout(() => {
+      this.api.addActionListener((action) => {
+        if (action.type !== "openProject") {
+          this.sendActions({ type: "action", data: action });
+          astController.actionListener(action);
+          let state = BlockParser.generate("treeRoots");
+          this.sendState({ type: "state", data: state });
+        }
+      });
+      this.api.addEventListener("startScript", console.log);
+    }, 2000);
+
     // };
 
     this.socket = Websockets.connect();
