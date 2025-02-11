@@ -1298,7 +1298,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "set position to x: %n y: %n m",
+        spec: "set position to x: %n y: %n",
         defaults: [0, 0],
         concepts: ["x_position", "y_position"],
       },
@@ -1306,7 +1306,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "set x position to %n m",
+        spec: "set x position to %n",
         defaults: [0],
         concepts: ["x_position"],
       },
@@ -1314,7 +1314,7 @@ export default {
         only: "SpriteMorph",
         type: "command",
         category: "simulation",
-        spec: "set y position to %n m",
+        spec: "set y position to %n",
         defaults: [0],
         concepts: ["y_position"],
       },
@@ -1322,14 +1322,14 @@ export default {
         only: "SpriteMorph",
         type: "reporter",
         category: "simulation",
-        spec: "x position in m",
+        spec: "x position",
         concepts: ["x_position"],
       },
       physicsYPosition: {
         only: "SpriteMorph",
         type: "reporter",
         category: "simulation",
-        spec: "y position in m",
+        spec: "y position",
         concepts: ["y_position"],
       },
       changePhysicsXPosition: {
@@ -1448,7 +1448,12 @@ export default {
     if (blocks[blockName]) {
       return blocks[blockName].spec;
     } else if (blockName.includes("var:")) {
-      return blockName.split(" ")[1];
+      let blockList = blockName.split(" ");
+      let finalBlockName = "";
+      for (let i = 1; i < blockList.length; i++) {
+        finalBlockName += blockList[i];
+      }
+      return finalBlockName;
     } else {
       return blockName;
     }

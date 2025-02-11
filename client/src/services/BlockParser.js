@@ -156,272 +156,279 @@ export default {
      * output: user state for a single tree root.
      * */
     function parseBlocks(node) {
-      let rootName = "";
-      if (node.id) {
-        rootName = MapBlocks.get(node.name);
-        if (nested_blocks.includes(rootName)) {
-          isNestedBlock = true;
-          rootCounter++;
-          if (nested_children.length > 0) {
-            children = [...children, ...nested_children];
-            nested_children = [];
-          }
-        }
-      }
-      if (node.next.contained.length !== 0) {
-        for (let nextNode of node.next.contained) {
-          if (nextNode) {
-            if (!nextNode.id) {
-              value = nextNode.name ? nextNode.name : "no value";
-              if (rootCounter > 1) {
-                // nested_children.push(value);
-                children.push(value);
-              } else {
-                rootName = replaceVariables(rootName, value);
-              }
-            } else {
-              if (!isNestedBlock) {
-                if (!nested_blocks.includes(MapBlocks.get(nextNode.name))) {
-                  finalString += decorate(rootName);
-                }
-              }
-              rootList.push(rootName);
-              nestedChildCounter++;
-              parseBlocks(nextNode);
+      try {
+        let rootName = "";
+        if (node.id) {
+          rootName = MapBlocks.get(node.name);
+          if (nested_blocks.includes(rootName)) {
+            isNestedBlock = true;
+            rootCounter++;
+            if (nested_children.length > 0) {
+              children = [...children, ...nested_children];
+              nested_children = [];
             }
           }
         }
-        if (
-          nested_children.length > 0 &&
-          (nested_blocks.includes(rootName) ||
-            nested_children[0].includes("no value") ||
-            rootName.includes("no value"))
-        ) {
-          if (
-            nested_children.length > 1 &&
-            (rootName.includes("no value") || rootName.includes("%n"))
-          ) {
-            let variableCount =
-              rootName.match(new RegExp("%n", "gi"))?.length || 0;
-            if (variableCount !== nested_children.length) {
-              let splicedChild = nested_children.splice(0, 1);
-              children.push(splicedChild[0].trim());
-            }
-          }
-          let updatedRootName;
-          let variableCount =
-            rootName.match(new RegExp("%", "gi"))?.length || 0;
-          if (variableCount !== nested_children.length && children.length > 0) {
-            if (children[1] === "no value" && rootName === "%phy of %spr") {
-              let middleChild = AssignNestedChildren(rootName, children);
-              nested_children.push(middleChild);
-            } else {
-              let splicedChild = children.splice(children.length - 1, 1);
-              if (
-                nested_children.length === 1 &&
-                nested_children[0].includes("%")
-              ) {
-                let updatedChildren = AssignNestedChildren(
-                  nested_children[0],
-                  splicedChild[0]
-                );
-                nested_children = [];
-                nested_children.push(updatedChildren);
-              } else {
-                if (
-                  (rootName.includes(">") || rootName.includes("<")) &&
-                  !splicedChild[0].includes("no value")
-                ) {
-                  nested_children.splice(0, 0, splicedChild[0].trim());
+        if (node.next.contained.length !== 0) {
+          for (let nextNode of node.next.contained) {
+            if (nextNode) {
+              if (!nextNode.id) {
+                value = nextNode.name ? nextNode.name : "no value";
+                if (rootCounter > 1) {
+                  // nested_children.push(value);
+                  children.push(value);
                 } else {
-                  if (rootName === "if %b %c") {
-                    nested_children.splice(0, 0, splicedChild[0].trim());
-                  } else {
+                  rootName = replaceVariables(rootName, value);
+                }
+              } else {
+                if (!isNestedBlock) {
+                  if (!nested_blocks.includes(MapBlocks.get(nextNode.name))) {
+                    finalString += decorate(rootName);
+                  }
+                }
+                rootList.push(rootName);
+                nestedChildCounter++;
+                parseBlocks(nextNode);
+              }
+            }
+          }
+          if (
+            nested_children.length > 0 &&
+            (nested_blocks.includes(rootName) ||
+              nested_children[0].includes("no value") ||
+              rootName.includes("no value"))
+          ) {
+            if (
+              nested_children.length > 1 &&
+              (rootName.includes("no value") || rootName.includes("%n"))
+            ) {
+              let variableCount =
+                rootName.match(new RegExp("%n", "gi"))?.length || 0;
+              if (variableCount !== nested_children.length) {
+                let splicedChild = nested_children.splice(0, 1);
+                children.push(splicedChild[0].trim());
+              }
+            }
+            let updatedRootName;
+            let variableCount =
+              rootName.match(new RegExp("%", "gi"))?.length || 0;
+            if (
+              variableCount !== nested_children.length &&
+              children.length > 0
+            ) {
+              if (children[1] === "no value" && rootName === "%phy of %spr") {
+                let middleChild = AssignNestedChildren(rootName, children);
+                nested_children.push(middleChild);
+              } else {
+                let splicedChild = children.splice(children.length - 1, 1);
+                if (
+                  nested_children.length === 1 &&
+                  nested_children[0].includes("%")
+                ) {
+                  let updatedChildren = AssignNestedChildren(
+                    nested_children[0],
+                    splicedChild[0]
+                  );
+                  nested_children = [];
+                  nested_children.push(updatedChildren);
+                } else {
+                  if (
+                    (rootName.includes(">") || rootName.includes("<")) &&
+                    !splicedChild[0].includes("no value")
+                  ) {
                     nested_children.push(splicedChild[0].trim());
+                  } else {
+                    if (rootName === "if %b %c") {
+                      nested_children.splice(0, 0, splicedChild[0].trim());
+                    } else {
+                      nested_children.push(splicedChild[0].trim());
+                    }
                   }
                 }
               }
             }
-          }
-          if (
-            nested_children.length === 2 &&
-            nested_children[1].includes("%")
-          ) {
-            let splicedChild = children.splice(children.length - 1, 1);
-            let updatedChildren = AssignNestedChildren(
-              nested_children[1],
-              nested_children[0]
-            );
-            nested_children = [];
-            nested_children.push(splicedChild[0].trim());
-            nested_children.push(updatedChildren);
-          } else if (
-            nested_children.length === 2 &&
-            nested_children[0].includes("%")
-          ) {
-            let splicedChild = children.splice(children.length - 1, 1);
-            let updatedChildren = AssignNestedChildren(
-              nested_children[0],
-              nested_children[1]
-            );
-            nested_children = [];
-            nested_children.push(splicedChild[0].trim());
-            nested_children.push(updatedChildren);
-          }
-          updatedRootName = AssignNestedChildren(rootName, nested_children);
-
-          if (!rootList.includes("if %b %c")) {
-            rootCounter--;
-          }
-          if (rootCounter === 0) {
-            if (updatedRootName.includes("if")) {
-              finalString += updatedRootName + "\n";
-            } else {
-              finalString += decorate(updatedRootName) + "\n";
-            }
-          } else {
             if (
-              updatedRootName.includes("if") &&
-              !updatedRootName.includes("%")
+              nested_children.length === 2 &&
+              nested_children[1].includes("%")
             ) {
-              finalString += updatedRootName + "\n";
-            } else {
-              children.push(updatedRootName);
-            }
-            rootCounter--;
-          }
-          nested_children = [];
-        } else if (rootCounter === 1) {
-          if (nested_blocks.includes(rootName)) {
-            if (
-              rootList.includes("if %b %c") &&
-              !rootName.includes("if %b %c")
-            ) {
-              let updatedChild =
-                AssignNestedChildren(rootName, children) + "\n";
-              children = [];
-              children.push(updatedChild);
-            } else {
-              finalString += AssignNestedChildren(rootName, children) + "\n";
-              children = [];
-            }
-
-            rootCounter--;
-            rootList.pop();
-          } else if (nested_children.length > 0) {
-            if (rootName.includes("%n")) {
-              let splicedChild = nested_children.splice(0, 1);
-              let newBlock = AssignNestedChildren(rootName, nested_children);
+              let splicedChild = children.splice(children.length - 1, 1);
+              let updatedChildren = AssignNestedChildren(
+                nested_children[1],
+                nested_children[0]
+              );
               nested_children = [];
-              nested_children.push(splicedChild);
-              nested_children.push(newBlock);
-            } else {
-              nested_children.push(rootName);
-            }
-          } else if (rootName.includes("no value")) {
-            if (rootName.includes("%c")) {
-              if (children.length > 0) {
-                rootName = AssignNestedChildren(rootName, children) + "\n";
-                children = [];
-              } else {
-                rootName = rootName.replaceAll("%c", "(no value)");
-              }
-            }
-            if (nestedChildCounter > 0 && !rootName.includes("if")) {
-              nested_children.push(rootName);
-              nestedChildCounter--;
-            } else {
-              finalString += decorate(rootName) + "\n";
-            }
-          } else {
-            children.push(rootName);
-          }
-        } else if (rootCounter > 1) {
-          if (children.length > 0 && rootName.includes("%")) {
-            if (children.length > 2) {
-              let splicedChild = children.splice(0, 1);
               nested_children.push(splicedChild[0].trim());
+              nested_children.push(updatedChildren);
+            } else if (
+              nested_children.length === 2 &&
+              nested_children[0].includes("%")
+            ) {
+              let splicedChild = children.splice(children.length - 1, 1);
+              let updatedChildren = AssignNestedChildren(
+                nested_children[0],
+                nested_children[1]
+              );
+              nested_children = [];
+              nested_children.push(splicedChild[0].trim());
+              nested_children.push(updatedChildren);
             }
-            nested_children.push(
-              AssignNestedChildren(rootName, children) + "\n"
-            );
-            children = [];
-          } else if (nested_children.length > 0) {
-            nested_children.push(rootName);
-          } else {
-            children.push(rootName);
-          }
-          rootList.pop();
-          rootCounter--;
-        } else {
-          if (children.length > 0) {
-            if (rootList.includes("if %b %c")) {
-              // if(children.length ===1){
-              //   children.push(rootName);
-              // }else{
-              if (rootName.includes("%")) {
-                let transitionalBlock =
+            updatedRootName = AssignNestedChildren(rootName, nested_children);
+
+            if (!rootList.includes("if %b %c")) {
+              rootCounter--;
+            }
+            if (rootCounter === 0) {
+              if (updatedRootName.includes("if")) {
+                finalString += updatedRootName + "\n";
+              } else {
+                finalString += decorate(updatedRootName) + "\n";
+              }
+            } else {
+              if (
+                updatedRootName.includes("if") &&
+                !updatedRootName.includes("%")
+              ) {
+                finalString += updatedRootName + "\n";
+              } else {
+                children.push(updatedRootName);
+              }
+              rootCounter--;
+            }
+            nested_children = [];
+          } else if (rootCounter === 1) {
+            if (nested_blocks.includes(rootName)) {
+              if (
+                rootList.includes("if %b %c") &&
+                !rootName.includes("if %b %c")
+              ) {
+                let updatedChild =
                   AssignNestedChildren(rootName, children) + "\n";
                 children = [];
-                rootList.pop();
-                if (transitionalBlock.includes("if")) {
-                  finalString += transitionalBlock;
-                } else {
-                  children.push(transitionalBlock);
-                }
+                children.push(updatedChild);
               } else {
-                children.push(rootName);
+                finalString += AssignNestedChildren(rootName, children) + "\n";
+                children = [];
               }
 
-              // }
+              rootCounter--;
+              rootList.pop();
+            } else if (nested_children.length > 0) {
+              if (rootName.includes("%n")) {
+                let splicedChild = nested_children.splice(0, 1);
+                let newBlock = AssignNestedChildren(rootName, nested_children);
+                nested_children = [];
+                nested_children.push(splicedChild);
+                nested_children.push(newBlock);
+              } else {
+                nested_children.push(rootName);
+              }
+            } else if (rootName.includes("no value")) {
+              if (rootName.includes("%c")) {
+                if (children.length > 0) {
+                  rootName = AssignNestedChildren(rootName, children) + "\n";
+                  children = [];
+                } else {
+                  rootName = rootName.replaceAll("%c", "(no value)");
+                }
+              }
+              if (nestedChildCounter > 0 && !rootName.includes("if")) {
+                nested_children.push(rootName);
+                nestedChildCounter--;
+              } else {
+                finalString += decorate(rootName) + "\n";
+              }
             } else {
-              finalString += AssignNestedChildren(rootName, children) + "\n";
-              children = [];
+              children.push(rootName);
             }
+          } else if (rootCounter > 1) {
+            if (children.length > 0 && rootName.includes("%")) {
+              if (children.length > 2) {
+                let splicedChild = children.splice(0, 1);
+                nested_children.push(splicedChild[0].trim());
+              }
+              nested_children.push(
+                AssignNestedChildren(rootName, children) + "\n"
+              );
+              children = [];
+            } else if (nested_children.length > 0) {
+              nested_children.push(rootName);
+            } else {
+              children.push(rootName);
+            }
+            rootList.pop();
+            rootCounter--;
+          } else {
+            if (children.length > 0) {
+              if (rootList.includes("if %b %c")) {
+                // if(children.length ===1){
+                //   children.push(rootName);
+                // }else{
+                if (rootName.includes("%")) {
+                  let transitionalBlock =
+                    AssignNestedChildren(rootName, children) + "\n";
+                  children = [];
+                  rootList.pop();
+                  if (transitionalBlock.includes("if")) {
+                    finalString += transitionalBlock;
+                  } else {
+                    children.push(transitionalBlock);
+                  }
+                } else {
+                  children.push(rootName);
+                }
+
+                // }
+              } else {
+                finalString += AssignNestedChildren(rootName, children) + "\n";
+                children = [];
+              }
+            } else {
+              if (rootName.includes("if")) {
+                finalString += rootName + "\n";
+              } else {
+                if (rootName.includes("%n")) {
+                  let finalList = finalString.split("\n");
+                  let lastELement = finalList[finalList.length - 2]
+                    .replace("[", "")
+                    .replace("]", "")
+                    .trim();
+                  let completedBlock =
+                    AssignNestedChildren(rootName, [lastELement]) + "\n";
+                  finalString = "";
+                  for (let i = 0; i < finalList.length - 1; i++) {
+                    if (i === finalList.length - 2) {
+                      finalString += decorate(completedBlock.trim()) + "\n";
+                    } else if (!finalList[i].includes("\n")) {
+                      finalString += finalList[i] + "\n";
+                    }
+                  }
+                } else {
+                  finalString += decorate(rootName) + "\n";
+                }
+              }
+            }
+          }
+        } else {
+          if (rootName.includes("%")) {
+            rootName = rootName.replace("%", "");
+          }
+          if (isNestedBlock) {
+            nested_children.push(rootName);
           } else {
             if (rootName.includes("if")) {
               finalString += rootName + "\n";
             } else {
-              if (rootName.includes("%n")) {
-                let finalList = finalString.split("\n");
-                let lastELement = finalList[finalList.length - 2]
-                  .replace("[", "")
-                  .replace("]", "")
-                  .trim();
-                let completedBlock =
-                  AssignNestedChildren(rootName, [lastELement]) + "\n";
-                finalString = "";
-                for (let i = 0; i < finalList.length - 1; i++) {
-                  if (i === finalList.length - 2) {
-                    finalString += decorate(completedBlock.trim()) + "\n";
-                  } else if (!finalList[i].includes("\n")) {
-                    finalString += finalList[i] + "\n";
-                  }
-                }
-              } else {
-                finalString += decorate(rootName) + "\n";
-              }
+              finalString += decorate(rootName) + "\n";
             }
           }
+          // here is where the last blocks are printed.
         }
-      } else {
-        if (rootName.includes("%")) {
-          rootName = rootName.replace("%", "");
-        }
-        if (isNestedBlock) {
-          nested_children.push(rootName);
-        } else {
-          if (rootName.includes("if")) {
-            finalString += rootName + "\n";
-          } else {
-            finalString += decorate(rootName) + "\n";
-          }
-        }
-        // here is where the last blocks are printed.
-      }
 
-      if (node.next.next) {
-        parseBlocks(node.next.next);
+        if (node.next.next) {
+          parseBlocks(node.next.next);
+        }
+      } catch (e) {
+        console.log(e);
       }
     }
 
