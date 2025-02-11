@@ -1,6 +1,6 @@
 <template>
   <iframe
-    src="https://physics.c2stem.org"
+    src="https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Truck_Model_full_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
     id="iframe-id"
     sandbox="allow-scripts allow-same-origin"
     height="100%"
@@ -73,17 +73,17 @@ export default {
     );
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
-    ifr_window.onload = () => {
-      this.api.addActionListener((action) => {
-        if (action.type !== "openProject") {
-          this.sendActions({ type: "action", data: action });
-          astController.actionListener(action);
-          let state = BlockParser.generate("treeRoots");
-          this.sendState({ type: "state", data: state });
-        }
-      });
-      this.api.addEventListener("startScript", console.log);
-    };
+    // ifr_window.onload = () => {
+    this.api.addActionListener((action) => {
+      if (action.type !== "openProject") {
+        this.sendActions({ type: "action", data: action });
+        astController.actionListener(action);
+        let state = BlockParser.generate("treeRoots");
+        this.sendState({ type: "state", data: state });
+      }
+    });
+    this.api.addEventListener("startScript", console.log);
+    // };
 
     this.socket = Websockets.connect();
     this.socket.onmessage = (event) => {

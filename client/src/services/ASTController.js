@@ -408,7 +408,11 @@ export default class ASTController {
           }
           this.blocks[t[0]].next.contained[v].name = action.args[1];
         } else {
-          this.blocks[t[0]].next.contained[v].name = action.args[1][0];
+          if (action.args[1] === null) {
+            this.blocks[t[0]].next.contained[v].name = "";
+          } else {
+            this.blocks[t[0]].next.contained[v].name = action.args[1][0];
+          }
         }
 
         break;
