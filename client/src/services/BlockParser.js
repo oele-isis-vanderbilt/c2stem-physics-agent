@@ -129,14 +129,17 @@ export default {
             updatedRoot += element;
             childCounter++;
           } else {
-            if (children[childCounter].includes("(")) {
-              element = children[childCounter];
+            if (children.length > 0) {
+              if (children[childCounter].includes("(")) {
+                element = children[childCounter];
+              } else {
+                element = "(" + children[childCounter] + ")";
+              }
+              updatedRoot += element.trim() + " ";
+              childCounter++;
             } else {
-              element = "(" + children[childCounter] + ")";
+              updatedRoot += element.trim() + " ";
             }
-
-            updatedRoot += element.trim() + " ";
-            childCounter++;
           }
         } else if (
           ["and", "or", "+", "−", "+", "×", "/", ">"].includes(element)
