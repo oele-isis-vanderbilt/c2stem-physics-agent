@@ -65,6 +65,9 @@ export default {
       rootList = [];
       children = [];
       // parse tree root.
+      if (root.name !== "receiveGo" && root.name !== "doSimulationStep") {
+        finalString += decorate("Not Connected") + "\n";
+      }
       parseBlocks(root);
       finalString += "\n";
     }
