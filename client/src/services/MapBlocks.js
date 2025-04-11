@@ -1273,7 +1273,7 @@ export default {
       setDeltaTime: {
         type: "command",
         category: "simulation",
-        spec: "set \u2206t to %n",
+        spec: "set DeltaT to %n",
         defaults: [0],
         concepts: ["delta_time"],
       },

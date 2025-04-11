@@ -85,21 +85,44 @@ export default {
      * The method replaces the placeholders in the nested block with the items in the nested children list.
      * ex: nestedChildren = ["x", "y"] and the nested block is %n > %v. Result : x > y.
      * */
-    function replaceVariables(block, value) {
+    function replaceVariables(block, value, contianedIndex) {
       let directional_blocks = ["%clockwise", "%counterclockwise"];
       let AdditionalVariables = false;
       let updatedBlock = "";
+      let elementIndex = -1;
+      const percentSigns = countPercentSigns(block);
       if (block.includes("%")) {
         let blockList = block.split(" ");
         blockList.forEach((element, index) => {
           if (element.includes("%")) {
-            if (!AdditionalVariables && !directional_blocks.includes(element)) {
-              element = "(" + value + ")";
-              AdditionalVariables = true;
-            } else if (directional_blocks.includes(element)) {
-              element = element.replace("%", "");
+            elementIndex++;
+            if (percentSigns > 1) {
+              if (elementIndex === contianedIndex) {
+                if (
+                  !AdditionalVariables &&
+                  !directional_blocks.includes(element)
+                ) {
+                  element = "(" + value + ")";
+                  AdditionalVariables = true;
+                } else if (directional_blocks.includes(element)) {
+                  element = element.replace("%", "");
+                }
+                updatedBlock += element + " ";
+              } else {
+                updatedBlock += element + " ";
+              }
+            } else {
+              if (
+                !AdditionalVariables &&
+                !directional_blocks.includes(element)
+              ) {
+                element = "(" + value + ")";
+                AdditionalVariables = true;
+              } else if (directional_blocks.includes(element)) {
+                element = element.replace("%", "");
+              }
+              updatedBlock += element + " ";
             }
-            updatedBlock += element + " ";
           } else if (index === blockList.length - 1) {
             updatedBlock += element;
           } else {
@@ -155,6 +178,10 @@ export default {
       return updatedRoot;
     }
 
+    function countPercentSigns(str) {
+      const matches = str.match(/%/g);
+      return matches ? matches.length : 0;
+    }
     /*
      * Main method to parse the tree elements into the textual user state.
      * The method can be used recursively to process nested nodes.
@@ -176,7 +203,9 @@ export default {
           }
         }
         if (node.next.contained.length !== 0) {
+          let containedIndex = -1;
           for (let nextNode of node.next.contained) {
+            containedIndex += 1;
             if (nextNode) {
               if (!nextNode.id) {
                 value = nextNode.name ? nextNode.name : "no value";
@@ -184,7 +213,7 @@ export default {
                   // nested_children.push(value);
                   children.push(value);
                 } else {
-                  rootName = replaceVariables(rootName, value);
+                  rootName = replaceVariables(rootName, value, containedIndex);
                 }
               } else {
                 if (!isNestedBlock) {
@@ -344,7 +373,15 @@ export default {
                 finalString += decorate(rootName) + "\n";
               }
             } else {
-              children.push(rootName);
+              if (
+                ["+", "−", "×", "/", "<", ">"].some((operator) =>
+                  rootName.includes(operator)
+                )
+              ) {
+                finalString += decorate(rootName) + "\n";
+              } else {
+                children.push(rootName);
+              }
             }
           } else if (rootCounter > 1) {
             if (children.length > 0 && rootName.includes("%")) {
