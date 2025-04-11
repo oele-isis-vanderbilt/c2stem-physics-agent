@@ -446,7 +446,7 @@ export default {
                     }
                   }
                 } else {
-                  finalString += decorate(rootName) + "\n";
+                  finalString += decorate(rootName.trim()) + "\n";
                 }
               }
             }
