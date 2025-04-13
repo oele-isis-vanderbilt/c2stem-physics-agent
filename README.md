@@ -1,42 +1,24 @@
-# c2stem-physics-agent
-Agent implementation for C2STEM physics. Testing waters with an initial local implementation
+# client
 
-
-## Installation
-
-- Clone Repository:
-
-```sh
-git clone git@github.com:oele-isis-vanderbilt/c2stem-physics-agent.git
+## Project setup
 ```
-
-- Front End:
-  Setup Vue static app.
-
-```sh
-cd client
 npm install
-npm run build
 ```
 
-- Back End:
-  Setup python server with WebSocket.
-
-```sh
-cd server
-pip install -r requirements.txt
+### Compiles and hot-reloads for development
 ```
-
-## Running locally
-
-```sh
-cd server
-python main.py
-```
-
-```sh
-cd client
 npm run serve
 ```
 
-The app should be running on http://locahost:8081.
+### Compiles and minifies for production
+```
+npm run build
+```
+
+### Lints and fixes files
+```
+npm run lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).

@@ -107,7 +107,7 @@ div {
 
 iframe {
   width: 100%;
-  height: 100%; //display: block;
+  height: 100%;
 }
 
 .chat-btn {
