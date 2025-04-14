@@ -30,7 +30,7 @@
       ></iframe>
       <iframe
         v-else
-        src="https://login.c2stem.org"
+        src="https://agent.c2-stem.org"
         id="chat-iframe"
         sandbox="allow-scripts allow-same-origin"
         height="100%"

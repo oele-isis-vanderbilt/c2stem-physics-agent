@@ -5,7 +5,7 @@ import axios from "axios";
 export default {
   login(credentials) {
     try {
-      return axiosInstance.post("api/login", credentials);
+      return axiosInstance.post("app/api/login", credentials);
     } catch (error) {
       return error;
     }
