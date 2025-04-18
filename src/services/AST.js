@@ -1,7 +1,8 @@
 export default {
   generateDOT() {
-    const blocks = JSON.parse(window.sessionStorage.getItem("blocks"));
-    const treeRoots = JSON.parse(window.sessionStorage.getItem("treeRoots"));
+    //pass store here when ever you plan to use this
+    const blocks = this.$store.getters.getBlocks;
+    const treeRoots = this.$store.getters.getTreeRoots;
 
     let dot = "graph Tree {\nnode [shape = none, ordering = out];\n";
     for (let block of Object.values(blocks)) {

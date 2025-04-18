@@ -1,6 +1,6 @@
 <template>
   <iframe
-    src="https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Farm_Model_full_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
+    src="https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Truck_Model_full_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
     id="iframe-id"
     sandbox="allow-scripts allow-same-origin"
     height="100%"
@@ -69,7 +69,8 @@ export default {
     const astController = new ASTController(
       "blocks",
       "treeRoots",
-      "actionList"
+      "actionList",
+      this.$store
     );
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
@@ -79,7 +80,7 @@ export default {
         if (action.type !== "openProject") {
           this.sendActions({ type: "action", data: action });
           astController.actionListener(action);
-          let state = BlockParser.generate("treeRoots");
+          let state = BlockParser.generate(this.$store);
           this.sendState({ type: "state", data: state });
         }
       });
@@ -87,8 +88,8 @@ export default {
     }, 2000);
 
     // };
-
-    this.socket = Websockets.connect();
+    let username = document.cookie.split("=")[1];
+    this.socket = Websockets.connect(username);
     this.socket.onmessage = (event) => {
       if (event.data.includes("URL")) {
         this.chat_URL = event.data.split("URL=")[1];

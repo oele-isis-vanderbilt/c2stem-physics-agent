@@ -60,7 +60,7 @@
  */
 import auth from "../services/Auth.js";
 import Token from "../services/Token.js";
-import LiveKit from "../services/LiveKit.js";
+// import LiveKit from "../services/LiveKit.js";
 export default {
   data() {
     return {
@@ -103,12 +103,13 @@ export default {
             .then(async (response) => {
               if (response) {
                 data.username = this.username;
+                document.cookie = "username=" + data.username;
                 Token.setAccessToken(data.token);
-                try {
-                  await LiveKit.tryAndPublish(data.username, this.$store);
-                } catch (err) {
-                  console.log(err);
-                }
+                // try {
+                //   await LiveKit.tryAndPublish(data.username, this.$store);
+                // } catch (err) {
+                //   console.log(err);
+                // }
                 this.$router.push({ name: "home" });
               }
             })

@@ -1,10 +1,11 @@
 import ed from "edit-distance";
 
 export default class ASTController {
-  constructor(blocksName, treeRootsName, actionListName) {
+  constructor(blocksName, treeRootsName, actionListName, store) {
     this.blocksName = blocksName;
     this.treeRootsName = treeRootsName;
     this.actionListName = actionListName;
+    this.store = store;
   }
 
   normalizeTree(root) {
@@ -498,14 +499,17 @@ export default class ASTController {
 
     // console.log(actions);
     // console.log(treeRoots);
-    window.sessionStorage.setItem(this.blocksName, JSON.stringify(this.blocks));
-    window.sessionStorage.setItem(
-      this.treeRootsName,
-      JSON.stringify(this.treeRoots)
-    );
-    window.sessionStorage.setItem(
-      this.actionListName,
-      JSON.stringify(this.actions)
-    );
+    // window.sessionStorage.setItem(this.blocksName, JSON.stringify(this.blocks));
+    // window.sessionStorage.setItem(
+    //   this.treeRootsName,
+    //   JSON.stringify(this.treeRoots)
+    // );
+    // window.sessionStorage.setItem(
+    //   this.actionListName,
+    //   JSON.stringify(this.actions)
+    // );
+    this.store.dispatch("updateTreeRoots", this.treeRoots);
+    this.store.dispatch("updateBlocks", this.blocks);
+    this.store.dispatch("updateActions", this.actions);
   };
 }
