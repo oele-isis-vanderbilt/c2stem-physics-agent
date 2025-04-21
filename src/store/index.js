@@ -52,4 +52,9 @@ const store = createStore({
   },
   modules: {},
 });
+store.subscribe((mutation, state) => {
+  // Store the state object as a JSON string
+  sessionStorage.setItem("store", JSON.stringify(state));
+});
+
 export default store;

@@ -155,10 +155,18 @@ export default {
             childCounter++;
           } else {
             if (children.length > 0) {
-              if (children[childCounter].includes("(")) {
-                element = children[childCounter];
+              if (typeof children === "string") {
+                if (children.includes("(")) {
+                  element = children;
+                } else {
+                  element = "(" + children + ")";
+                }
               } else {
-                element = "(" + children[childCounter] + ")";
+                if (children[childCounter].includes("(")) {
+                  element = children[childCounter];
+                } else {
+                  element = "(" + children[childCounter] + ")";
+                }
               }
               updatedRoot += element.trim() + " ";
               childCounter++;
@@ -291,7 +299,9 @@ export default {
                 nested_children[0]
               );
               nested_children = [];
-              nested_children.push(splicedChild[0].trim());
+              if (splicedChild && splicedChild.length > 0) {
+                nested_children.push(splicedChild[0].trim());
+              }
               nested_children.push(updatedChildren);
             } else if (
               nested_children.length === 2 &&
@@ -306,8 +316,14 @@ export default {
               nested_children.push(splicedChild[0].trim());
               nested_children.push(updatedChildren);
             }
-            updatedRootName = AssignNestedChildren(rootName, nested_children);
-
+            if (
+              rootName.includes("(x position) of") &&
+              nested_children[0].includes("(x position) of")
+            ) {
+              nested_children.push(rootName);
+            } else {
+              updatedRootName = AssignNestedChildren(rootName, nested_children);
+            }
             if (!rootList.includes("if %b %c")) {
               rootCounter--;
             }
@@ -352,6 +368,13 @@ export default {
                 let newBlock = AssignNestedChildren(rootName, nested_children);
                 nested_children = [];
                 nested_children.push(splicedChild);
+                nested_children.push(newBlock);
+              } else if (
+                rootName.includes("%s") &&
+                nested_children[0].includes("(x position) of")
+              ) {
+                let newBlock = AssignNestedChildren(rootName, nested_children);
+                nested_children = [];
                 nested_children.push(newBlock);
               } else {
                 nested_children.push(rootName);
