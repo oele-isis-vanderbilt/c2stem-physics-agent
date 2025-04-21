@@ -331,7 +331,8 @@ export default class ASTController {
               this.blocks[id].next &&
               this.blocks[id].next.next
             ) {
-              this.blocks[t[0]].next.contained[t[1]] = this.blocks[id].next.next;
+              this.blocks[t[0]].next.contained[t[1]] =
+                this.blocks[id].next.next;
             }
           } else {
             // Otherwise, unlink it like a normal linked list.
