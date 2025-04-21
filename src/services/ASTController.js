@@ -326,11 +326,23 @@ export default class ASTController {
             // If the block is being removed from the top of a block's body,
             // unlink it from there.
             const t = action.args[2].element.split("/");
-            this.blocks[t[0]].next.contained[t[1]] = this.blocks[id].next.next;
+            if (
+              this.blocks[id] &&
+              this.blocks[id].next &&
+              this.blocks[id].next.next
+            ) {
+              this.blocks[t[0]].next.contained[t[1]] = this.blocks[id].next.next;
+            }
           } else {
             // Otherwise, unlink it like a normal linked list.
-            this.blocks[action.args[2].element].next.next =
-              this.blocks[id].next.next;
+            if (
+              this.blocks[id] &&
+              this.blocks[id].next &&
+              this.blocks[id].next.next
+            ) {
+              this.blocks[action.args[2].element].next.next =
+                this.blocks[id].next.next;
+            }
           }
         } else if (typeof action.args[2] == "string") {
           // Blocks that are part of other block's condition statmements that are being removed
@@ -344,8 +356,14 @@ export default class ASTController {
 
           // Unroot the block, and move the next block (if it exists) to the root.
           unrootBlock(action.args[0]);
-          if (this.blocks[action.args[0]].next.next) {
-            this.treeRoots.push(this.blocks[action.args[0]].next.next);
+          if (
+            this.blocks[action.args[0]] &&
+            this.blocks[action.args[0]].next &&
+            this.blocks[action.args[0]].next.next
+          ) {
+            if (this.blocks[action.args[0]].next.next) {
+              this.treeRoots.push(this.blocks[action.args[0]].next.next);
+            }
           }
         }
 
