@@ -2,6 +2,14 @@
   <router-view />
 </template>
 
+<script>
+export default {
+  name: "App",
+  // beforeCreate() {
+  //   this.$store.dispatch("initializeStorage");
+  // },
+};
+</script>
 <style>
 html,
 body {

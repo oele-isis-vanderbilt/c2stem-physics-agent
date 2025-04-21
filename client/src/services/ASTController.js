@@ -1,10 +1,11 @@
 import ed from "edit-distance";
 
 export default class ASTController {
-  constructor(blocksName, treeRootsName, actionListName) {
-    this.blocksName = blocksName;
-    this.treeRootsName = treeRootsName;
-    this.actionListName = actionListName;
+  constructor(blocks, treeRoots, actionList, store) {
+    this.blocks = blocks;
+    this.treeRoots = treeRoots;
+    this.actions = actionList;
+    this.store = store;
   }
 
   normalizeTree(root) {
@@ -35,11 +36,12 @@ export default class ASTController {
   );
 
   // Map of blocks (id -> block object)
-  blocks = {};
-  // Array of root blocks
-  treeRoots = [];
-  // List of actions for action sequence
-  actions = [];
+
+  // blocks = {};
+  // // Array of root blocks
+  // treeRoots = [];
+  // // List of actions for action sequence
+  // actions = [];
 
   // Tree understanding functions
   // let insert, remove, update, children;
@@ -325,11 +327,24 @@ export default class ASTController {
             // If the block is being removed from the top of a block's body,
             // unlink it from there.
             const t = action.args[2].element.split("/");
-            this.blocks[t[0]].next.contained[t[1]] = this.blocks[id].next.next;
+            if (
+              this.blocks[id] &&
+              this.blocks[id].next &&
+              this.blocks[id].next.next
+            ) {
+              this.blocks[t[0]].next.contained[t[1]] =
+                this.blocks[id].next.next;
+            }
           } else {
             // Otherwise, unlink it like a normal linked list.
-            this.blocks[action.args[2].element].next.next =
-              this.blocks[id].next.next;
+            if (
+              this.blocks[id] &&
+              this.blocks[id].next &&
+              this.blocks[id].next.next
+            ) {
+              this.blocks[action.args[2].element].next.next =
+                this.blocks[id].next.next;
+            }
           }
         } else if (typeof action.args[2] == "string") {
           // Blocks that are part of other block's condition statmements that are being removed
@@ -343,8 +358,14 @@ export default class ASTController {
 
           // Unroot the block, and move the next block (if it exists) to the root.
           unrootBlock(action.args[0]);
-          if (this.blocks[action.args[0]].next.next) {
-            this.treeRoots.push(this.blocks[action.args[0]].next.next);
+          if (
+            this.blocks[action.args[0]] &&
+            this.blocks[action.args[0]].next &&
+            this.blocks[action.args[0]].next.next
+          ) {
+            if (this.blocks[action.args[0]].next.next) {
+              this.treeRoots.push(this.blocks[action.args[0]].next.next);
+            }
           }
         }
 
@@ -498,14 +519,17 @@ export default class ASTController {
 
     // console.log(actions);
     // console.log(treeRoots);
-    window.sessionStorage.setItem(this.blocksName, JSON.stringify(this.blocks));
-    window.sessionStorage.setItem(
-      this.treeRootsName,
-      JSON.stringify(this.treeRoots)
-    );
-    window.sessionStorage.setItem(
-      this.actionListName,
-      JSON.stringify(this.actions)
-    );
+    // window.sessionStorage.setItem(this.blocksName, JSON.stringify(this.blocks));
+    // window.sessionStorage.setItem(
+    //   this.treeRootsName,
+    //   JSON.stringify(this.treeRoots)
+    // );
+    // window.sessionStorage.setItem(
+    //   this.actionListName,
+    //   JSON.stringify(this.actions)
+    // );
+    this.store.dispatch("updateTreeRoots", this.treeRoots);
+    this.store.dispatch("updateBlocks", this.blocks);
+    this.store.dispatch("updateActions", this.actions);
   };
 }

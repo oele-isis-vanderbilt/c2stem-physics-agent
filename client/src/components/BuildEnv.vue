@@ -1,6 +1,6 @@
 <template>
   <iframe
-    src="https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Truck_Model_full_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
+    src=" https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Truck_Model_full_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
     id="iframe-id"
     sandbox="allow-scripts allow-same-origin"
     height="100%"
@@ -66,10 +66,14 @@ export default {
     },
   },
   mounted() {
+    let blocks = this.$store.getters.getBlocks;
+    let treeRoots = this.$store.getters.getTreeRoots;
+    let actions = this.$store.getters.getActions;
     const astController = new ASTController(
-      "blocks",
-      "treeRoots",
-      "actionList"
+      blocks,
+      treeRoots,
+      actions,
+      this.$store
     );
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
@@ -79,7 +83,7 @@ export default {
         if (action.type !== "openProject") {
           this.sendActions({ type: "action", data: action });
           astController.actionListener(action);
-          let state = BlockParser.generate("treeRoots");
+          let state = BlockParser.generate(this.$store);
           this.sendState({ type: "state", data: state });
         }
       });
