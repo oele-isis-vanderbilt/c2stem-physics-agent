@@ -5,6 +5,29 @@ const store = createStore({
     treeRoots: [],
     blocks: {},
     actions: [],
+    currentGroup: "",
+    currentActionName: "",
+    score: {
+      velocityInitialization: 0,
+      positionInitialization: 0,
+      accelerationInitialization: 0,
+      deltaTInitialization: 0,
+      startSimulation: 0,
+      updatePosition: 0,
+      updateVelocity: 0,
+      updateOrder: 0,
+      accuracy: 0,
+      cruising: 0,
+      decelerating: 0,
+      stopping: 0,
+      cruisingConditional: 0,
+      slowingConditional: 0,
+      stoppingConditional: 0,
+      completeCruising: 0,
+      completeSlowDown: 0,
+      completeStopping: 0,
+      completeOrdering: 0,
+    },
   },
   getters: {
     getTreeRoots(state) {
@@ -15,6 +38,15 @@ const store = createStore({
     },
     getActions(state) {
       return state.actions;
+    },
+    getCurrentGroup(state) {
+      return state.currentGroup;
+    },
+    getCurrentActionName(state) {
+      return state.currentActionName;
+    },
+    getScore(state) {
+      return state.score;
     },
   },
   mutations: {
@@ -4638,6 +4670,15 @@ const store = createStore({
     updateActions(state, actions) {
       state.actions = actions;
     },
+    updateCurrentGroup(state, group) {
+      state.currentGroup = group;
+    },
+    updateCurrentActionName(state, name) {
+      state.currentActionName = name;
+    },
+    updateScore(state, score) {
+      state.score = score;
+    },
   },
   actions: {
     initializeStorage(context) {
@@ -4651,6 +4692,15 @@ const store = createStore({
     },
     updateActions(context, actions) {
       context.commit("updateActions", actions);
+    },
+    updateCurrentGroup(context, group) {
+      context.commit("updateCurrentGroup", group);
+    },
+    updateCurrentActionName(context, name) {
+      context.commit("updateCurrentActionName", name);
+    },
+    updateScore(context, score) {
+      context.commit("updateScore", score);
     },
   },
   modules: {},

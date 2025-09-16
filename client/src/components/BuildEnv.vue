@@ -56,6 +56,9 @@ export default {
     getChatURL() {
       return this.chat_URL;
     },
+    getScore() {
+      return this.$store.getters.getScore;
+    },
   },
   methods: {
     sendActions(data) {
@@ -63,6 +66,36 @@ export default {
     },
     sendState(state) {
       this.socket.send(JSON.stringify(state));
+    },
+    sendActionGroup(action) {
+      let group = this.$store.getters.getCurrentGroup;
+      let name = this.$store.getters.getCurrentActionName;
+      if (
+        action.args[1] === "item_0" &&
+        name !== "receiveGo" &&
+        name !== "doSimulationStep"
+      ) {
+        this.socket.send(JSON.stringify({ type: "group", data: "DRAFT" }));
+      } else {
+        this.socket.send(JSON.stringify({ type: "group", data: group }));
+      }
+    },
+    sendScore(score) {
+      this.socket.send(JSON.stringify(score));
+    },
+    setupSocket() {
+      this.socket = Websockets.connect();
+      this.socket.onmessage = (event) => {
+        if (event.data.includes("URL")) {
+          this.chat_URL = event.data.split("URL=")[1];
+          console.log(this.chat_URL);
+        }
+        console.log(event.data);
+      };
+      this.socket.onclose = () => {
+        console.log("Disconnected from the WebSocket server");
+        this.setupSocket();
+      };
     },
   },
   mounted() {
@@ -83,23 +116,17 @@ export default {
         if (action.type !== "openProject") {
           this.sendActions({ type: "action", data: action });
           astController.actionListener(action);
+          this.sendActionGroup(action);
           let state = BlockParser.generate(this.$store);
           this.sendState({ type: "state", data: state });
+          this.sendScore({ type: "score", data: this.getScore });
         }
       });
       this.api.addEventListener("startScript", console.log);
     }, 2000);
 
     // };
-
-    this.socket = Websockets.connect();
-    this.socket.onmessage = (event) => {
-      if (event.data.includes("URL")) {
-        this.chat_URL = event.data.split("URL=")[1];
-        console.log(this.chat_URL);
-      }
-      console.log(event.data);
-    };
+    this.setupSocket();
   },
 };
 </script>
