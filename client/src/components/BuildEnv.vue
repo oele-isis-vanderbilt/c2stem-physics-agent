@@ -44,12 +44,14 @@
 import Websockets from "@/services/Websockets";
 import BlockParser from "@/services/BlockParser";
 import ASTController from "@/services/ASTController";
+import ActionScorer from "@/services/ActionScorer";
 
 export default {
   name: "BuildEnv",
   data() {
     return {
       chat_URL: "",
+      lastGroup: "",
     };
   },
   computed: {
@@ -75,9 +77,17 @@ export default {
         name !== "receiveGo" &&
         name !== "doSimulationStep"
       ) {
+        this.lastGroup = "DRAFT";
         this.socket.send(JSON.stringify({ type: "group", data: "DRAFT" }));
       } else {
-        this.socket.send(JSON.stringify({ type: "group", data: group }));
+        if (group) {
+          this.lastGroup = group;
+          this.socket.send(JSON.stringify({ type: "group", data: group }));
+        } else {
+          this.socket.send(
+            JSON.stringify({ type: "group", data: this.lastGroup })
+          );
+        }
       }
     },
     sendScore(score) {
@@ -108,6 +118,12 @@ export default {
       actions,
       this.$store
     );
+    const actionScorer = new ActionScorer(
+      "blocks",
+      "treeRoots",
+      "actionList",
+      this.$store
+    );
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
     // ifr_window.onload = () => {
@@ -118,6 +134,7 @@ export default {
           astController.actionListener(action);
           this.sendActionGroup(action);
           let state = BlockParser.generate(this.$store);
+          actionScorer.updateScore(state);
           this.sendState({ type: "state", data: state });
           this.sendScore({ type: "score", data: this.getScore });
         }
