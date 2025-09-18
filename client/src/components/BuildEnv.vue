@@ -45,6 +45,7 @@ import Websockets from "@/services/Websockets";
 import BlockParser from "@/services/BlockParser";
 import ASTController from "@/services/ASTController";
 import ActionScorer from "@/services/ActionScorer";
+import SegmentParser from "@/services/SegmentParser";
 
 export default {
   name: "BuildEnv",
@@ -60,6 +61,9 @@ export default {
     },
     getScore() {
       return this.$store.getters.getScore;
+    },
+    getSegment() {
+      return this.$store.getters.getSegment;
     },
   },
   methods: {
@@ -85,13 +89,16 @@ export default {
           this.socket.send(JSON.stringify({ type: "group", data: group }));
         } else {
           this.socket.send(
-            JSON.stringify({ type: "group", data: this.lastGroup })
+            JSON.stringify({ type: "group", data: "VISUALIZE" })
           );
         }
       }
     },
     sendScore(score) {
       this.socket.send(JSON.stringify(score));
+    },
+    sendSegment(segment) {
+      this.socket.send(JSON.stringify(segment));
     },
     setupSocket() {
       this.socket = Websockets.connect();
@@ -124,6 +131,7 @@ export default {
       "actionList",
       this.$store
     );
+    const segmentparser = new SegmentParser();
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
     // ifr_window.onload = () => {
@@ -131,12 +139,13 @@ export default {
       this.api.addActionListener((action) => {
         if (action.type !== "openProject") {
           this.sendActions({ type: "action", data: action });
-          astController.actionListener(action);
+          astController.actionListener(action, segmentparser);
           this.sendActionGroup(action);
           let state = BlockParser.generate(this.$store);
           actionScorer.updateScore(state);
           this.sendState({ type: "state", data: state });
           this.sendScore({ type: "score", data: this.getScore });
+          this.sendSegment({ type: "segment", data: this.getSegment });
         }
       });
       this.api.addEventListener("startScript", console.log);

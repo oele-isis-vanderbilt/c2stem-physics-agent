@@ -1,4 +1,5 @@
 import ed from "edit-distance";
+import Helper from "@/services/Helpers";
 
 export default class ASTController {
   constructor(blocks, treeRoots, actionList, store) {
@@ -58,7 +59,7 @@ export default class ASTController {
     return [...ret, ...node.next.contained];
   };
 
-  actionListener = (action) => {
+  actionListener = (action, segmentparser) => {
     // Block class -- used to create standardized objects
     // that represent new blocks in C2STEM
     class Block {
@@ -397,7 +398,10 @@ export default class ASTController {
               }
             });
           }
-          delete this.blocks[id];
+          let ids = Helper.getAllIds(this.blocks[id]);
+          ids.forEach((id) => {
+            delete this.blocks[id];
+          });
         }
         break;
       }
@@ -598,7 +602,11 @@ export default class ASTController {
       actionRep.effective = ted.distance < lastEditDistance;
     }
 
-    if (actionRep.valid) this.actions.push(actionRep);
+    if (actionRep.valid) {
+      this.actions.push(actionRep);
+      let segment = segmentparser.extractSegment(actionRep);
+      this.store.dispatch("updateSegment", segment);
+    }
 
     // console.log(actions);
     // console.log(treeRoots);

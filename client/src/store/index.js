@@ -7,6 +7,7 @@ const store = createStore({
     actions: [],
     currentGroup: "",
     currentActionName: "",
+    currentSegment: "",
     score: {
       velocityInitialization: 0,
       positionInitialization: 0,
@@ -47,6 +48,9 @@ const store = createStore({
     },
     getScore(state) {
       return state.score;
+    },
+    getSegment(state) {
+      return state.currentSegment;
     },
   },
   mutations: {
@@ -4679,6 +4683,9 @@ const store = createStore({
     updateScore(state, score) {
       state.score = score;
     },
+    updateSegment(state, segment) {
+      state.currentSegment = segment;
+    },
   },
   actions: {
     initializeStorage(context) {
@@ -4701,6 +4708,9 @@ const store = createStore({
     },
     updateScore(context, score) {
       context.commit("updateScore", score);
+    },
+    updateSegment(context, segment) {
+      context.commit("updateSegment", segment);
     },
   },
   modules: {},
