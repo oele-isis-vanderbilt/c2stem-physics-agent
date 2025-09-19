@@ -27,11 +27,7 @@ export default class SegmentParser {
   }
 
   getBlockId(obj) {
-    if (obj.block.includes("item")) {
-      return obj.block;
-    } else {
-      return false;
-    }
+    return String(obj?.block || "").includes("item") ? obj.block : null;
   }
 
   getActionType(action) {
@@ -121,6 +117,8 @@ export default class SegmentParser {
           let parent = this.parentChildMap[id];
           this.segment = this.generateSegment(parent);
           return this.segment;
+        } else {
+          return "initialization";
         }
       } else {
         return this.segment;

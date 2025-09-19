@@ -68,9 +68,11 @@ export default {
   },
   methods: {
     sendActions(data) {
+      data = data ? data : "";
       this.socket.send(JSON.stringify(data));
     },
     sendState(state) {
+      state = state ? state : "";
       this.socket.send(JSON.stringify(state));
     },
     sendActionGroup(action) {
@@ -95,9 +97,11 @@ export default {
       }
     },
     sendScore(score) {
+      score = score ? score : {};
       this.socket.send(JSON.stringify(score));
     },
     sendSegment(segment) {
+      segment = segment ? segment : "";
       this.socket.send(JSON.stringify(segment));
     },
     setupSocket() {
@@ -108,6 +112,10 @@ export default {
           console.log(this.chat_URL);
         }
         console.log(event.data);
+        let state = BlockParser.generate(this.$store);
+        if (state.trim().length > 1) {
+          this.sendState({ type: "state", data: state });
+        }
       };
       this.socket.onclose = () => {
         console.log("Disconnected from the WebSocket server");
