@@ -376,11 +376,11 @@ export default class ASTController {
           //   this.blocks[action.args[0]].next &&
           //   this.blocks[action.args[0]].next.next
           // ) {
-          if (this.blocks[action.args[0]]) {
-            if (this.blocks[action.args[0]].next.next) {
-              this.treeRoots.push(this.blocks[action.args[0]].next.next);
-            }
-          }
+          // if (this.blocks[action.args[0]]) {
+          //   if (this.blocks[action.args[0]].next.next) {
+          //     this.treeRoots.push(this.blocks[action.args[0]].next.next);
+          //   }
+          // }
         }
         // Remove all blocks contained in the block (e.g. variable in condition of if statement.)
         if (this.blocks[id]) {
@@ -543,11 +543,23 @@ export default class ASTController {
       }
       case "pressStart": {
         actionRep.type = "assessment";
-        actionRep.group = "EXECUTE";
+        actionRep.group = "PLAY_PAUSE";
+        actionRep.action = "play";
+        break;
+      }
+      case "togglePause": {
+        actionRep.type = "assessment";
+        actionRep.group = "PLAY_PAUSE";
         actionRep.action = "play";
         break;
       }
       case "startScript": {
+        actionRep.type = "assessment";
+        actionRep.group = "EXECUTE";
+        actionRep.action = "block";
+        break;
+      }
+      case "stopAllScripts": {
         actionRep.type = "assessment";
         actionRep.group = "EXECUTE";
         actionRep.action = "block";

@@ -6,25 +6,25 @@ export default class ActionScorer {
     this.store = store;
   }
   scoringRubricListedObj = {
-    positionInitialization: [],
-    velocityInitialization: [],
-    accelerationInitialization: [],
-    deltaTInitialization: [],
-    startSimulation: [],
-    updatePosition: [],
-    updateVelocity: [],
-    updateOrder: [],
-    accuracy: [],
-    cruising: [],
-    decelerating: [],
-    stopping: [],
-    cruisingConditional: [],
-    slowingConditional: [],
-    stoppingConditional: [],
-    completeCruising: [],
-    completeSlowDown: [],
-    completeStopping: [],
-    completeOrdering: [],
+    initialize_position: [],
+    initialize_velocity: [],
+    initialize_acceleration: [],
+    initialize_deltaT: [],
+    start_simulation: [],
+    accurate_comparison_position_velocity_time: [],
+    accurate_comparison_velocity_acceleration_time: [],
+    update_order_of_velocity_position: [],
+    code_accuracy_to_accelerate_truck: [],
+    setting_acceleration_to_cruise_truck: [],
+    setting_acceleration_to_decelerate_truck: [],
+    stop_simulation: [],
+    code_accuracy_to_cruise_truck: [],
+    code_accuracy_to_slowdown_truck: [],
+    code_accuracy_to_stop_truck: [],
+    accurate_acceleration_velocity_for_cruising: [],
+    accurate_acceleration_position_for_slowing: [],
+    accurate_code_for_stopping: [],
+    accurate_order_cruising_slowing_stopping: [],
   };
 
   getMatchingBlock(ast, searchString) {
@@ -238,7 +238,7 @@ export default class ActionScorer {
     // let droneScoringRubric = this.store.getters.getDroneScore;
     Object.keys(scoringRubric).forEach((key) => {
       switch (key) {
-        case "positionInitialization": {
+        case "initialize_position": {
           let block = this.getMatchingBlock(ast, "set x_position to");
           let value;
           let parent = this.getRootBlock(ast, "set x_position to");
@@ -246,88 +246,88 @@ export default class ActionScorer {
             // console.log(block[0]);
             value = block[0].split("(")[1].split(")")[0];
             if (value === "-60") {
-              scoringRubric.positionInitialization = 1;
-              this.scoringRubricListedObj.positionInitialization.push(1);
+              scoringRubric.initialize_position = 1;
+              this.scoringRubricListedObj.initialize_position.push(1);
             } else {
-              this.scoringRubricListedObj.positionInitialization.push(0);
-              scoringRubric.positionInitialization = 0;
+              this.scoringRubricListedObj.initialize_position.push(0);
+              scoringRubric.initialize_position = 0;
             }
           } else {
-            scoringRubric.positionInitialization = 0;
-            this.scoringRubricListedObj.positionInitialization.push(0);
+            scoringRubric.initialize_position = 0;
+            this.scoringRubricListedObj.initialize_position.push(0);
           }
           break;
         }
-        case "velocityInitialization": {
+        case "initialize_velocity": {
           let block = this.getMatchingBlock(ast, "set x_velocity to");
           let value;
           let parent = this.getRootBlock(ast, "set x_velocity to");
           if (block && parent === "greenflag clicked") {
             value = block[0].split("(")[1].split(")")[0];
             if (value === "0") {
-              scoringRubric.velocityInitialization = 1;
-              this.scoringRubricListedObj.velocityInitialization.push(1);
+              scoringRubric.initialize_velocity = 1;
+              this.scoringRubricListedObj.initialize_velocity.push(1);
             } else {
-              scoringRubric.velocityInitialization = 0;
-              this.scoringRubricListedObj.velocityInitialization.push(0);
+              scoringRubric.initialize_velocity = 0;
+              this.scoringRubricListedObj.initialize_velocity.push(0);
             }
           } else {
-            this.scoringRubricListedObj.velocityInitialization.push(0);
-            scoringRubric.velocityInitialization = 0;
+            this.scoringRubricListedObj.initialize_velocity.push(0);
+            scoringRubric.initialize_velocity = 0;
           }
           break;
         }
-        case "accelerationInitialization": {
+        case "initialize_acceleration": {
           let block = this.getMatchingBlock(ast, "set x_acceleration to");
           let value;
           let parent = this.getRootBlock(ast, "set x_acceleration to");
           if (block && parent === "greenflag clicked") {
             value = block[0].split("(")[1].split(")")[0];
             if (["3", "4"].includes(value)) {
-              scoringRubric.accelerationInitialization = 1;
-              this.scoringRubricListedObj.accelerationInitialization.push(1);
+              scoringRubric.initialize_acceleration = 1;
+              this.scoringRubricListedObj.initialize_acceleration.push(1);
             } else {
-              scoringRubric.accelerationInitialization = 0;
-              this.scoringRubricListedObj.accelerationInitialization.push(0);
+              scoringRubric.initialize_acceleration = 0;
+              this.scoringRubricListedObj.initialize_acceleration.push(0);
             }
           } else {
-            scoringRubric.accelerationInitialization = 0;
-            this.scoringRubricListedObj.accelerationInitialization.push(0);
+            scoringRubric.initialize_acceleration = 0;
+            this.scoringRubricListedObj.initialize_acceleration.push(0);
           }
           break;
         }
-        case "deltaTInitialization": {
+        case "initialize_deltaT": {
           let block = this.getMatchingBlock(ast, "set DeltaT to");
           let value;
           let parent = this.getRootBlock(ast, "set DeltaT to");
           if (block && parent === "greenflag clicked") {
             value = block[0].split("(")[1].split(")")[0];
             if (["0", "0.1"].includes(value)) {
-              scoringRubric.deltaTInitialization = 1;
-              this.scoringRubricListedObj.deltaTInitialization.push(1);
+              scoringRubric.initialize_deltaT = 1;
+              this.scoringRubricListedObj.initialize_deltaT.push(1);
             } else {
-              scoringRubric.deltaTInitialization = 0;
-              this.scoringRubricListedObj.deltaTInitialization.push(0);
+              scoringRubric.initialize_deltaT = 0;
+              this.scoringRubricListedObj.initialize_deltaT.push(0);
             }
           } else {
-            scoringRubric.deltaTInitialization = 0;
-            this.scoringRubricListedObj.deltaTInitialization.push(0);
+            scoringRubric.initialize_deltaT = 0;
+            this.scoringRubricListedObj.initialize_deltaT.push(0);
           }
           break;
         }
-        case "startSimulation": {
+        case "start_simulation": {
           let block = this.getMatchingBlock(ast, "start simulation");
           let parent = this.getRootBlock(ast, "start simulation");
           if (block && parent === "greenflag clicked") {
-            scoringRubric.startSimulation = 1;
-            this.scoringRubricListedObj.startSimulation.push(1);
+            scoringRubric.start_simulation = 1;
+            this.scoringRubricListedObj.start_simulation.push(1);
           } else {
-            this.scoringRubricListedObj.startSimulation.push(0);
-            scoringRubric.startSimulation = 0;
+            this.scoringRubricListedObj.start_simulation.push(0);
+            scoringRubric.start_simulation = 0;
           }
           break;
         }
-        case "updatePosition": {
+        case "accurate_comparison_position_velocity_time": {
           let block = this.getMatchingBlock(ast, "change x_position by");
           let parent = this.getRootBlock(ast, "change x_position by");
           let ifPosition = this.checkIfBeforeOrAfter(
@@ -342,15 +342,19 @@ export default class ActionScorer {
             parent === "simulation step" &&
             (ifPosition === "after" || ifPosition === null)
           ) {
-            scoringRubric.updatePosition = 1;
-            this.scoringRubricListedObj.updatePosition.push(1);
+            scoringRubric.accurate_comparison_position_velocity_time = 1;
+            this.scoringRubricListedObj.accurate_comparison_position_velocity_time.push(
+              1
+            );
           } else {
-            this.scoringRubricListedObj.updatePosition.push(0);
-            scoringRubric.updatePosition = 0;
+            this.scoringRubricListedObj.accurate_comparison_position_velocity_time.push(
+              0
+            );
+            scoringRubric.accurate_comparison_position_velocity_time = 0;
           }
           break;
         }
-        case "updateVelocity": {
+        case "accurate_comparison_velocity_acceleration_time": {
           let block = this.getMatchingBlock(ast, "change x_velocity by");
           let parent = this.getRootBlock(ast, "change x_velocity by");
           let ifPosition = this.checkIfBeforeOrAfter(
@@ -366,61 +370,79 @@ export default class ActionScorer {
             parent === "simulation step" &&
             (ifPosition === "after" || ifPosition === null)
           ) {
-            this.scoringRubricListedObj.updateVelocity.push(1);
-            scoringRubric.updateVelocity = 1;
+            this.scoringRubricListedObj.accurate_comparison_velocity_acceleration_time.push(
+              1
+            );
+            scoringRubric.accurate_comparison_velocity_acceleration_time = 1;
           } else {
-            this.scoringRubricListedObj.updateVelocity.push(0);
-            scoringRubric.updateVelocity = 0;
+            this.scoringRubricListedObj.accurate_comparison_velocity_acceleration_time.push(
+              0
+            );
+            scoringRubric.accurate_comparison_velocity_acceleration_time = 0;
           }
           break;
         }
-        case "updateOrder": {
+        case "update_order_of_velocity_position": {
           if (
-            scoringRubric.updatePosition === 1 &&
-            scoringRubric.updateVelocity === 1
+            scoringRubric.accurate_comparison_position_velocity_time === 1 &&
+            scoringRubric.accurate_comparison_velocity_acceleration_time === 1
           ) {
             if (this.checkChangeOrder(ast) === "before") {
-              this.scoringRubricListedObj.updateOrder.push(1);
-              scoringRubric.updateOrder = 1;
+              this.scoringRubricListedObj.update_order_of_velocity_position.push(
+                1
+              );
+              scoringRubric.update_order_of_velocity_position = 1;
             } else {
-              this.scoringRubricListedObj.updateOrder.push(0);
-              scoringRubric.updateOrder = 0;
+              this.scoringRubricListedObj.update_order_of_velocity_position.push(
+                0
+              );
+              scoringRubric.update_order_of_velocity_position = 0;
             }
           } else {
-            this.scoringRubricListedObj.updateOrder.push(0);
-            scoringRubric.updateOrder = 0;
+            this.scoringRubricListedObj.update_order_of_velocity_position.push(
+              0
+            );
+            scoringRubric.update_order_of_velocity_position = 0;
           }
           break;
         }
-        case "accuracy": {
+        case "code_accuracy_to_accelerate_truck": {
           let block = this.findBlockAfterGreenFlag(
             ast,
             "set x_acceleration to"
           );
           if (block) {
             if (
-              scoringRubric.updatePosition === 1 &&
-              scoringRubric.updateVelocity === 1
+              scoringRubric.accurate_comparison_position_velocity_time === 1 &&
+              scoringRubric.accurate_comparison_velocity_acceleration_time === 1
             ) {
               let value = block.split("(")[1].split(")")[0];
               if (parseInt(value) > 0) {
-                this.scoringRubricListedObj.accuracy.push(1);
-                scoringRubric.accuracy = 1;
+                this.scoringRubricListedObj.code_accuracy_to_accelerate_truck.push(
+                  1
+                );
+                scoringRubric.code_accuracy_to_accelerate_truck = 1;
               } else {
-                this.scoringRubricListedObj.accuracy.push(0);
-                scoringRubric.accuracy = 0;
+                this.scoringRubricListedObj.code_accuracy_to_accelerate_truck.push(
+                  0
+                );
+                scoringRubric.code_accuracy_to_accelerate_truck = 0;
               }
             } else {
-              this.scoringRubricListedObj.accuracy.push(0);
-              scoringRubric.accuracy = 0;
+              this.scoringRubricListedObj.code_accuracy_to_accelerate_truck.push(
+                0
+              );
+              scoringRubric.code_accuracy_to_accelerate_truck = 0;
             }
           } else {
-            this.scoringRubricListedObj.accuracy.push(0);
-            scoringRubric.accuracy = 0;
+            this.scoringRubricListedObj.code_accuracy_to_accelerate_truck.push(
+              0
+            );
+            scoringRubric.code_accuracy_to_accelerate_truck = 0;
           }
           break;
         }
-        case "cruising": {
+        case "setting_acceleration_to_cruise_truck": {
           let block = this.getMatchingBlock(ast, "\t[set x_acceleration to");
           let value;
           let parent = this.getRootBlock(ast, "\t[set x_acceleration to");
@@ -432,23 +454,31 @@ export default class ActionScorer {
             value = block[0].split("(")[1].split(")")[0];
             if (value === 0) {
               if (ifPosition === "after" || ifPosition === "both") {
-                this.scoringRubricListedObj.cruising.push(1);
-                scoringRubric.cruising = 1;
+                this.scoringRubricListedObj.setting_acceleration_to_cruise_truck.push(
+                  1
+                );
+                scoringRubric.setting_acceleration_to_cruise_truck = 1;
               } else {
-                this.scoringRubricListedObj.cruising.push(0);
-                scoringRubric.cruising = 0;
+                this.scoringRubricListedObj.setting_acceleration_to_cruise_truck.push(
+                  0
+                );
+                scoringRubric.setting_acceleration_to_cruise_truck = 0;
               }
             } else {
-              this.scoringRubricListedObj.cruising.push(0);
-              scoringRubric.cruising = 0;
+              this.scoringRubricListedObj.setting_acceleration_to_cruise_truck.push(
+                0
+              );
+              scoringRubric.setting_acceleration_to_cruise_truck = 0;
             }
           } else {
-            this.scoringRubricListedObj.cruising.push(0);
-            scoringRubric.cruising = 0;
+            this.scoringRubricListedObj.setting_acceleration_to_cruise_truck.push(
+              0
+            );
+            scoringRubric.setting_acceleration_to_cruise_truck = 0;
           }
           break;
         }
-        case "decelerating": {
+        case "setting_acceleration_to_decelerate_truck": {
           let block = this.getMatchingBlock(
             ast,
             "\t[set x_acceleration to (-3)"
@@ -466,15 +496,19 @@ export default class ActionScorer {
             parent === "simulation step" &&
             ["after", "both"].includes(ifPosition)
           ) {
-            this.scoringRubricListedObj.decelerating.push(1);
-            scoringRubric.decelerating = 1;
+            this.scoringRubricListedObj.setting_acceleration_to_decelerate_truck.push(
+              1
+            );
+            scoringRubric.setting_acceleration_to_decelerate_truck = 1;
           } else {
-            this.scoringRubricListedObj.decelerating.push(0);
-            scoringRubric.decelerating = 0;
+            this.scoringRubricListedObj.setting_acceleration_to_decelerate_truck.push(
+              0
+            );
+            scoringRubric.setting_acceleration_to_decelerate_truck = 0;
           }
           break;
         }
-        case "stopping": {
+        case "stop_simulation": {
           let block = this.getMatchingBlock(ast, "stop simulation");
           let parent = this.getRootBlock(ast, "stop simulation");
           if (
@@ -482,21 +516,21 @@ export default class ActionScorer {
             parent === "simulation step" &&
             this.isInsideIfBlock(ast, "stop simulation")
           ) {
-            this.scoringRubricListedObj.stopping.push(1);
-            scoringRubric.stopping = 1;
+            this.scoringRubricListedObj.stop_simulation.push(1);
+            scoringRubric.stop_simulation = 1;
           } else {
-            this.scoringRubricListedObj.stopping.push(0);
-            scoringRubric.stopping = 0;
+            this.scoringRubricListedObj.stop_simulation.push(0);
+            scoringRubric.stop_simulation = 0;
           }
           break;
         }
-        case "cruisingConditional": {
+        case "code_accuracy_to_cruise_truck": {
           let block;
           let parentSearchString;
           if (!this.getMatchingBlock(ast, "[if (x_velocity) (>) (")) {
             if (!this.getMatchingBlock(ast, "(<) (x_velocity)")) {
-              this.scoringRubricListedObj.cruisingConditional.push(0);
-              scoringRubric.cruisingConditional = 0;
+              this.scoringRubricListedObj.code_accuracy_to_cruise_truck.push(0);
+              scoringRubric.code_accuracy_to_cruise_truck = 0;
             } else {
               block = this.getMatchingBlock(ast, "(<) (x_velocity)");
               parentSearchString = "(<) (x_velocity)";
@@ -507,15 +541,15 @@ export default class ActionScorer {
           }
           let parent = this.getRootBlock(ast, parentSearchString);
           if (block && parent === "simulation step") {
-            this.scoringRubricListedObj.cruisingConditional.push(1);
-            scoringRubric.cruisingConditional = 1;
+            this.scoringRubricListedObj.code_accuracy_to_cruise_truck.push(1);
+            scoringRubric.code_accuracy_to_cruise_truck = 1;
           } else {
-            this.scoringRubricListedObj.cruisingConditional.push(0);
-            scoringRubric.cruisingConditional = 0;
+            this.scoringRubricListedObj.code_accuracy_to_cruise_truck.push(0);
+            scoringRubric.code_accuracy_to_cruise_truck = 0;
           }
           break;
         }
-        case "slowingConditional": {
+        case "code_accuracy_to_slowdown_truck": {
           let block = this.getMatchingBlock(ast, "[if (x_position) (>) (7.5)");
           let parent = this.getRootBlock(ast, "[if (x_position) (>) (7.5)");
           let ifExpression = this.findIfExpressionByCondition(
@@ -527,15 +561,15 @@ export default class ActionScorer {
             setValue = ifExpression.split("(")[1].split(")")[0];
           }
           if (block && parent === "simulation step" && setValue === -4) {
-            this.scoringRubricListedObj.slowingConditional.push(1);
-            scoringRubric.slowingConditional = 1;
+            this.scoringRubricListedObj.code_accuracy_to_slowdown_truck.push(1);
+            scoringRubric.code_accuracy_to_slowdown_truck = 1;
           } else {
-            this.scoringRubricListedObj.slowingConditional.push(0);
-            scoringRubric.slowingConditional = 0;
+            this.scoringRubricListedObj.code_accuracy_to_slowdown_truck.push(0);
+            scoringRubric.code_accuracy_to_slowdown_truck = 0;
           }
           break;
         }
-        case "stoppingConditional": {
+        case "code_accuracy_to_stop_truck": {
           let parentValue;
           let block = this.getMatchingBlock(ast, "(x_velocity) < (0)");
           let block1 = this.getMatchingBlock(ast, "(0) (>) (x_velocity)");
@@ -555,17 +589,17 @@ export default class ActionScorer {
           if (
             (block || block1 || block2 || block3) &&
             parent === "simulation step" &&
-            scoringRubric.slowingConditional === 1
+            scoringRubric.code_accuracy_to_slowdown_truck === 1
           ) {
-            this.scoringRubricListedObj.stoppingConditional.push(1);
-            scoringRubric.stoppingConditional = 1;
+            this.scoringRubricListedObj.code_accuracy_to_stop_truck.push(1);
+            scoringRubric.code_accuracy_to_stop_truck = 1;
           } else {
-            this.scoringRubricListedObj.stoppingConditional.push(0);
-            scoringRubric.stoppingConditional = 0;
+            this.scoringRubricListedObj.code_accuracy_to_stop_truck.push(0);
+            scoringRubric.code_accuracy_to_stop_truck = 0;
           }
           break;
         }
-        case "completeCruising": {
+        case "accurate_acceleration_velocity_for_cruising": {
           let ifExpression = this.findIfExpressionByCondition(
             ast,
             "(x_velocity) (>) (15)"
@@ -576,35 +610,45 @@ export default class ActionScorer {
           );
           if (
             ifExpression &&
-            scoringRubric.cruising === 1 &&
-            scoringRubric.cruisingConditional === 1
+            scoringRubric.setting_acceleration_to_cruise_truck === 1 &&
+            scoringRubric.code_accuracy_to_cruise_truck === 1
           ) {
             if (ifExpression.includes("[set x_acceleration to (0) ]")) {
-              this.scoringRubricListedObj.completeCruising.push(1);
-              scoringRubric.completeCruising = 1;
+              this.scoringRubricListedObj.accurate_acceleration_velocity_for_cruising.push(
+                1
+              );
+              scoringRubric.accurate_acceleration_velocity_for_cruising = 1;
             } else {
-              this.scoringRubricListedObj.completeCruising.push(0);
-              scoringRubric.completeCruising = 0;
+              this.scoringRubricListedObj.accurate_acceleration_velocity_for_cruising.push(
+                0
+              );
+              scoringRubric.accurate_acceleration_velocity_for_cruising = 0;
             }
           } else if (
             ifExpression1 &&
-            scoringRubric.cruising === 1 &&
-            scoringRubric.cruisingConditional === 1
+            scoringRubric.setting_acceleration_to_cruise_truck === 1 &&
+            scoringRubric.code_accuracy_to_cruise_truck === 1
           ) {
             if (ifExpression1.includes("[set x_acceleration to (0) ]")) {
-              this.scoringRubricListedObj.completeCruising.push(1);
-              scoringRubric.completeCruising = 1;
+              this.scoringRubricListedObj.accurate_acceleration_velocity_for_cruising.push(
+                1
+              );
+              scoringRubric.accurate_acceleration_velocity_for_cruising = 1;
             } else {
-              this.scoringRubricListedObj.completeCruising.push(0);
-              scoringRubric.completeCruising = 0;
+              this.scoringRubricListedObj.accurate_acceleration_velocity_for_cruising.push(
+                0
+              );
+              scoringRubric.accurate_acceleration_velocity_for_cruising = 0;
             }
           } else {
-            this.scoringRubricListedObj.completeCruising.push(0);
-            scoringRubric.completeCruising = 0;
+            this.scoringRubricListedObj.accurate_acceleration_velocity_for_cruising.push(
+              0
+            );
+            scoringRubric.accurate_acceleration_velocity_for_cruising = 0;
           }
           break;
         }
-        case "completeSlowDown": {
+        case "accurate_acceleration_position_for_slowing": {
           let ifExpression = this.findIfExpressionByCondition(
             ast,
             "(x_velocity) (>) (7.5)"
@@ -615,41 +659,51 @@ export default class ActionScorer {
           );
           if (
             ifExpression &&
-            scoringRubric.decelerating === 1 &&
-            scoringRubric.slowingConditional === 1
+            scoringRubric.setting_acceleration_to_decelerate_truck === 1 &&
+            scoringRubric.code_accuracy_to_slowdown_truck === 1
           ) {
             if (
               ifExpression.includes("[set x_acceleration to (-4) ]") ||
               ifExpression.includes("[set x_acceleration to (-3) ]")
             ) {
-              this.scoringRubricListedObj.completeSlowDown.push(1);
-              scoringRubric.completeSlowDown = 1;
+              this.scoringRubricListedObj.accurate_acceleration_position_for_slowing.push(
+                1
+              );
+              scoringRubric.accurate_acceleration_position_for_slowing = 1;
             } else {
-              this.scoringRubricListedObj.completeSlowDown.push(0);
-              scoringRubric.completeSlowDown = 0;
+              this.scoringRubricListedObj.accurate_acceleration_position_for_slowing.push(
+                0
+              );
+              scoringRubric.accurate_acceleration_position_for_slowing = 0;
             }
           } else if (
             ifExpression1 &&
-            scoringRubric.decelerating === 1 &&
-            scoringRubric.slowingConditional === 1
+            scoringRubric.setting_acceleration_to_decelerate_truck === 1 &&
+            scoringRubric.code_accuracy_to_slowdown_truck === 1
           ) {
             if (
               ifExpression1.includes("[set x_acceleration to (-4) ]") ||
               ifExpression1.includes("[set x_acceleration to (-3) ]")
             ) {
-              this.scoringRubricListedObj.completeSlowDown.push(1);
-              scoringRubric.completeSlowDown = 1;
+              this.scoringRubricListedObj.accurate_acceleration_position_for_slowing.push(
+                1
+              );
+              scoringRubric.accurate_acceleration_position_for_slowing = 1;
             } else {
-              this.scoringRubricListedObj.completeSlowDown.push(0);
-              scoringRubric.completeSlowDown = 0;
+              this.scoringRubricListedObj.accurate_acceleration_position_for_slowing.push(
+                0
+              );
+              scoringRubric.accurate_acceleration_position_for_slowing = 0;
             }
           } else {
-            this.scoringRubricListedObj.completeSlowDown.push(0);
-            scoringRubric.completeSlowDown = 0;
+            this.scoringRubricListedObj.accurate_acceleration_position_for_slowing.push(
+              0
+            );
+            scoringRubric.accurate_acceleration_position_for_slowing = 0;
           }
           break;
         }
-        case "completeStopping": {
+        case "accurate_code_for_stopping": {
           let ifExpression = this.findIfExpressionByCondition(
             ast,
             "(x_velocity) < (0)"
@@ -689,25 +743,84 @@ export default class ActionScorer {
           }
           if (
             expression &&
-            scoringRubric.stopping === 1 &&
-            scoringRubric.stoppingConditional === 1
+            scoringRubric.stop_simulation === 1 &&
+            scoringRubric.code_accuracy_to_stop_truck === 1
           ) {
-            this.scoringRubricListedObj.completeStopping.push(1);
-            scoringRubric.completeStopping = 1;
+            this.scoringRubricListedObj.accurate_code_for_stopping.push(1);
+            scoringRubric.accurate_code_for_stopping = 1;
           } else {
-            this.scoringRubricListedObj.completeStopping.push(0);
-            scoringRubric.completeStopping = 0;
+            this.scoringRubricListedObj.accurate_code_for_stopping.push(0);
+            scoringRubric.accurate_code_for_stopping = 0;
           }
           break;
         }
-        case "completeOrdering": {
+        case "accurate_order_cruising_slowing_stopping": {
           if (this.checkIfBlocksOrder(ast)) {
-            this.scoringRubricListedObj.completeOrdering.push(1);
-            scoringRubric.completeOrdering = 1;
+            this.scoringRubricListedObj.accurate_order_cruising_slowing_stopping.push(
+              1
+            );
+            scoringRubric.accurate_order_cruising_slowing_stopping = 1;
           } else {
-            this.scoringRubricListedObj.completeOrdering.push(0);
-            scoringRubric.completeOrdering = 0;
+            this.scoringRubricListedObj.accurate_order_cruising_slowing_stopping.push(
+              0
+            );
+            scoringRubric.accurate_order_cruising_slowing_stopping = 0;
           }
+          break;
+        }
+        case "physics_mastery": {
+          let physicsTotal =
+            scoringRubric.initialize_position +
+            scoringRubric.initialize_velocity +
+            scoringRubric.initialize_acceleration +
+            scoringRubric.accurate_comparison_velocity_acceleration_time +
+            scoringRubric.accurate_comparison_position_velocity_time +
+            scoringRubric.code_accuracy_to_accelerate_truck +
+            scoringRubric.setting_acceleration_to_cruise_truck +
+            scoringRubric.setting_acceleration_to_decelerate_truck +
+            scoringRubric.code_accuracy_to_cruise_truck +
+            scoringRubric.code_accuracy_to_slowdown_truck +
+            scoringRubric.code_accuracy_to_stop_truck;
+          scoringRubric.physics_mastery = Math.floor((physicsTotal / 11) * 100);
+          break;
+        }
+        case "computing_mastery": {
+          let computingTotal =
+            scoringRubric.start_simulation +
+            scoringRubric.stop_simulation +
+            scoringRubric.initialize_deltaT +
+            scoringRubric.update_order_of_velocity_position +
+            scoringRubric.accurate_acceleration_velocity_for_cruising +
+            scoringRubric.accurate_acceleration_position_for_slowing +
+            scoringRubric.accurate_code_for_stopping +
+            scoringRubric.accurate_order_cruising_slowing_stopping;
+          scoringRubric.computing_mastery = Math.floor(
+            (computingTotal / 8) * 100
+          );
+          break;
+        }
+        case "overall_mastery": {
+          let total =
+            scoringRubric.initialize_position +
+            scoringRubric.initialize_velocity +
+            scoringRubric.initialize_acceleration +
+            scoringRubric.accurate_comparison_velocity_acceleration_time +
+            scoringRubric.accurate_comparison_position_velocity_time +
+            scoringRubric.code_accuracy_to_accelerate_truck +
+            scoringRubric.setting_acceleration_to_cruise_truck +
+            scoringRubric.setting_acceleration_to_decelerate_truck +
+            scoringRubric.code_accuracy_to_cruise_truck +
+            scoringRubric.code_accuracy_to_slowdown_truck +
+            scoringRubric.code_accuracy_to_stop_truck +
+            scoringRubric.start_simulation +
+            scoringRubric.stop_simulation +
+            scoringRubric.initialize_deltaT +
+            scoringRubric.update_order_of_velocity_position +
+            scoringRubric.accurate_acceleration_velocity_for_cruising +
+            scoringRubric.accurate_acceleration_position_for_slowing +
+            scoringRubric.accurate_code_for_stopping +
+            scoringRubric.accurate_order_cruising_slowing_stopping;
+          scoringRubric.overall_mastery = Math.floor((total / 19) * 100);
           break;
         }
       }

@@ -87,6 +87,10 @@ export default {
         this.socket.send(JSON.stringify({ type: "group", data: "DRAFT" }));
       } else {
         if (group) {
+          let exists = !!action.args[3]?.[1];
+          if (exists && typeof action.args[3][1] === "object") {
+            group = "DRAFT";
+          }
           this.lastGroup = group;
           this.socket.send(JSON.stringify({ type: "group", data: group }));
         } else {

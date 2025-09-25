@@ -3,6 +3,7 @@ export default class SegmentParser {
     this.segment = "";
     this.parentNameMap = {};
     this.parentChildMap = {};
+    this.segmentMap = {};
   }
   getSValue(obj) {
     try {
@@ -74,12 +75,14 @@ export default class SegmentParser {
           if (actionName === "receiveGo" || actionName === "doSimulationStep") {
             this.parentNameMap[id] = actionName;
             this.segment = "initialization";
+            this.segmentMap[id] = this.segment;
             return this.segment;
           } else if (actionName === "doIf") {
             this.parentNameMap[id] = actionName;
             this.segment = "initialization";
           }
         }
+        this.segmentMap[id] = this.segment;
         return this.segment;
       } else if (actionType === "moveBlock") {
         let location = "";
@@ -90,6 +93,7 @@ export default class SegmentParser {
             if (!(id in this.parentNameMap)) {
               this.parentNameMap[id] = actionName;
             }
+            this.segmentMap[id] = this.segment;
             return this.segment;
           } else {
             if (action.rawAction?.args?.[1]?.element) {
@@ -104,10 +108,26 @@ export default class SegmentParser {
                 location = parentSplitList[1];
               }
               let rootParent = this.getRootParent(parent);
+              if (
+                this.parentNameMap[rootParent] === "doIf" &&
+                (this.segmentMap[parent] === "conditional-clause" ||
+                  this.segmentMap[parent] ===
+                    "updating-variables-under-conditons")
+              ) {
+                if (this.segmentMap[parent] === "conditional-clause") {
+                  location = "0";
+                } else if (
+                  this.segmentMap[parent] ===
+                  "updating-variables-under-conditons"
+                ) {
+                  location = "1";
+                }
+              }
               if (!(id in this.parentChildMap)) {
                 this.parentChildMap[id] = rootParent;
               }
               this.segment = this.generateSegment(rootParent, location);
+              this.segmentMap[id] = this.segment;
               return this.segment;
             }
           }
@@ -116,14 +136,18 @@ export default class SegmentParser {
         if (id in this.parentChildMap) {
           let parent = this.parentChildMap[id];
           this.segment = this.generateSegment(parent);
+          this.segmentMap[id] = this.segment;
           return this.segment;
         } else {
+          this.segmentMap[id] = "initialization";
           return "initialization";
         }
       } else {
+        this.segmentMap[id] = this.segment;
         return this.segment;
       }
     } else {
+      this.segmentMap[id] = this.segment;
       return this.segment;
     }
   }
