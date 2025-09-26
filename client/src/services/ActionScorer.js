@@ -38,16 +38,16 @@ export default class ActionScorer {
     let simulationStepSection = "";
     if (sections.length === 1) {
       const singleSection = sections[0];
-      if (singleSection.includes("[when greenflag clicked]")) {
+      if (singleSection.includes("[when green flag clicked]")) {
         greenFlagSection = singleSection;
-      } else if (singleSection.includes("[simulation_step]")) {
+      } else if (singleSection.includes("[simulation step]")) {
         simulationStepSection = singleSection;
       }
     } else {
       sections.forEach((section) => {
-        if (section.includes("[when greenflag clicked]")) {
+        if (section.includes("[when green flag clicked]")) {
           greenFlagSection = section;
-        } else if (section.includes("[simulation_step]")) {
+        } else if (section.includes("[simulation step]")) {
           simulationStepSection = section;
         }
       });
@@ -56,7 +56,7 @@ export default class ActionScorer {
     let result;
 
     if (greenFlagSection && greenFlagSection.includes(searchString)) {
-      result = "greenflag clicked";
+      result = "green flag clicked";
     } else if (
       simulationStepSection &&
       simulationStepSection.includes(searchString)
@@ -88,7 +88,7 @@ export default class ActionScorer {
 
     // Check before the search text for an "if" statement
     for (let i = searchIndex - 1; i >= 0; i--) {
-      if (lines[i].includes("[if")) {
+      if (lines[i].includes("if")) {
         beforeIfIndex = i;
         break;
       }
@@ -96,7 +96,7 @@ export default class ActionScorer {
 
     // Check after the search text for an "if" statement
     for (let i = searchIndex + 1; i < lines.length; i++) {
-      if (lines[i].includes("[if")) {
+      if (lines[i].includes("if")) {
         afterIfIndex = i;
         break;
       }
@@ -121,7 +121,7 @@ export default class ActionScorer {
     let positionIndex = -1;
 
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes("change velocity by") && velocityIndex === -1) {
+      if (lines[i].includes("change x_velocity by") && velocityIndex === -1) {
         velocityIndex = i; // Store the index of "change velocity by"
       }
       if (lines[i].includes("change x_position by") && positionIndex === -1) {
@@ -147,7 +147,7 @@ export default class ActionScorer {
 
     let greenFlagIndex = -1;
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes("[when greenflag clicked]")) {
+      if (lines[i].includes("[when green flag clicked]")) {
         greenFlagIndex = i;
         break;
       }
@@ -170,7 +170,7 @@ export default class ActionScorer {
     const lines = ast.split("\n");
 
     for (let i = 0; i < lines.length - 1; i++) {
-      if (lines[i].includes("[if")) {
+      if (lines[i].includes("if")) {
         if (lines[i + 1].includes(searchText) && lines[i + 1].includes("\t")) {
           return true;
         }
@@ -183,7 +183,7 @@ export default class ActionScorer {
   findIfExpressionByCondition(ast, searchString) {
     const lines = ast.split("\n");
     for (let i = 0; i < lines.length - 1; i++) {
-      if (lines[i].includes("[if") && lines[i].includes(searchString)) {
+      if (lines[i].includes("if") && lines[i].includes(searchString)) {
         const nextLine = lines[i + 1];
         if (nextLine.includes("\t")) {
           return nextLine;
@@ -202,22 +202,23 @@ export default class ActionScorer {
 
     for (let i = 0; i < lines.length; i++) {
       if (
-        lines[i].includes("[if") &&
+        lines[i].includes("if") &&
         lines[i].includes("(x_velocity)") &&
-        lines[i].includes("(15)")
+        lines[i].includes("(SpeedLimit)")
       ) {
         firstIfIndex = i;
       } else if (
-        lines[i].includes("[if") &&
+        lines[i].includes("if") &&
         lines[i].includes("(x_position)") &&
-        lines[i].includes("(7.5)")
+        lines[i].includes("(Stop)") &&
+        lines[i].includes("(−)")
       ) {
         secondIfIndex = i;
       } else if (
-        (lines[i].includes("[if") &&
+        (lines[i].includes("if") &&
           lines[i].includes("(x_velocity)") &&
           lines[i].includes("(0)")) ||
-        (lines[i].includes("[if") &&
+        (lines[i].includes("if") &&
           lines[i].includes("Stop") &&
           lines[i].includes("(x_position)"))
       ) {
@@ -242,7 +243,7 @@ export default class ActionScorer {
           let block = this.getMatchingBlock(ast, "set x_position to");
           let value;
           let parent = this.getRootBlock(ast, "set x_position to");
-          if (block && parent === "greenflag clicked") {
+          if (block && parent === "green flag clicked") {
             // console.log(block[0]);
             value = block[0].split("(")[1].split(")")[0];
             if (value === "-60") {
@@ -262,7 +263,7 @@ export default class ActionScorer {
           let block = this.getMatchingBlock(ast, "set x_velocity to");
           let value;
           let parent = this.getRootBlock(ast, "set x_velocity to");
-          if (block && parent === "greenflag clicked") {
+          if (block && parent === "green flag clicked") {
             value = block[0].split("(")[1].split(")")[0];
             if (value === "0") {
               scoringRubric.initialize_velocity = 1;
@@ -279,9 +280,11 @@ export default class ActionScorer {
         }
         case "initialize_acceleration": {
           let block = this.getMatchingBlock(ast, "set x_acceleration to");
+          console.log(block);
           let value;
           let parent = this.getRootBlock(ast, "set x_acceleration to");
-          if (block && parent === "greenflag clicked") {
+          console.log(parent);
+          if (block && parent === "green flag clicked") {
             value = block[0].split("(")[1].split(")")[0];
             if (["3", "4"].includes(value)) {
               scoringRubric.initialize_acceleration = 1;
@@ -300,7 +303,7 @@ export default class ActionScorer {
           let block = this.getMatchingBlock(ast, "set DeltaT to");
           let value;
           let parent = this.getRootBlock(ast, "set DeltaT to");
-          if (block && parent === "greenflag clicked") {
+          if (block && parent === "green flag clicked") {
             value = block[0].split("(")[1].split(")")[0];
             if (["0", "0.1"].includes(value)) {
               scoringRubric.initialize_deltaT = 1;
@@ -318,7 +321,7 @@ export default class ActionScorer {
         case "start_simulation": {
           let block = this.getMatchingBlock(ast, "start simulation");
           let parent = this.getRootBlock(ast, "start simulation");
-          if (block && parent === "greenflag clicked") {
+          if (block && parent === "green flag clicked") {
             scoringRubric.start_simulation = 1;
             this.scoringRubricListedObj.start_simulation.push(1);
           } else {
@@ -336,9 +339,10 @@ export default class ActionScorer {
           );
           if (
             block &&
-            (block[0] === "[change x_position by (DeltaT) (×) (x_velocity)]" ||
+            (block[0] ===
+              "[change x_position by ((DeltaT) (×) (x_velocity))]" ||
               block[0] ===
-                "[change x_position by (x_velocity) (×) (DeltaT)]") &&
+                "[change x_position by ((x_velocity) (×) (DeltaT))]") &&
             parent === "simulation step" &&
             (ifPosition === "after" || ifPosition === null)
           ) {
@@ -364,9 +368,9 @@ export default class ActionScorer {
           if (
             block &&
             (block[0] ===
-              "[change x_velocity by (DeltaT) (×) (x_acceleration)]" ||
+              "[change x_velocity by ((DeltaT) (×) (x_acceleration))]" ||
               block[0] ===
-                "[change x_velocity by (x_acceleration) (×) (DeltaT)]") &&
+                "[change x_velocity by ((x_acceleration) (×) (DeltaT))]") &&
             parent === "simulation step" &&
             (ifPosition === "after" || ifPosition === null)
           ) {
@@ -452,7 +456,7 @@ export default class ActionScorer {
           );
           if (block && parent === "simulation step") {
             value = block[0].split("(")[1].split(")")[0];
-            if (value === 0) {
+            if (value === "0") {
               if (ifPosition === "after" || ifPosition === "both") {
                 this.scoringRubricListedObj.setting_acceleration_to_cruise_truck.push(
                   1
@@ -483,7 +487,7 @@ export default class ActionScorer {
             ast,
             "\t[set x_acceleration to (-3)"
           );
-          if (!block) {
+          if (block.length < 1) {
             block = this.getMatchingBlock(ast, "\t[set x_acceleration to (-4)");
           }
           let parent = this.getRootBlock(ast, block);
@@ -494,7 +498,7 @@ export default class ActionScorer {
           if (
             block &&
             parent === "simulation step" &&
-            ["after", "both"].includes(ifPosition)
+            ["before", "both"].includes(ifPosition)
           ) {
             this.scoringRubricListedObj.setting_acceleration_to_decelerate_truck.push(
               1
@@ -527,7 +531,7 @@ export default class ActionScorer {
         case "code_accuracy_to_cruise_truck": {
           let block;
           let parentSearchString;
-          if (!this.getMatchingBlock(ast, "[if (x_velocity) (>) (")) {
+          if (!this.getMatchingBlock(ast, "if ((x_velocity) (>) (")) {
             if (!this.getMatchingBlock(ast, "(<) (x_velocity)")) {
               this.scoringRubricListedObj.code_accuracy_to_cruise_truck.push(0);
               scoringRubric.code_accuracy_to_cruise_truck = 0;
@@ -536,8 +540,8 @@ export default class ActionScorer {
               parentSearchString = "(<) (x_velocity)";
             }
           } else {
-            block = this.getMatchingBlock(ast, "[if (x_velocity) (>) (");
-            parentSearchString = "[if (x_velocity) (>) (";
+            block = this.getMatchingBlock(ast, "if ((x_velocity) (>) (");
+            parentSearchString = "if ((x_velocity) (>) (";
           }
           let parent = this.getRootBlock(ast, parentSearchString);
           if (block && parent === "simulation step") {
@@ -550,19 +554,51 @@ export default class ActionScorer {
           break;
         }
         case "code_accuracy_to_slowdown_truck": {
-          let block = this.getMatchingBlock(ast, "[if (x_position) (>) (7.5)");
-          let parent = this.getRootBlock(ast, "[if (x_position) (>) (7.5)");
+          let block = this.getMatchingBlock(
+            ast,
+            "if ((x_position) (>) ((Stop) (−)"
+          );
+          let parent = this.getRootBlock(
+            ast,
+            "if ((x_position) (>) ((Stop) (−)"
+          );
           let ifExpression = this.findIfExpressionByCondition(
             ast,
-            "(x_position) (>) (7.5)"
+            "if ((x_position) (>) ((Stop) (−)"
           );
+          let lookAheadValue;
+          if (block.length > 0) {
+            lookAheadValue = block[0].split("(−) (")[1]?.split(")")[0];
+          }
           let setValue;
           if (ifExpression && ifExpression.includes("set x_acceleration")) {
             setValue = ifExpression.split("(")[1].split(")")[0];
           }
-          if (block && parent === "simulation step" && setValue === -4) {
-            this.scoringRubricListedObj.code_accuracy_to_slowdown_truck.push(1);
-            scoringRubric.code_accuracy_to_slowdown_truck = 1;
+          if (block && parent === "simulation step") {
+            if (
+              lookAheadValue >= "35" &&
+              lookAheadValue <= "40" &&
+              setValue === "-3"
+            ) {
+              this.scoringRubricListedObj.code_accuracy_to_slowdown_truck.push(
+                1
+              );
+              scoringRubric.code_accuracy_to_slowdown_truck = 1;
+            } else if (
+              lookAheadValue >= "25.625" &&
+              lookAheadValue <= "30.625" &&
+              setValue === "-4"
+            ) {
+              this.scoringRubricListedObj.code_accuracy_to_slowdown_truck.push(
+                1
+              );
+              scoringRubric.code_accuracy_to_slowdown_truck = 1;
+            } else {
+              this.scoringRubricListedObj.code_accuracy_to_slowdown_truck.push(
+                0
+              );
+              scoringRubric.code_accuracy_to_slowdown_truck = 0;
+            }
           } else {
             this.scoringRubricListedObj.code_accuracy_to_slowdown_truck.push(0);
             scoringRubric.code_accuracy_to_slowdown_truck = 0;
@@ -571,18 +607,18 @@ export default class ActionScorer {
         }
         case "code_accuracy_to_stop_truck": {
           let parentValue;
-          let block = this.getMatchingBlock(ast, "(x_velocity) < (0)");
+          let block = this.getMatchingBlock(ast, "(x_velocity) (<) (0)");
           let block1 = this.getMatchingBlock(ast, "(0) (>) (x_velocity)");
           let block2 = this.getMatchingBlock(ast, "(x_position) (>) (Stop)");
           let block3 = this.getMatchingBlock(ast, "(Stop) (<) (x_position)");
 
-          if (block) {
-            parentValue = "(x_velocity) < (0)";
-          } else if (block1) {
+          if (block.length > 0) {
+            parentValue = "(x_velocity) (<) (0)";
+          } else if (block1.length > 0) {
             parentValue = "(0) (>) (x_velocity)";
-          } else if (block2) {
+          } else if (block2.length > 0) {
             parentValue = "(x_position) (>) (Stop)";
-          } else if (block3) {
+          } else if (block3.length > 0) {
             parentValue = "(Stop) (<) (x_position)";
           }
           let parent = this.getRootBlock(ast, parentValue);
@@ -602,18 +638,18 @@ export default class ActionScorer {
         case "accurate_acceleration_velocity_for_cruising": {
           let ifExpression = this.findIfExpressionByCondition(
             ast,
-            "(x_velocity) (>) (15)"
+            "(x_velocity) (>) (SpeedLimit)"
           );
           let ifExpression1 = this.findIfExpressionByCondition(
             ast,
-            "(15) (<) (x_velocity)"
+            "(SpeedLimit) (<) (x_velocity)"
           );
           if (
             ifExpression &&
             scoringRubric.setting_acceleration_to_cruise_truck === 1 &&
             scoringRubric.code_accuracy_to_cruise_truck === 1
           ) {
-            if (ifExpression.includes("[set x_acceleration to (0) ]")) {
+            if (ifExpression.includes("[set x_acceleration to (0)]")) {
               this.scoringRubricListedObj.accurate_acceleration_velocity_for_cruising.push(
                 1
               );
@@ -629,7 +665,7 @@ export default class ActionScorer {
             scoringRubric.setting_acceleration_to_cruise_truck === 1 &&
             scoringRubric.code_accuracy_to_cruise_truck === 1
           ) {
-            if (ifExpression1.includes("[set x_acceleration to (0) ]")) {
+            if (ifExpression1.includes("[set x_acceleration to (0)]")) {
               this.scoringRubricListedObj.accurate_acceleration_velocity_for_cruising.push(
                 1
               );
@@ -651,11 +687,11 @@ export default class ActionScorer {
         case "accurate_acceleration_position_for_slowing": {
           let ifExpression = this.findIfExpressionByCondition(
             ast,
-            "(x_velocity) (>) (7.5)"
+            "((x_position) (>) ((Stop) (−)"
           );
           let ifExpression1 = this.findIfExpressionByCondition(
             ast,
-            "(7.5) (<) (x_velocity)"
+            "(7.5) (<) (x_position)"
           );
           if (
             ifExpression &&
@@ -663,8 +699,8 @@ export default class ActionScorer {
             scoringRubric.code_accuracy_to_slowdown_truck === 1
           ) {
             if (
-              ifExpression.includes("[set x_acceleration to (-4) ]") ||
-              ifExpression.includes("[set x_acceleration to (-3) ]")
+              ifExpression.includes("[set x_acceleration to (-4)]") ||
+              ifExpression.includes("[set x_acceleration to (-3)]")
             ) {
               this.scoringRubricListedObj.accurate_acceleration_position_for_slowing.push(
                 1
@@ -682,8 +718,8 @@ export default class ActionScorer {
             scoringRubric.code_accuracy_to_slowdown_truck === 1
           ) {
             if (
-              ifExpression1.includes("[set x_acceleration to (-4) ]") ||
-              ifExpression1.includes("[set x_acceleration to (-3) ]")
+              ifExpression1.includes("[set x_acceleration to (-4)]") ||
+              ifExpression1.includes("[set x_acceleration to (-3)]")
             ) {
               this.scoringRubricListedObj.accurate_acceleration_position_for_slowing.push(
                 1
@@ -706,7 +742,7 @@ export default class ActionScorer {
         case "accurate_code_for_stopping": {
           let ifExpression = this.findIfExpressionByCondition(
             ast,
-            "(x_velocity) < (0)"
+            "(x_velocity) (<) (0)"
           );
           let ifExpression1 = this.findIfExpressionByCondition(
             ast,

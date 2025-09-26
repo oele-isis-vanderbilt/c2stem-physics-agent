@@ -42,7 +42,7 @@
 </template>
 <script>
 import Websockets from "@/services/Websockets";
-import BlockParser from "@/services/BlockParser";
+import BlockParser from "@/services/BlockParser_v1";
 import ASTController from "@/services/ASTController";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";

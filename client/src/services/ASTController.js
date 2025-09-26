@@ -543,7 +543,7 @@ export default class ASTController {
       }
       case "pressStart": {
         actionRep.type = "assessment";
-        actionRep.group = "PLAY_PAUSE";
+        actionRep.group = "EXECUTE";
         actionRep.action = "play";
         break;
       }
@@ -561,7 +561,7 @@ export default class ASTController {
       }
       case "stopAllScripts": {
         actionRep.type = "assessment";
-        actionRep.group = "EXECUTE";
+        actionRep.group = "PLAY_PAUSE";
         actionRep.action = "block";
         break;
       }
