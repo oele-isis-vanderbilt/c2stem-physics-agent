@@ -42,36 +42,108 @@
 </template>
 <script>
 import Websockets from "@/services/Websockets";
-import BlockParser from "@/services/BlockParser";
+import BlockParser from "@/services/BlockParser_v1";
 import ASTController from "@/services/ASTController";
+import ActionScorer from "@/services/ActionScorer";
+import SegmentParser from "@/services/SegmentParser";
 
 export default {
   name: "BuildEnv",
   data() {
     return {
       chat_URL: "",
+      lastGroup: "",
     };
   },
   computed: {
     getChatURL() {
       return this.chat_URL;
     },
+    getScore() {
+      return this.$store.getters.getScore;
+    },
+    getSegment() {
+      return this.$store.getters.getSegment;
+    },
   },
   methods: {
     sendActions(data) {
+      data = data ? data : "";
       this.socket.send(JSON.stringify(data));
     },
     sendState(state) {
+      state = state ? state : "";
       this.socket.send(JSON.stringify(state));
+    },
+    sendActionGroup(action) {
+      let group = this.$store.getters.getCurrentGroup;
+      let name = this.$store.getters.getCurrentActionName;
+      if (
+        action.args[1] === "item_0" &&
+        name !== "receiveGo" &&
+        name !== "doSimulationStep"
+      ) {
+        this.lastGroup = "DRAFT";
+        this.socket.send(JSON.stringify({ type: "group", data: "DRAFT" }));
+      } else {
+        if (group) {
+          let exists = !!action.args[3]?.[1];
+          if (exists && typeof action.args[3][1] === "object") {
+            group = "DRAFT";
+          }
+          this.lastGroup = group;
+          this.socket.send(JSON.stringify({ type: "group", data: group }));
+        } else {
+          this.socket.send(
+            JSON.stringify({ type: "group", data: "VISUALIZE" })
+          );
+        }
+      }
+    },
+    sendScore(score) {
+      score = score ? score : {};
+      this.socket.send(JSON.stringify(score));
+    },
+    sendSegment(segment) {
+      segment = segment ? segment : "";
+      this.socket.send(JSON.stringify(segment));
+    },
+    setupSocket(username) {
+      this.socket = Websockets.connect(username);
+      this.socket.onmessage = (event) => {
+        if (event.data.includes("URL")) {
+          this.chat_URL = event.data.split("URL=")[1];
+          console.log(this.chat_URL);
+        }
+        console.log(event.data);
+        let state = BlockParser.generate(this.$store);
+        if (state.trim().length > 1) {
+          this.sendState({ type: "state", data: state });
+        }
+      };
+      this.socket.onclose = () => {
+        console.log("Disconnected from the WebSocket server");
+        this.setupSocket();
+      };
     },
   },
   mounted() {
+    let blocks = this.$store.getters.getBlocks;
+    let treeRoots = this.$store.getters.getTreeRoots;
+    let actions = this.$store.getters.getActions;
     const astController = new ASTController(
+      blocks,
+      treeRoots,
+      actions,
+      this.$store
+    );
+    const actionScorer = new ActionScorer(
       "blocks",
       "treeRoots",
       "actionList",
       this.$store
     );
+    const segmentparser = new SegmentParser();
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
     // ifr_window.onload = () => {
@@ -79,9 +151,13 @@ export default {
       this.api.addActionListener((action) => {
         if (action.type !== "openProject") {
           this.sendActions({ type: "action", data: action });
-          astController.actionListener(action);
+          astController.actionListener(action, segmentparser);
+          this.sendActionGroup(action);
           let state = BlockParser.generate(this.$store);
+          actionScorer.updateScore(state);
           this.sendState({ type: "state", data: state });
+          this.sendScore({ type: "score", data: this.getScore });
+          this.sendSegment({ type: "segment", data: this.getSegment });
         }
       });
       this.api.addEventListener("startScript", console.log);
@@ -89,14 +165,7 @@ export default {
 
     // };
     let username = document.cookie.split("=")[1];
-    this.socket = Websockets.connect(username);
-    this.socket.onmessage = (event) => {
-      if (event.data.includes("URL")) {
-        this.chat_URL = event.data.split("URL=")[1];
-        console.log(this.chat_URL);
-      }
-      console.log(event.data);
-    };
+    this.setupSocket(username);
   },
 };
 </script>

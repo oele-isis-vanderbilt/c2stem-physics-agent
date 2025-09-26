@@ -1,10 +1,11 @@
 import ed from "edit-distance";
+import Helper from "@/services/Helpers";
 
 export default class ASTController {
-  constructor(blocksName, treeRootsName, actionListName, store) {
-    this.blocksName = blocksName;
-    this.treeRootsName = treeRootsName;
-    this.actionListName = actionListName;
+  constructor(blocks, treeRoots, actionList, store) {
+    this.blocks = blocks;
+    this.treeRoots = treeRoots;
+    this.actions = actionList;
     this.store = store;
   }
 
@@ -36,11 +37,12 @@ export default class ASTController {
   );
 
   // Map of blocks (id -> block object)
-  blocks = {};
-  // Array of root blocks
-  treeRoots = [];
-  // List of actions for action sequence
-  actions = [];
+
+  // blocks = {};
+  // // Array of root blocks
+  // treeRoots = [];
+  // // List of actions for action sequence
+  // actions = [];
 
   // Tree understanding functions
   // let insert, remove, update, children;
@@ -57,7 +59,7 @@ export default class ASTController {
     return [...ret, ...node.next.contained];
   };
 
-  actionListener = (action) => {
+  actionListener = (action, segmentparser) => {
     // Block class -- used to create standardized objects
     // that represent new blocks in C2STEM
     class Block {
@@ -178,7 +180,7 @@ export default class ASTController {
       // Drag block into window without connecting
       case "addBlock": {
         actionRep.action = "add";
-        actionRep.group = "build";
+        actionRep.group = "BUILD";
         const id = addBlock(action);
         actionRep.block = id;
         break;
@@ -190,15 +192,15 @@ export default class ASTController {
         // If this block is being connected straight from the block pallete,
         // add it to the window first
         if (action.args[0].startsWith("<")) {
-          actionRep.group = "build";
+          actionRep.group = "BUILD";
           id = addBlock(action);
           this.blocks[id].connectedBefore = true;
         } else {
           if (!this.blocks[id].connectedBefore) {
-            actionRep.group = "build";
+            actionRep.group = "BUILD";
             this.blocks[id].connectedBefore = true;
           } else {
-            actionRep.group = "adjust";
+            actionRep.group = "ADJUST";
           }
         }
 
@@ -314,10 +316,11 @@ export default class ASTController {
 
         break;
       }
-      // Remove block from canvas
+
       case "removeBlock": {
+        // this.actionScorer.addScore(action, "remove");
         actionRep.action = "remove";
-        actionRep.group = "adjust";
+        actionRep.group = "ADJUST";
 
         if (typeof action.args[2] == "object") {
           // Normal blocks that have other blocks above them are removed in this branch.
@@ -326,23 +329,28 @@ export default class ASTController {
             // If the block is being removed from the top of a block's body,
             // unlink it from there.
             const t = action.args[2].element.split("/");
-            if (
-              this.blocks[id] &&
-              this.blocks[id].next &&
-              this.blocks[id].next.next
-            ) {
+            // if (
+            //   this.blocks[id] &&
+            //   this.blocks[id].next &&
+            //   this.blocks[id].next.next
+            // ) {
+            if (this.blocks[id]) {
               this.blocks[t[0]].next.contained[t[1]] =
                 this.blocks[id].next.next;
             }
           } else {
             // Otherwise, unlink it like a normal linked list.
-            if (
-              this.blocks[id] &&
-              this.blocks[id].next &&
-              this.blocks[id].next.next
-            ) {
-              this.blocks[action.args[2].element].next.next =
-                this.blocks[id].next.next;
+            // if (
+            //   this.blocks[id] &&
+            //   this.blocks[id].next &&
+            //   this.blocks[id].next.next
+            // ) {
+            // if (this.blocks[id]) {
+            //   this.blocks[action.args[2].element].next.next =
+            //     this.blocks[id].next.next;
+            // }
+            if (this.blocks[id]) {
+              this.blocks[action.args[2].element].next.next = undefined;
             }
           }
         } else if (typeof action.args[2] == "string") {
@@ -351,36 +359,116 @@ export default class ASTController {
 
           const t = action.args[2].split("/");
           // Replace the block with an empty ephemeral block.
-          this.blocks[t[0]].next.contained[t[1]] = new Block(undefined, "", []);
+          if (this.blocks[t[0]]) {
+            this.blocks[t[0]].next.contained[t[1]] = new Block(
+              undefined,
+              "",
+              []
+            );
+          }
         } else {
           // Blocks that are on top (root blocks) take this branch.
 
           // Unroot the block, and move the next block (if it exists) to the root.
           unrootBlock(action.args[0]);
-          if (
-            this.blocks[action.args[0]] &&
-            this.blocks[action.args[0]].next &&
-            this.blocks[action.args[0]].next.next
-          ) {
-            if (this.blocks[action.args[0]].next.next) {
-              this.treeRoots.push(this.blocks[action.args[0]].next.next);
-            }
-          }
+          // if (
+          //   this.blocks[action.args[0]] &&
+          //   this.blocks[action.args[0]].next &&
+          //   this.blocks[action.args[0]].next.next
+          // ) {
+          // if (this.blocks[action.args[0]]) {
+          //   if (this.blocks[action.args[0]].next.next) {
+          //     this.treeRoots.push(this.blocks[action.args[0]].next.next);
+          //   }
+          // }
         }
-
         // Remove all blocks contained in the block (e.g. variable in condition of if statement.)
-        this.blocks[id].next.contained.forEach(
-          (block) => delete this.blocks[block.id]
-        );
-        delete this.blocks[id];
+        if (this.blocks[id]) {
+          this.blocks[id].next.contained.forEach(
+            (block) => delete this.blocks[block.id]
+          );
+          if (Object.keys(this.blocks).length > 1) {
+            Object.keys(this.blocks).forEach((key) => {
+              if (
+                this.blocks[key].next &&
+                this.blocks[key].next.next &&
+                this.blocks[key].next.next.id === id
+              ) {
+                this.blocks[key].next.next = undefined;
+              }
+            });
+          }
+          let ids = Helper.getAllIds(this.blocks[id]);
+          ids.forEach((id) => {
+            delete this.blocks[id];
+          });
+        }
         break;
       }
+
+      // Remove block from canvas
+      // case "removeBlock": {
+      //   actionRep.action = "remove";
+      //   actionRep.group = "ADJUST";
+      //
+      //   if (typeof action.args[2] == "object") {
+      //     // Normal blocks that have other blocks above them are removed in this branch.
+      //
+      //     if (action.args[2].element.includes("/")) {
+      //       // If the block is being removed from the top of a block's body,
+      //       // unlink it from there.
+      //       const t = action.args[2].element.split("/");
+      //       if (
+      //         this.blocks[id] &&
+      //         this.blocks[id].next &&
+      //         this.blocks[id].next.next
+      //       ) {
+      //         this.blocks[t[0]].next.contained[t[1]] =
+      //           this.blocks[id].next.next;
+      //       }
+      //     } else {
+      //       // Otherwise, unlink it like a normal linked list.
+      //       if (this.blocks[id] && this.blocks[id].next) {
+      //         this.blocks[action.args[2].element].next.next =
+      //           this.blocks[id].next.next;
+      //       }
+      //     }
+      //   } else if (typeof action.args[2] == "string") {
+      //     // Blocks that are part of other block's condition statmements that are being removed
+      //     // take this branch.
+      //
+      //     const t = action.args[2].split("/");
+      //     // Replace the block with an empty ephemeral block.
+      //     this.blocks[t[0]].next.contained[t[1]] = new Block(undefined, "", []);
+      //   } else {
+      //     // Blocks that are on top (root blocks) take this branch.
+      //
+      //     // Unroot the block, and move the next block (if it exists) to the root.
+      //     unrootBlock(action.args[0]);
+      //     if (
+      //       this.blocks[action.args[0]] &&
+      //       this.blocks[action.args[0]].next &&
+      //       this.blocks[action.args[0]].next.next
+      //     ) {
+      //       if (this.blocks[action.args[0]].next.next) {
+      //         this.treeRoots.push(this.blocks[action.args[0]].next.next);
+      //       }
+      //     }
+      //   }
+      //
+      //   // Remove all blocks contained in the block (e.g. variable in condition of if statement.)
+      //   this.blocks[id].next.contained.forEach(
+      //     (block) => delete this.blocks[block.id]
+      //   );
+      //   delete this.blocks[id];
+      //   break;
+      // }
       // This event is triggerd when a block is disconnected from another block and brought into the canvas,
       // or when the block is simply moved from one place to another on the canvas with no connection changes.
       // We only care about the former case.
       case "setBlockPosition": {
         actionRep.action = "modify";
-        actionRep.group = "adjust";
+        actionRep.group = "ADJUST";
 
         if (typeof action.args[3][1] == "object") {
           // If the block is a normal block, this branch is taken.
@@ -409,14 +497,14 @@ export default class ASTController {
 
         if (!block[v]) {
           // If field does not currently exist, create it.
-          actionRep.group = "build";
+          actionRep.group = "BUILD";
           block[v] = new Block(undefined, "", []);
         } else {
           if (!block[v].modifiedBefore) {
-            actionRep.group = "build";
+            actionRep.group = "BUILD";
             block[v].modifiedBefore = true;
           } else {
-            actionRep.group = "adjust";
+            actionRep.group = "ADJUST";
           }
         }
 
@@ -440,7 +528,7 @@ export default class ASTController {
       // Toggle boolean field on boolean block.
       case "toggleBoolean": {
         actionRep.action = "edit";
-        actionRep.group = "adjust";
+        actionRep.group = "ADJUST";
         const t = action.args[0].split("/");
         actionRep.block = t[0];
         this.blocks[t[0]].next.contained[0].name = String(action.args[2]);
@@ -455,26 +543,38 @@ export default class ASTController {
       }
       case "pressStart": {
         actionRep.type = "assessment";
-        actionRep.group = "visual";
+        actionRep.group = "EXECUTE";
+        actionRep.action = "play";
+        break;
+      }
+      case "togglePause": {
+        actionRep.type = "assessment";
+        actionRep.group = "PLAY_PAUSE";
         actionRep.action = "play";
         break;
       }
       case "startScript": {
         actionRep.type = "assessment";
-        actionRep.group = "visual";
+        actionRep.group = "EXECUTE";
+        actionRep.action = "block";
+        break;
+      }
+      case "stopAllScripts": {
+        actionRep.type = "assessment";
+        actionRep.group = "PLAY_PAUSE";
         actionRep.action = "block";
         break;
       }
       case "addListInput": {
         const t = id.split("/");
-        actionRep.group = "build";
+        actionRep.group = "BUILD";
         actionRep.block = t[0];
         this.blocks[t[0]].next.contained.push(new Block(undefined, "", []));
         break;
       }
       case "removeListInput": {
         const t = id.split("/");
-        actionRep.group = "adjust";
+        actionRep.group = "ADJUST";
         actionRep.block = t[0];
         this.blocks[t[0]].next.contained.pop();
         break;
@@ -514,7 +614,11 @@ export default class ASTController {
       actionRep.effective = ted.distance < lastEditDistance;
     }
 
-    if (actionRep.valid) this.actions.push(actionRep);
+    if (actionRep.valid) {
+      this.actions.push(actionRep);
+      let segment = segmentparser.extractSegment(actionRep);
+      this.store.dispatch("updateSegment", segment);
+    }
 
     // console.log(actions);
     // console.log(treeRoots);
@@ -527,6 +631,16 @@ export default class ASTController {
     //   this.actionListName,
     //   JSON.stringify(this.actions)
     // );
+    if (this.blocks[actionRep.block] && this.blocks[actionRep.block].name) {
+      this.store.dispatch(
+        "updateCurrentActionName",
+        this.blocks[actionRep.block].name
+      );
+    } else {
+      this.store.dispatch("updateCurrentActionName", "");
+    }
+
+    this.store.dispatch("updateCurrentGroup", actionRep.group);
     this.store.dispatch("updateTreeRoots", this.treeRoots);
     this.store.dispatch("updateBlocks", this.blocks);
     this.store.dispatch("updateActions", this.actions);
