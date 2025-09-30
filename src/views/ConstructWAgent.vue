@@ -2,7 +2,7 @@
   <!-- Construct View for CMISE -->
   <div class="container">
     <iframe-loader
-      source="https:/physics.c2stem.org"
+      source="https://physics.c2stem.org"
       iframeid="iframe-id"
       username="oele"
       projectname="Truck_Model_full_empty_HIDDEN_BLOCKS"
