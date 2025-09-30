@@ -1,5 +1,11 @@
 import { createStore } from "vuex";
 import { Room } from "livekit-client";
+import VuexPersistence from "vuex-persist";
+
+const vuexLocal = new VuexPersistence({
+  storage: window.sessionStorage,
+  key: "store",
+});
 
 const store = createStore({
   state: {
@@ -34,6 +40,7 @@ const store = createStore({
       computing_mastery: 0,
       overall_mastery: 0,
     },
+    user: "",
   },
   getters: {
     getLiveKitRoom(state) {
@@ -59,6 +66,9 @@ const store = createStore({
     },
     getSegment(state) {
       return state.currentSegment;
+    },
+    loggedIn(state) {
+      return !!state.user;
     },
   },
   mutations: {
@@ -86,6 +96,12 @@ const store = createStore({
     updateSegment(state, segment) {
       state.currentSegment = segment;
     },
+    saveCredentials(state, data) {
+      state.user = data.username;
+    },
+    removeCredentials(state) {
+      state.user = null;
+    },
   },
   actions: {
     addLivekitRoom(context, data) {
@@ -112,12 +128,15 @@ const store = createStore({
     updateSegment(context, segment) {
       context.commit("updateSegment", segment);
     },
+    saveCredentials(context, data) {
+      context.commit("saveCredentials", data);
+    },
+    removeCredentials(context) {
+      context.commit("removeCredentials");
+    },
   },
   modules: {},
-});
-store.subscribe((mutation, state) => {
-  // Store the state object as a JSON string
-  sessionStorage.setItem("store", JSON.stringify(state));
+  plugins: [vuexLocal.plugin],
 });
 
 export default store;

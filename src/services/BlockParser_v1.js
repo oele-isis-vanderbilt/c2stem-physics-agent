@@ -212,6 +212,11 @@ export default {
           return `(${property}) of (no value)`;
         } else {
           // If sprite has a value, show just the sprite value
+          if (sprite.includes("Stop")) {
+            sprite = "StopSignPosition";
+          } else if (sprite.includes("Truck")) {
+            sprite = "x_position";
+          }
           return sprite;
         }
       }

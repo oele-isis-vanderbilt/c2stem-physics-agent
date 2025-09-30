@@ -1,59 +1,73 @@
 <template>
-  <iframe
-    src="https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Truck_Model_full_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
-    id="iframe-id"
-    sandbox="allow-scripts allow-same-origin"
-    height="100%"
-    width="100%"
-    frameborder="0"
-  ></iframe>
-  <button
-    type="button"
-    class="btn btn-primary btn-lg rounded-circle chat-btn bottom-0 end-0"
-    draggable="true"
-    data-bs-toggle="collapse"
-    data-bs-target="#collapseWindow"
-    aria-expanded="false"
-    aria-controls="collapseWindow"
-  >
-    <i class="bi bi-chat-left-fill fs-2"></i>
-  </button>
-  <div class="collapse bottom-0 end-0" id="collapseWindow">
-    <div class="card card-body mb-5">
-      <iframe
-        v-if="chat_URL.length !== 0"
-        :src="chat_URL"
-        id="chat-iframe"
-        sandbox="allow-scripts allow-same-origin"
-        height="100%"
-        width="100%"
-      ></iframe>
-      <iframe
-        v-else
-        src="https://agent.c2-stem.org"
-        id="chat-iframe"
-        sandbox="allow-scripts allow-same-origin"
-        height="100%"
-        width="100%"
-      >
-      </iframe>
+  <!-- Construct View for CMISE -->
+  <div class="container">
+    <iframe-loader
+      source="https:/physics.c2stem.org"
+      iframeid="iframe-id"
+      username="oele"
+      projectname="Truck_Model_full_empty_HIDDEN_BLOCKS"
+      :embed="false"
+    ></iframe-loader>
+    <button
+      type="button"
+      class="btn btn-primary btn-lg rounded-circle chat-btn bottom-0 end-0"
+      @click="toggleCollapse"
+      aria-controls="collapseWindow"
+    >
+      <i class="bi bi-chat-left-fill fs-2"></i>
+    </button>
+    <div class="collapse bottom-0 end-0" id="collapseWindow">
+      <div class="card card-body mb-5">
+        <iframe
+          v-if="chat_URL.length !== 0"
+          :src="chat_URL"
+          id="chat-iframe"
+          sandbox="allow-scripts allow-same-origin"
+          height="100%"
+          width="100%"
+        ></iframe>
+        <iframe
+          v-else
+          src="https://agent.c2-stem.org"
+          id="chat-iframe"
+          sandbox="allow-scripts allow-same-origin"
+          height="100%"
+          width="100%"
+        >
+        </iframe>
+      </div>
     </div>
   </div>
 </template>
+
 <script>
+/**
+ * Construct view.
+ * In this view User will have access to a C2STEM project in an iframe.
+ * @requires ../components/IframeLoader.vue to display a c2stem environment in an iframe.
+ */
+import IframeLoader from "../components/IframeLoader.vue";
+import { Collapse } from "bootstrap";
+import ASTController from "../services/ASTController";
 import Websockets from "@/services/Websockets";
 import BlockParser from "@/services/BlockParser_v1";
-import ASTController from "@/services/ASTController";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";
+// import simulation from "../services/Simulation.js";
 
 export default {
-  name: "BuildEnv",
+  // eslint-disable-next-line vue/multi-word-component-names
+  name: "ConstructWAgent",
+  components: {
+    IframeLoader,
+  },
   data() {
     return {
+      projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
       chat_URL: "",
       lastGroup: "",
-      username: "test",
+      username: "",
+      collapseInstance: null,
     };
   },
   computed: {
@@ -68,6 +82,17 @@ export default {
     },
   },
   methods: {
+    toggleCollapse() {
+      if (this.collapseInstance) {
+        this.collapseInstance.toggle();
+      }
+    },
+    saveProject() {
+      this.emitter.emit("save-project", { status: true });
+    },
+    getUser() {
+      return sessionStorage.getItem("user");
+    },
     sendActions(data) {
       data = data ? data : "";
       this.socket.send(JSON.stringify(data));
@@ -129,6 +154,7 @@ export default {
     },
   },
   mounted() {
+    this.username = this.getUser();
     let blocks = this.$store.getters.getBlocks;
     let treeRoots = this.$store.getters.getTreeRoots;
     let actions = this.$store.getters.getActions;
@@ -147,7 +173,11 @@ export default {
     const segmentparser = new SegmentParser();
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
-    // ifr_window.onload = () => {
+
+    // Initialize collapse manually
+    const collapseElement = document.getElementById("collapseWindow");
+    this.collapseInstance = new Collapse(collapseElement, { toggle: false });
+
     setTimeout(() => {
       this.api.addActionListener((action) => {
         if (action.type !== "openProject") {
@@ -162,41 +192,62 @@ export default {
         }
       });
       this.api.addEventListener("startScript", console.log);
+      this.api.addEventListener("projectSaved", this.saveProject);
     }, 2000);
 
     // };
-    let username = document.cookie.split("=")[1];
-    this.setupSocket(username);
+    // let username = document.cookie.split("=")[1];
+    this.setupSocket(this.username);
   },
 };
 </script>
-<style>
-div {
-  min-height: 0;
-  height: 86%;
+
+<style scoped>
+.container {
+  max-width: 100%;
+  height: 90%;
+  padding: 0;
+  background-color: #1e1e1e;
+}
+.btn {
+  margin-right: 5px;
+  margin-left: 5px;
+}
+.modal-body {
+  display: flex;
+  justify-content: center;
+}
+.modal-dialog {
+  display: flex;
+  align-items: center;
 }
 
-iframe {
-  width: 100%;
-  height: 100%;
+.modal-content {
+  background-color: rgba(0, 0, 0, 0.0001) !important;
+  border: 0;
 }
 
-.chat-btn {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  margin: 30px;
+strong {
+  font-size: x-large;
+  color: aliceblue;
 }
 
 #collapseWindow {
   position: absolute;
   width: 30%;
-  height: 90%;
+  max-height: 90%;
   margin: 60px;
   left: 60%;
+  overflow: hidden;
+  transition: height 0.35s ease;
 }
-
 .card {
   height: 100%;
+}
+.chat-btn {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  margin: 30px;
 }
 </style>

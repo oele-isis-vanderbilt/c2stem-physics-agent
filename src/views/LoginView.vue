@@ -104,6 +104,7 @@ export default {
               if (response) {
                 data.username = this.username;
                 document.cookie = "username=" + data.username;
+                this.$store.dispatch("saveCredentials", data);
                 Token.setAccessToken(data.token);
                 // try {
                 //   await LiveKit.tryAndPublish(data.username, this.$store);
