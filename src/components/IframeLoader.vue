@@ -66,10 +66,10 @@ export default {
   },
   computed: {
     loggedIn() {
-      return sessionStorage.getItem("user");
+      return this.$store.state.user;
     },
     projectNameExists() {
-      return sessionStorage.getItem("projectName");
+      return this.$store.state.projectName;
     },
   },
   created() {
@@ -87,12 +87,7 @@ export default {
             this.userid = this.username;
             this.actionType = "present";
           }
-          if (this.projectNameExists) {
-            sessionStorage.removeItem("projectName");
-            sessionStorage.setItem("projectName", this.projectname);
-          } else {
-            sessionStorage.setItem("projectName", this.projectname);
-          }
+          this.$store.dispatch("setProjectName", this.projectname);
           if (this.embed) {
             this.iframeSource =
               this.source +

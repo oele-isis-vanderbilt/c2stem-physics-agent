@@ -3,6 +3,7 @@
  * Methods related to C2STEM GUI and C2STEM simulation.
  */
 import axios from "axios";
+import store from "@/store";
 
 export default {
   runProject() {
@@ -29,7 +30,8 @@ export default {
   },
   async getProjectList() {
     const projects = [];
-    const user = sessionStorage.getItem("user");
+    // const user = sessionStorage.getItem("user");
+    const user = store.state.user;
     if (user) {
       try {
         let response = await axios.get(
@@ -66,7 +68,8 @@ export default {
 
   async getSharedProjectList() {
     const projects = [];
-    const user = sessionStorage.getItem("user");
+    // const user = sessionStorage.getItem("user");
+    const user = store.state.user;
     if (user) {
       try {
         let response = await axios.get(
@@ -108,7 +111,8 @@ export default {
     // world = iframe.contentWindow.world,
     // ide = world.children[0];
     // var projectResponse = ide.exportProject(projectName, false);
-    const user = sessionStorage.getItem("user");
+    // const user = sessionStorage.getItem("user");
+    const user = store.state.user;
     var currentDate = new Date();
     var datetime =
       currentDate.getDate() +
@@ -171,7 +175,8 @@ export default {
 
   async deleteProjectByName(projectName) {
     let response = "";
-    const user = sessionStorage.getItem("user");
+    // const user = sessionStorage.getItem("user");
+    const user = store.state.user;
     if (user) {
       try {
         response = await axios.post(

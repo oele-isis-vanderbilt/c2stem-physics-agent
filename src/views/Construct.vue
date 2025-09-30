@@ -37,7 +37,7 @@ export default {
       this.emitter.emit("save-project", { status: true });
     },
     getUser() {
-      return sessionStorage.getItem("user");
+      return this.$store.state.user;
     },
   },
   mounted() {

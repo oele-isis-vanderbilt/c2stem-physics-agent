@@ -41,6 +41,7 @@ const store = createStore({
       overall_mastery: 0,
     },
     user: "",
+    projectName: "",
   },
   getters: {
     getLiveKitRoom(state) {
@@ -69,6 +70,9 @@ const store = createStore({
     },
     loggedIn(state) {
       return !!state.user;
+    },
+    getProjectName(state) {
+      return state.projectName;
     },
   },
   mutations: {
@@ -102,6 +106,9 @@ const store = createStore({
     removeCredentials(state) {
       state.user = null;
     },
+    setProjectName(state, name) {
+      state.projectName = name;
+    },
   },
   actions: {
     addLivekitRoom(context, data) {
@@ -133,6 +140,9 @@ const store = createStore({
     },
     removeCredentials(context) {
       context.commit("removeCredentials");
+    },
+    setProjectName(context, name) {
+      context.commit("setProjectName", name);
     },
   },
   modules: {},

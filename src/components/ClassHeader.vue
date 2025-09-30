@@ -53,7 +53,7 @@ export default {
       return this.$route.name;
     },
     getProjectName() {
-      return sessionStorage.getItem("projectName");
+      return this.$store.state.projectName;
     },
   },
   methods: {
