@@ -5,7 +5,7 @@
       source="https://physics.c2stem.org"
       iframeid="iframe-id"
       username="oele"
-      projectname="Truck_Model_full_empty_HIDDEN_BLOCKS"
+      projectname="Sloth_Model_full_empty_HIDDEN_BLOCKS"
       :embed="false"
     ></iframe-loader>
   </div>
@@ -41,10 +41,14 @@ export default {
     },
   },
   mounted() {
+    let blocks = this.$store.getters.getBlocks;
+    let treeRoots = this.$store.getters.getTreeRoots;
+    let actions = this.$store.getters.getActions;
     const astController = new ASTController(
-      "blocks",
-      "treeRoots",
-      "actionList"
+      blocks,
+      treeRoots,
+      actions,
+      this.$store
     );
     const iframe = document.getElementById("iframe-id");
     const api = new window.EmbeddedNetsBloxAPI(iframe);

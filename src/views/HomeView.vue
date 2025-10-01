@@ -22,24 +22,18 @@ export default {
   },
   data() {
     return {
-      names: ["Task 1", "Task 2"],
-      description: [
-        "Complete your computational model lessons",
-        "Explore the agent",
-      ],
-      route: ["Construct", "ConstructAgent"],
+      names: ["Sloth Task"],
+      description: ["Complete your computational model lessons"],
+      route: ["Construct"],
       engineering: true,
     };
   },
 };
 </script>
 
-<!--<style>-->
-<!--.container {-->
-<!--  max-width: 100%;-->
-<!--  height: 100%;-->
-<!--  padding: 0;-->
-<!--  //background-color: #1e1e1e;-->
-<!--  position: relative;-->
-<!--}-->
-<!--</style>-->
+<style>
+.container {
+  max-width: 100%;
+  height: 80%;
+}
+</style>

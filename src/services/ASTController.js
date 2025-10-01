@@ -59,7 +59,7 @@ export default class ASTController {
     return [...ret, ...node.next.contained];
   };
 
-  actionListener = (action, segmentparser) => {
+  actionListener = (action, segmentparser = null) => {
     // Block class -- used to create standardized objects
     // that represent new blocks in C2STEM
     class Block {
@@ -616,8 +616,10 @@ export default class ASTController {
 
     if (actionRep.valid) {
       this.actions.push(actionRep);
-      let segment = segmentparser.extractSegment(actionRep);
-      this.store.dispatch("updateSegment", segment);
+      if (segmentparser) {
+        let segment = segmentparser.extractSegment(actionRep);
+        this.store.dispatch("updateSegment", segment);
+      }
     }
 
     // console.log(actions);

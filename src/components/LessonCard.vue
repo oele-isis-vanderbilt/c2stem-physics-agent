@@ -8,7 +8,10 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">{{ name }}</h5>
-          <p class="card-text">{{ description[index] }}</p>
+          <!--          <p class="card-text">{{ description[index] }}</p>-->
+          <p class="card-text">
+            <img src="../assets/sloth.png" alt="" width="100" height="80" />
+          </p>
           <router-link :to="{ name: route[index] }"
             ><button type="button" class="btn btn-primary">
               Continue
@@ -58,6 +61,7 @@ export default {
   margin: 20px;
   width: fit-content;
   min-height: fit-content;
+  border: 3px inset #615195;
 }
 .card-text {
   display: flex;
@@ -65,6 +69,7 @@ export default {
 }
 div {
   min-height: 127px;
+  max-height: 70% !important;
   margin: 0;
 }
 .row {
