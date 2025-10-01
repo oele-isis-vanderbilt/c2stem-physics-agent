@@ -41,26 +41,55 @@ export default {
     },
   },
   mounted() {
-    let blocks = this.$store.getters.getBlocks;
-    let treeRoots = this.$store.getters.getTreeRoots;
-    let actions = this.$store.getters.getActions;
-    const astController = new ASTController(
-      blocks,
-      treeRoots,
-      actions,
-      this.$store
-    );
-    const iframe = document.getElementById("iframe-id");
-    const api = new window.EmbeddedNetsBloxAPI(iframe);
-    // iframe.onload = () => {
-    setTimeout(() => {
-      api.addEventListener("projectSaved", this.saveProject);
-      api.addEventListener("action", (e) => {
-        if (e.detail.type !== "openProject") {
-          astController.actionListener(e.detail);
+    try {
+      let blocks = this.$store.getters.getBlocks;
+      let treeRoots = this.$store.getters.getTreeRoots;
+      let actions = this.$store.getters.getActions;
+      const astController = new ASTController(
+        blocks,
+        treeRoots,
+        actions,
+        this.$store
+      );
+      const iframe = document.getElementById("iframe-id");
+
+      if (!iframe) {
+        console.error("Construct: iframe not found");
+        return;
+      }
+
+      if (!window.EmbeddedNetsBloxAPI) {
+        console.error("Construct: EmbeddedNetsBloxAPI not available");
+        return;
+      }
+
+      const api = new window.EmbeddedNetsBloxAPI(iframe);
+      // iframe.onload = () => {
+      setTimeout(() => {
+        try {
+          api.addEventListener("projectSaved", this.saveProject);
+          api.addEventListener("action", (e) => {
+            try {
+              if (e && e.detail && e.detail.type !== "openProject") {
+                astController.actionListener(e.detail);
+              }
+            } catch (error) {
+              console.error(
+                "Construct: Error processing action event",
+                error,
+                e
+              );
+              // Continue execution - don't let one action error break everything
+            }
+          });
+        } catch (error) {
+          console.error("Construct: Error setting up event listeners", error);
         }
-      });
-    }, 2000);
+      }, 2000);
+    } catch (error) {
+      console.error("Construct: Error in mounted hook", error);
+      // Continue - let the component render even if ASTController fails
+    }
   },
 };
 </script>
