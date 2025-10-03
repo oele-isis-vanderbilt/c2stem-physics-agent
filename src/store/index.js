@@ -21,6 +21,7 @@ const store = createStore({
       initialize_position: 0,
       initialize_acceleration: 0,
       initialize_deltaT: 0,
+      set_speed_limit: 0,
       start_simulation: 0,
       accurate_comparison_position_velocity_time: 0,
       accurate_comparison_velocity_acceleration_time: 0,
@@ -106,6 +107,42 @@ const store = createStore({
     removeCredentials(state) {
       state.user = null;
     },
+    resetStore(state) {
+      state.livekitRoom = Room;
+      state.treeRoots = [];
+      state.blocks = {};
+      state.actions = [];
+      state.currentGroup = "";
+      state.currentActionName = "";
+      state.currentSegment = "";
+      state.score = {
+        initialize_velocity: 0,
+        initialize_position: 0,
+        initialize_acceleration: 0,
+        initialize_deltaT: 0,
+        set_speed_limit: 0,
+        start_simulation: 0,
+        accurate_comparison_position_velocity_time: 0,
+        accurate_comparison_velocity_acceleration_time: 0,
+        update_order_of_velocity_position: 0,
+        code_accuracy_to_accelerate_truck: 0,
+        setting_acceleration_to_cruise_truck: 0,
+        setting_acceleration_to_decelerate_truck: 0,
+        stop_simulation: 0,
+        code_accuracy_to_cruise_truck: 0,
+        code_accuracy_to_slowdown_truck: 0,
+        code_accuracy_to_stop_truck: 0,
+        accurate_acceleration_velocity_for_cruising: 0,
+        accurate_acceleration_position_for_slowing: 0,
+        accurate_code_for_stopping: 0,
+        accurate_order_cruising_slowing_stopping: 0,
+        physics_mastery: 0,
+        computing_mastery: 0,
+        overall_mastery: 0,
+      };
+      state.user = "";
+      state.projectName = "";
+    },
     setProjectName(state, name) {
       state.projectName = name;
     },
@@ -140,6 +177,9 @@ const store = createStore({
     },
     removeCredentials(context) {
       context.commit("removeCredentials");
+    },
+    resetStore(context) {
+      context.commit("resetStore");
     },
     setProjectName(context, name) {
       context.commit("setProjectName", name);

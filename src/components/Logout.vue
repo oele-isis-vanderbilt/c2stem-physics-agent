@@ -33,7 +33,9 @@ export default {
   methods: {
     async logout() {
       await authService.netsbloxLogout();
-      this.$store.dispatch("removeCredentials");
+      this.$store.dispatch("resetStore");
+      sessionStorage.clear();
+      localStorage.clear();
       this.$router.push("/");
     },
   },

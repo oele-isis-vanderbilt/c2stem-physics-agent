@@ -10,6 +10,7 @@ export default class ActionScorer {
     initialize_velocity: [],
     initialize_acceleration: [],
     initialize_deltaT: [],
+    set_speed_limit: [],
     start_simulation: [],
     accurate_comparison_position_velocity_time: [],
     accurate_comparison_velocity_acceleration_time: [],
@@ -315,6 +316,25 @@ export default class ActionScorer {
           } else {
             scoringRubric.initialize_deltaT = 0;
             this.scoringRubricListedObj.initialize_deltaT.push(0);
+          }
+          break;
+        }
+        case "set_speed_limit": {
+          let block = this.getMatchingBlock(ast, "SpeedLimit");
+          let value;
+          let parent = this.getRootBlock(ast, "SpeedLimit");
+          if (block && parent === "green flag clicked") {
+            value = block[0].split("(")[2].split(")")[0];
+            if (value === "15") {
+              scoringRubric.set_speed_limit = 1;
+              this.scoringRubricListedObj.set_speed_limit.push(1);
+            } else {
+              scoringRubric.set_speed_limit = 0;
+              this.scoringRubricListedObj.set_speed_limit.push(0);
+            }
+          } else {
+            this.scoringRubricListedObj.set_speed_limit.push(0);
+            scoringRubric.set_speed_limit = 0;
           }
           break;
         }
@@ -829,9 +849,10 @@ export default class ActionScorer {
             scoringRubric.accurate_acceleration_velocity_for_cruising +
             scoringRubric.accurate_acceleration_position_for_slowing +
             scoringRubric.accurate_code_for_stopping +
-            scoringRubric.accurate_order_cruising_slowing_stopping;
+            scoringRubric.accurate_order_cruising_slowing_stopping +
+            scoringRubric.set_speed_limit;
           scoringRubric.computing_mastery = Math.floor(
-            (computingTotal / 8) * 100
+            (computingTotal / 9) * 100
           );
           break;
         }
@@ -855,8 +876,9 @@ export default class ActionScorer {
             scoringRubric.accurate_acceleration_velocity_for_cruising +
             scoringRubric.accurate_acceleration_position_for_slowing +
             scoringRubric.accurate_code_for_stopping +
-            scoringRubric.accurate_order_cruising_slowing_stopping;
-          scoringRubric.overall_mastery = Math.floor((total / 19) * 100);
+            scoringRubric.accurate_order_cruising_slowing_stopping +
+            scoringRubric.set_speed_limit;
+          scoringRubric.overall_mastery = Math.floor((total / 20) * 100);
           break;
         }
       }

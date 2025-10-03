@@ -110,6 +110,9 @@ export default {
               if (value === "" || value === undefined || value === null) {
                 value = "no value";
               }
+              if (value === "Speed Limit") {
+                value = "SpeedLimit";
+              }
               operands.push(value);
             }
           } else {
@@ -277,8 +280,19 @@ export default {
 
       // Process any following blocks
       let currentNode = root;
+      let visitedNodes = new Set();
+      visitedNodes.add(root.id);
+
       while (currentNode && currentNode.next && currentNode.next.next) {
         currentNode = currentNode.next.next;
+
+        // Prevent infinite loops from circular references
+        if (visitedNodes.has(currentNode.id)) {
+          console.warn("Circular reference detected in block tree");
+          break;
+        }
+        visitedNodes.add(currentNode.id);
+
         let nextResult = processNode(currentNode);
         if (nextResult.includes("if") && nextResult.includes("\n")) {
           finalString += nextResult + "\n";
