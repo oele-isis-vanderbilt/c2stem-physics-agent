@@ -211,7 +211,7 @@ export default class ActionScorer {
       } else if (
         lines[i].includes("if") &&
         lines[i].includes("(x_position)") &&
-        lines[i].includes("(Stop)") &&
+        lines[i].includes("(StopSignPosition)") &&
         lines[i].includes("(−)")
       ) {
         secondIfIndex = i;
@@ -220,7 +220,7 @@ export default class ActionScorer {
           lines[i].includes("(x_velocity)") &&
           lines[i].includes("(0)")) ||
         (lines[i].includes("if") &&
-          lines[i].includes("Stop") &&
+          lines[i].includes("StopSignPosition") &&
           lines[i].includes("(x_position)"))
       ) {
         thirdIfIndex = i;
@@ -576,15 +576,15 @@ export default class ActionScorer {
         case "code_accuracy_to_slowdown_truck": {
           let block = this.getMatchingBlock(
             ast,
-            "if ((x_position) (>) ((Stop) (−)"
+            "if ((x_position) (>) ((StopSignPosition) (−)"
           );
           let parent = this.getRootBlock(
             ast,
-            "if ((x_position) (>) ((Stop) (−)"
+            "if ((x_position) (>) ((StopSignPosition) (−)"
           );
           let ifExpression = this.findIfExpressionByCondition(
             ast,
-            "if ((x_position) (>) ((Stop) (−)"
+            "if ((x_position) (>) ((StopSignPosition) (−)"
           );
           let lookAheadValue;
           if (block.length > 0) {
@@ -629,17 +629,23 @@ export default class ActionScorer {
           let parentValue;
           let block = this.getMatchingBlock(ast, "(x_velocity) (<) (0)");
           let block1 = this.getMatchingBlock(ast, "(0) (>) (x_velocity)");
-          let block2 = this.getMatchingBlock(ast, "(x_position) (>) (Stop)");
-          let block3 = this.getMatchingBlock(ast, "(Stop) (<) (x_position)");
+          let block2 = this.getMatchingBlock(
+            ast,
+            "(x_position) (>) (StopSignPosition)"
+          );
+          let block3 = this.getMatchingBlock(
+            ast,
+            "(StopSignPosition) (<) (x_position)"
+          );
 
           if (block.length > 0) {
             parentValue = "(x_velocity) (<) (0)";
           } else if (block1.length > 0) {
             parentValue = "(0) (>) (x_velocity)";
           } else if (block2.length > 0) {
-            parentValue = "(x_position) (>) (Stop)";
+            parentValue = "(x_position) (>) (StopSignPosition)";
           } else if (block3.length > 0) {
-            parentValue = "(Stop) (<) (x_position)";
+            parentValue = "(StopSignPosition) (<) (x_position)";
           }
           let parent = this.getRootBlock(ast, parentValue);
           if (
@@ -707,7 +713,7 @@ export default class ActionScorer {
         case "accurate_acceleration_position_for_slowing": {
           let ifExpression = this.findIfExpressionByCondition(
             ast,
-            "((x_position) (>) ((Stop) (−)"
+            "((x_position) (>) ((StopSignPosition) (−)"
           );
           let ifExpression1 = this.findIfExpressionByCondition(
             ast,
@@ -770,11 +776,11 @@ export default class ActionScorer {
           );
           let ifExpression2 = this.findIfExpressionByCondition(
             ast,
-            "(x_position) (>) (Stop)"
+            "(x_position) (>) (StopSignPosition)"
           );
           let ifExpression3 = this.findIfExpressionByCondition(
             ast,
-            "(Stop) (<) (x_position)"
+            "(StopSignPosition) (<) (x_position)"
           );
           let expression;
           if (ifExpression && ifExpression.includes("stop simulation")) {
