@@ -11,7 +11,7 @@ export default class SegmentParser {
       const scriptString = obj?.rawAction?.args?.[0];
 
       if (!scriptString || typeof scriptString !== "string") {
-        return "none";
+        return null;
       }
 
       // Use regex to find the s attribute value
@@ -21,9 +21,9 @@ export default class SegmentParser {
         return sMatch[1];
       }
 
-      return "none";
+      return null;
     } catch (error) {
-      return "none";
+      return null;
     }
   }
 
@@ -130,6 +130,12 @@ export default class SegmentParser {
               this.segmentMap[id] = this.segment;
               return this.segment;
             }
+          }
+        } else {
+          if (id in this.segmentMap) {
+            return this.segmentMap[id];
+          } else {
+            return this.segment;
           }
         }
       } else if (actionType === "setField" || actionType === "removeBlock") {
