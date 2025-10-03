@@ -16,7 +16,7 @@
     aria-expanded="false"
     aria-controls="collapseWindow"
   >
-    <i class="bi bi-chat-left-fill fs-2"></i>
+    <img src="../assets/peer_agent_image.png" alt="" width="60" height="60" />
   </button>
   <div class="collapse bottom-0 end-0" id="collapseWindow">
     <div class="card card-body mb-5">
@@ -176,14 +176,7 @@ div {
 
 iframe {
   width: 100%;
-  height: 100%; //display: block;
-}
-
-.chat-btn {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  margin: 30px;
+  height: 100%;
 }
 
 #collapseWindow {
@@ -196,5 +189,29 @@ iframe {
 
 .card {
   height: 100%;
+}
+.chat-btn {
+  position: absolute;
+  height: 80px;
+  margin: 40px;
+  background: #8270ba;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(130, 132, 198);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+.btn-pulse {
+  animation: pulse 1.5s infinite;
 }
 </style>

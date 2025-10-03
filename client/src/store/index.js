@@ -13,6 +13,7 @@ const store = createStore({
       initialize_position: 0,
       initialize_acceleration: 0,
       initialize_deltaT: 0,
+      set_speed_limit: 0,
       start_simulation: 0,
       accurate_comparison_position_velocity_time: 0,
       accurate_comparison_velocity_acceleration_time: 0,
