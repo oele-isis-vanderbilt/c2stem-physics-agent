@@ -10,7 +10,7 @@
           <h5 class="card-title">{{ name }}</h5>
           <!--          <p class="card-text">{{ description[index] }}</p>-->
           <p class="card-text">
-            <img src="../assets/sloth.png" alt="" width="100" height="80" />
+            <img :src="logo[index]" alt="" width="100" height="80" />
           </p>
           <router-link :to="{ name: route[index] }"
             ><button type="button" class="btn btn-primary">
@@ -43,9 +43,9 @@ export default {
     routeParams: {
       type: Object,
     },
-    engineering: {
-      type: Boolean,
-      required: true,
+    logo: {
+      type: Array,
+      required: false,
     },
   },
   computed: {

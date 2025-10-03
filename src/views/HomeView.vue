@@ -5,7 +5,7 @@
       :lessonNames="names"
       :description="description"
       :route="route"
-      :engineering="engineering"
+      :logo="logo"
     ></lesson-card>
   </div>
 </template>
@@ -13,6 +13,8 @@
 <script>
 import LessonCard from "../components/LessonCard.vue";
 // import BuildEnv from "@/components/BuildEnv.vue";
+import slothLogo from "@/assets/sloth.png";
+import c2stemTruckLogo from "@/assets/c2stem_med_truck.png";
 
 export default {
   name: "HomeView",
@@ -22,10 +24,10 @@ export default {
   },
   data() {
     return {
-      names: ["Sloth Task"],
-      description: ["Complete your computational model lessons"],
-      route: ["Construct"],
-      engineering: true,
+      names: ["Sloth Task", "Truck Task"],
+      description: ["Complete your computational model lessons", ""],
+      route: ["Construct", "ConstructAgent"],
+      logo: [slothLogo, c2stemTruckLogo],
     };
   },
 };
