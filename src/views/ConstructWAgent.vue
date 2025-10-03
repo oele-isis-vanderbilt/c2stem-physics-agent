@@ -10,11 +10,12 @@
     ></iframe-loader>
     <button
       type="button"
-      class="btn btn-primary btn-lg rounded-circle chat-btn bottom-0 end-0"
+      class="btn btn-dark btn-lg rounded-circle chat-btn bottom-0 end-0 btn-pulse"
       @click="toggleCollapse"
       aria-controls="collapseWindow"
     >
-      <i class="bi bi-chat-left-fill fs-2"></i>
+      <!--      <i class="bi bi-chat-left-fill fs-2"></i>-->
+      <img src="../assets/peer_agent_image.png" alt="" width="60" height="60" />
     </button>
     <div class="collapse bottom-0 end-0" id="collapseWindow">
       <div class="card card-body mb-5">
@@ -246,8 +247,26 @@ strong {
 }
 .chat-btn {
   position: absolute;
-  width: 80px;
   height: 80px;
-  margin: 30px;
+  margin: 40px;
+  background: #8270ba;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(130, 132, 198);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+.btn-pulse {
+  animation: pulse 1.5s infinite;
 }
 </style>
