@@ -1,6 +1,6 @@
 <template>
   <iframe
-    src=" https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Truck_Model_full_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
+    src=" https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Farm_Model_full_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
     id="iframe-id"
     sandbox="allow-scripts allow-same-origin"
     height="100%"
