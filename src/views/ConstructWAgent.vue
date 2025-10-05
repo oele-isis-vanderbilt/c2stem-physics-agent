@@ -5,7 +5,7 @@
       source="https://physics.c2stem.org"
       iframeid="iframe-id"
       username="oele"
-      projectname="Truck_Model_full_empty_HIDDEN_BLOCKS"
+      projectname="Farm_Model_full_empty_HIDDEN_BLOCKS"
       :embed="false"
     ></iframe-loader>
     <button
@@ -54,7 +54,7 @@ import Websockets from "@/services/Websockets";
 import BlockParser from "@/services/BlockParser_v1";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";
-// import simulation from "../services/Simulation.js";
+import Simulation from "../services/Simulation.js";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -69,6 +69,7 @@ export default {
       lastGroup: "",
       username: "",
       collapseInstance: null,
+      pendingNavigation: null,
     };
   },
   computed: {
@@ -154,6 +155,25 @@ export default {
       };
     },
   },
+  beforeRouteLeave(to, from, next) {
+    const projectName = this.$store.getters.getProjectName;
+    if (projectName && !this.pendingNavigation) {
+      this.pendingNavigation = next;
+
+      // Call saveToCloud - wait for projectSaved event before navigating
+      Simulation.saveToCloud(projectName).catch((error) => {
+        console.error("Error saving project:", error);
+        next();
+        this.pendingNavigation = null;
+      });
+      // Don't call next() here - wait for projectSaved event
+    } else if (this.pendingNavigation) {
+      // Already saving, block navigation
+      return;
+    } else {
+      next();
+    }
+  },
   mounted() {
     this.username = this.getUser();
     let blocks = this.$store.getters.getBlocks;
@@ -193,7 +213,15 @@ export default {
         }
       });
       this.api.addEventListener("startScript", console.log);
-      this.api.addEventListener("projectSaved", this.saveProject);
+      this.api.addEventListener("projectSaved", () => {
+        this.saveProject();
+
+        // If navigation is pending, allow it to proceed
+        if (this.pendingNavigation) {
+          this.pendingNavigation();
+          this.pendingNavigation = null;
+        }
+      });
     }, 2000);
 
     // };

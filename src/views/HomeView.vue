@@ -13,8 +13,9 @@
 <script>
 import LessonCard from "../components/LessonCard.vue";
 // import BuildEnv from "@/components/BuildEnv.vue";
-import slothLogo from "@/assets/sloth.png";
-import c2stemTruckLogo from "@/assets/c2stem_med_truck.png";
+// import slothLogo from "@/assets/sloth.png";
+// import c2stemTruckLogo from "@/assets/c2stem_med_truck.png";
+import farmTruckLogo from "@/assets/farm.png";
 
 export default {
   name: "HomeView",
@@ -24,10 +25,10 @@ export default {
   },
   data() {
     return {
-      names: ["Sloth Task", "Truck Task"],
+      names: ["Farm Task: Problem Solving", "Farm Task: Debugging"],
       description: ["Complete your computational model lessons", ""],
-      route: ["Construct", "ConstructAgent"],
-      logo: [slothLogo, c2stemTruckLogo],
+      route: ["ConstructAgent", "Construct"],
+      logo: [farmTruckLogo, farmTruckLogo],
     };
   },
 };

@@ -51,6 +51,7 @@
       </div>
     </div>
   </div>
+  <AlertBox :message="alertMessage" v-if="isActive"></AlertBox>
 </template>
 
 <script>
@@ -60,8 +61,10 @@
  */
 import auth from "../services/Auth.js";
 import Token from "../services/Token.js";
+import AlertBox from "../components/AlertBox.vue";
 // import LiveKit from "../services/LiveKit.js";
 export default {
+  components: { AlertBox },
   data() {
     return {
       username: "",
@@ -75,6 +78,9 @@ export default {
   computed: {
     currentRouteName() {
       return this.$route.name;
+    },
+    isActive() {
+      return this.cardActive;
     },
   },
   methods: {
@@ -98,10 +104,14 @@ export default {
               ServerURL: this.ServerURL,
             })
             .catch((err) => {
+              this.cardActive = true;
+              this.alertMessage = "Username or Password is incorrect";
               console.log(err);
             })
             .then(async (response) => {
               if (response) {
+                this.cardActive = true;
+                this.alertMessage = "User found. Logging in...";
                 data.username = this.username;
                 document.cookie = "username=" + data.username;
                 this.$store.dispatch("saveCredentials", data);
@@ -126,6 +136,12 @@ export default {
     toggleShow() {
       this.showPassword = !this.showPassword;
     },
+  },
+  mounted() {
+    this.emitter.on("close-alert", () => {
+      this.cardActive = false;
+      this.alertMessage = "";
+    });
   },
 };
 </script>

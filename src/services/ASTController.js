@@ -79,6 +79,51 @@ export default class ASTController {
     if (node.next.next) ret.push(node.next.next);
     return [...ret, ...node.next.contained];
   };
+  findParentId(data, searchId) {
+    function search(obj, parentId = null) {
+      // If current object has the search ID
+      if (obj && obj.id === searchId) {
+        return parentId === null ? obj.id : parentId;
+      }
+
+      // Only update parentId if current object has an ID
+      const currentParentId = obj && obj.id ? obj.id : parentId;
+
+      // Search in 'next' property
+      if (obj && obj.next) {
+        const result = search(obj.next, currentParentId);
+        if (result !== null) return result;
+      }
+
+      // Search in 'contained' array
+      if (obj && obj.contained && Array.isArray(obj.contained)) {
+        for (const item of obj.contained) {
+          const result = search(item, currentParentId);
+          if (result !== null) return result;
+        }
+      }
+
+      // Search in 'underlay' array
+      if (obj && obj.underlay && Array.isArray(obj.underlay)) {
+        for (const item of obj.underlay) {
+          const result = search(item, currentParentId);
+          if (result !== null) return result;
+        }
+      }
+
+      return null;
+    }
+
+    if (Array.isArray(data)) {
+      for (const root of data) {
+        const result = search(root);
+        if (result !== null) return result;
+      }
+      return null;
+    }
+
+    return search(data);
+  }
 
   actionListener = (action, segmentparser = null) => {
     try {
@@ -718,7 +763,12 @@ export default class ASTController {
             // Root the child, based on its parent and its index (in the string, separated by a slash).
             rootChildren(action.args[3][1]);
           } else {
-            actionRep.valid = false;
+            if (this.treeRoots.some((root) => root.id === action.args[0])) {
+              actionRep.valid = false;
+            } else {
+              let parent = this.findParentId(this.treeRoots, action.args[0]);
+              rootChildren(parent);
+            }
           }
 
           break;

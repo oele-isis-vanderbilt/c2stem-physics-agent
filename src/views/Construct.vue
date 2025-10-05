@@ -5,7 +5,7 @@
       source="https://physics.c2stem.org"
       iframeid="iframe-id"
       username="oele"
-      projectname="Sloth_Model_full_empty_HIDDEN_BLOCKS"
+      projectname="Farm_Model_debug_HIDDEN_BLOCKS"
       :embed="false"
     ></iframe-loader>
   </div>
@@ -19,7 +19,7 @@
  */
 import IframeLoader from "../components/IframeLoader.vue";
 import ASTController from "../services/ASTController";
-// import simulation from "../services/Simulation.js";
+import Simulation from "../services/Simulation.js";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -30,6 +30,8 @@ export default {
   data() {
     return {
       projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
+      api: null,
+      pendingNavigation: null,
     };
   },
   methods: {
@@ -39,6 +41,25 @@ export default {
     getUser() {
       return this.$store.state.user;
     },
+  },
+  beforeRouteLeave(to, from, next) {
+    const projectName = this.$store.getters.getProjectName;
+    if (projectName && !this.pendingNavigation) {
+      this.pendingNavigation = next;
+
+      // Call saveToCloud - wait for projectSaved event before navigating
+      Simulation.saveToCloud(projectName).catch((error) => {
+        console.error("Error saving project:", error);
+        next();
+        this.pendingNavigation = null;
+      });
+      // Don't call next() here - wait for projectSaved event
+    } else if (this.pendingNavigation) {
+      // Already saving, block navigation
+      return;
+    } else {
+      next();
+    }
   },
   mounted() {
     try {
@@ -63,12 +84,20 @@ export default {
         return;
       }
 
-      const api = new window.EmbeddedNetsBloxAPI(iframe);
+      this.api = new window.EmbeddedNetsBloxAPI(iframe);
       // iframe.onload = () => {
       setTimeout(() => {
         try {
-          api.addEventListener("projectSaved", this.saveProject);
-          api.addEventListener("action", (e) => {
+          this.api.addEventListener("projectSaved", () => {
+            this.saveProject();
+
+            // If navigation is pending, allow it to proceed
+            if (this.pendingNavigation) {
+              this.pendingNavigation();
+              this.pendingNavigation = null;
+            }
+          });
+          this.api.addEventListener("action", (e) => {
             try {
               if (e && e.detail && e.detail.type !== "openProject") {
                 astController.actionListener(e.detail);

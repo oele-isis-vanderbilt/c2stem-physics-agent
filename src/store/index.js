@@ -16,27 +16,44 @@ const store = createStore({
     currentGroup: "",
     currentActionName: "",
     currentSegment: "",
-    score: {
+    // truck_score: {
+    //   initialize_velocity: 0,
+    //   initialize_position: 0,
+    //   initialize_acceleration: 0,
+    //   initialize_deltaT: 0,
+    //   set_speed_limit: 0,
+    //   start_simulation: 0,
+    //   accurate_comparison_position_velocity_time: 0,
+    //   accurate_comparison_velocity_acceleration_time: 0,
+    //   update_order_of_velocity_position: 0,
+    //   code_accuracy_to_accelerate_truck: 0,
+    //   setting_acceleration_to_cruise_truck: 0,
+    //   setting_acceleration_to_decelerate_truck: 0,
+    //   stop_simulation: 0,
+    //   code_accuracy_to_cruise_truck: 0,
+    //   code_accuracy_to_slowdown_truck: 0,
+    //   code_accuracy_to_stop_truck: 0,
+    //   accurate_acceleration_velocity_for_cruising: 0,
+    //   accurate_acceleration_position_for_slowing: 0,
+    //   accurate_code_for_stopping: 0,
+    //   accurate_order_cruising_slowing_stopping: 0,
+    //   physics_mastery: 0,
+    //   computing_mastery: 0,
+    //   overall_mastery: 0,
+    // },
+    farm_score: {
       initialize_velocity: 0,
       initialize_position: 0,
       initialize_acceleration: 0,
       initialize_deltaT: 0,
-      set_speed_limit: 0,
       start_simulation: 0,
       accurate_comparison_position_velocity_time: 0,
       accurate_comparison_velocity_acceleration_time: 0,
       update_order_of_velocity_position: 0,
       code_accuracy_to_accelerate_truck: 0,
       setting_acceleration_to_cruise_truck: 0,
-      setting_acceleration_to_decelerate_truck: 0,
-      stop_simulation: 0,
       code_accuracy_to_cruise_truck: 0,
-      code_accuracy_to_slowdown_truck: 0,
-      code_accuracy_to_stop_truck: 0,
       accurate_acceleration_velocity_for_cruising: 0,
-      accurate_acceleration_position_for_slowing: 0,
-      accurate_code_for_stopping: 0,
-      accurate_order_cruising_slowing_stopping: 0,
       physics_mastery: 0,
       computing_mastery: 0,
       overall_mastery: 0,
@@ -64,7 +81,7 @@ const store = createStore({
       return state.currentActionName;
     },
     getScore(state) {
-      return state.score;
+      return state.farm_score;
     },
     getSegment(state) {
       return state.currentSegment;
@@ -96,7 +113,7 @@ const store = createStore({
       state.currentActionName = name;
     },
     updateScore(state, score) {
-      state.score = score;
+      state.farm_score = score;
     },
     updateSegment(state, segment) {
       state.currentSegment = segment;
@@ -115,27 +132,44 @@ const store = createStore({
       state.currentGroup = "";
       state.currentActionName = "";
       state.currentSegment = "";
-      state.score = {
+      // state.truck_score = {
+      //   initialize_velocity: 0,
+      //   initialize_position: 0,
+      //   initialize_acceleration: 0,
+      //   initialize_deltaT: 0,
+      //   set_speed_limit: 0,
+      //   start_simulation: 0,
+      //   accurate_comparison_position_velocity_time: 0,
+      //   accurate_comparison_velocity_acceleration_time: 0,
+      //   update_order_of_velocity_position: 0,
+      //   code_accuracy_to_accelerate_truck: 0,
+      //   setting_acceleration_to_cruise_truck: 0,
+      //   setting_acceleration_to_decelerate_truck: 0,
+      //   stop_simulation: 0,
+      //   code_accuracy_to_cruise_truck: 0,
+      //   code_accuracy_to_slowdown_truck: 0,
+      //   code_accuracy_to_stop_truck: 0,
+      //   accurate_acceleration_velocity_for_cruising: 0,
+      //   accurate_acceleration_position_for_slowing: 0,
+      //   accurate_code_for_stopping: 0,
+      //   accurate_order_cruising_slowing_stopping: 0,
+      //   physics_mastery: 0,
+      //   computing_mastery: 0,
+      //   overall_mastery: 0,
+      // };
+      state.farm_score = {
         initialize_velocity: 0,
         initialize_position: 0,
         initialize_acceleration: 0,
         initialize_deltaT: 0,
-        set_speed_limit: 0,
         start_simulation: 0,
         accurate_comparison_position_velocity_time: 0,
         accurate_comparison_velocity_acceleration_time: 0,
         update_order_of_velocity_position: 0,
         code_accuracy_to_accelerate_truck: 0,
         setting_acceleration_to_cruise_truck: 0,
-        setting_acceleration_to_decelerate_truck: 0,
-        stop_simulation: 0,
         code_accuracy_to_cruise_truck: 0,
-        code_accuracy_to_slowdown_truck: 0,
-        code_accuracy_to_stop_truck: 0,
         accurate_acceleration_velocity_for_cruising: 0,
-        accurate_acceleration_position_for_slowing: 0,
-        accurate_code_for_stopping: 0,
-        accurate_order_cruising_slowing_stopping: 0,
         physics_mastery: 0,
         computing_mastery: 0,
         overall_mastery: 0,

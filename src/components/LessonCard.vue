@@ -10,7 +10,7 @@
           <h5 class="card-title">{{ name }}</h5>
           <!--          <p class="card-text">{{ description[index] }}</p>-->
           <p class="card-text">
-            <img :src="logo[index]" alt="" width="100" height="80" />
+            <img :src="logo[index]" alt="" width="100" height="100" />
           </p>
           <router-link :to="{ name: route[index] }"
             ><button type="button" class="btn btn-primary">
@@ -78,5 +78,11 @@ div {
 }
 .cardCol {
   width: fit-content;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
