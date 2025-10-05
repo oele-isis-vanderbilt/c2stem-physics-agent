@@ -221,7 +221,7 @@ export default class ActionScorer {
           let parent = this.getRootBlock(ast, "set x_position to");
           if (block && parent === "green flag clicked") {
             value = block[0].split("(")[1].split(")")[0];
-            if (value === "-60") {
+            if (value === "0") {
               scoringRubric.initialize_position = 1;
             } else {
               scoringRubric.initialize_position = 0;
