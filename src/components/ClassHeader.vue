@@ -23,6 +23,14 @@
       </button>
       <div class="bttn-auth ms-2 me-2">
         <button
+          v-if="loggedIn && isAdmin && currentRouteName !== 'logs'"
+          type="button"
+          class="btn btn-primary btn-lg me-3"
+          @click="$router.push('/logs')"
+        >
+          Logs
+        </button>
+        <button
           v-if="!loggedIn"
           type="button"
           class="btn btn-primary btn-lg"
@@ -54,6 +62,9 @@ export default {
     },
     getProjectName() {
       return this.$store.state.projectName;
+    },
+    isAdmin() {
+      return this.$store.state.role === "admin";
     },
   },
   methods: {

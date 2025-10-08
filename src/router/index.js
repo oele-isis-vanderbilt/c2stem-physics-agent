@@ -6,6 +6,7 @@ import ConversationView from "@/views/ConversationView.vue";
 import Construct from "@/views/Construct.vue";
 import ConstructWAgent from "@/views/ConstructWAgent.vue";
 import store from "@/store";
+import LogView from "@/views/LogView.vue";
 
 function islogin(to, from, next) {
   if (!store.state.user) {
@@ -54,6 +55,11 @@ const routes = [
       requiresAuth: true,
       title: "C2STEM | Construct",
     },
+  },
+  {
+    path: "/logs",
+    name: "logs",
+    component: LogView,
   },
 ];
 

@@ -60,6 +60,7 @@ const store = createStore({
     },
     user: "",
     projectName: "",
+    role: "",
   },
   getters: {
     getLiveKitRoom(state) {
@@ -120,6 +121,7 @@ const store = createStore({
     },
     saveCredentials(state, data) {
       state.user = data.username;
+      state.role = data.role;
     },
     removeCredentials(state) {
       state.user = null;
