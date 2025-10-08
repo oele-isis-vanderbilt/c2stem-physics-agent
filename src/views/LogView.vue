@@ -105,7 +105,7 @@ export default {
   top: 56px;
   left: 0;
   right: 0;
-  bottom: 0;
+  height: calc(100vh - 56px);
   padding: 1rem;
   box-sizing: border-box;
   overflow: hidden;
@@ -134,6 +134,10 @@ export default {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
+}
+
+.nav.flex-column {
+  flex-wrap: nowrap;
 }
 
 .content-card {
