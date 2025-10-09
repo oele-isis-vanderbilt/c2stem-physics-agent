@@ -10,7 +10,7 @@
           <h5 class="card-title">{{ name }}</h5>
           <!--          <p class="card-text">{{ description[index] }}</p>-->
           <p class="card-text">
-            <img :src="logo[index]" alt="" width="100" height="100" />
+            <img :src="logo[index]" alt="" width="100" height="60" />
           </p>
           <router-link :to="{ name: route[index] }"
             ><button type="button" class="btn btn-primary">

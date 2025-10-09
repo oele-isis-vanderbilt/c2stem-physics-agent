@@ -593,6 +593,11 @@ export default class ASTController {
               // You can only insert on top of blocks that are roots,
               // so let's unroot the old block.
               unrootBlock(action.args[1].element);
+              // The new block is now the root, so we need to check if it's already rooted
+              // If not already rooted, add it to treeRoots
+              if (!this.treeRoots.some((root) => root && root.id === id)) {
+                this.treeRoots.push(this.blocks[id]);
+              }
             }
           }
 

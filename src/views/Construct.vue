@@ -5,7 +5,7 @@
       source="https://physics.c2stem.org"
       iframeid="iframe-id"
       username="oele"
-      projectname="Farm_Model_debug_HIDDEN_BLOCKS"
+      projectname="Truck_Model_debug_HIDDEN_BLOCKS"
       :embed="false"
     ></iframe-loader>
   </div>
