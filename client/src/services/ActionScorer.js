@@ -287,13 +287,10 @@ export default class ActionScorer {
             value = block[0].split("(")[2].split(")")[0];
             if (value === "15") {
               scoringRubric.set_speed_limit = 1;
-              this.scoringRubricListedObj.set_speed_limit.push(1);
             } else {
               scoringRubric.set_speed_limit = 0;
-              this.scoringRubricListedObj.set_speed_limit.push(0);
             }
           } else {
-            this.scoringRubricListedObj.set_speed_limit.push(0);
             scoringRubric.set_speed_limit = 0;
           }
           break;
