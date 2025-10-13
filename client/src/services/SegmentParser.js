@@ -1,6 +1,8 @@
+import store from "@/store";
+
 export default class SegmentParser {
   constructor() {
-    this.segment = "";
+    this.segment = "initialization";
     this.parentNameMap = {};
     this.parentChildMap = {};
     this.segmentMap = {};
@@ -40,7 +42,7 @@ export default class SegmentParser {
       return parent;
     } else {
       if (parent in this.parentChildMap) {
-        return this.parentChildMap[parent];
+        return this.getRootParent(this.parentChildMap[parent]);
       }
     }
     return false;
@@ -65,6 +67,58 @@ export default class SegmentParser {
         }
     }
   }
+
+  findParentBlockID(data, targetId) {
+    // eslint-disable-next-line no-unused-vars
+    function search(node, parentId = null) {
+      // Check if current node has an ID
+      if (node.id) {
+        // Check next.next chain
+        if (node.next?.next?.id === targetId) {
+          return node.id;
+        }
+
+        // Recursively search in next.next
+        if (node.next?.next) {
+          const result = search(node.next.next, node.id);
+          if (result) return result;
+        }
+
+        // Search in contained array
+        if (node.contained && node.contained.length > 0) {
+          for (const item of node.contained) {
+            if (item.id === targetId) {
+              return node.id;
+            }
+            const result = search(item, node.id);
+            if (result) return result;
+          }
+        }
+
+        // Search in underlay array
+        if (node.underlay && node.underlay.length > 0) {
+          for (const item of node.underlay) {
+            if (item.id === targetId) {
+              return node.id;
+            }
+            const result = search(item, node.id);
+            if (result) return result;
+          }
+        }
+      }
+
+      return null;
+    }
+
+    // Search through the top-level array
+    for (const item of data) {
+      const result = search(item);
+      if (result) return result;
+    }
+
+    return targetId; // Return the same ID if parent not found
+  }
+
   extractSegment(action) {
     let actionType = this.getActionType(action);
     let id = this.getBlockId(action);
@@ -72,9 +126,14 @@ export default class SegmentParser {
       if (actionType === "addBlock") {
         let actionName = this.getSValue(action);
         if (actionName) {
-          if (actionName === "receiveGo" || actionName === "doSimulationStep") {
+          if (actionName === "receiveGo") {
             this.parentNameMap[id] = actionName;
             this.segment = "initialization";
+            this.segmentMap[id] = this.segment;
+            return this.segment;
+          } else if (actionName === "doSimulationStep") {
+            this.parentNameMap[id] = actionName;
+            this.segment = "updating-variables-every-sim-step";
             this.segmentMap[id] = this.segment;
             return this.segment;
           } else if (actionName === "doIf") {
@@ -124,14 +183,57 @@ export default class SegmentParser {
                 }
               }
               if (!(id in this.parentChildMap)) {
-                this.parentChildMap[id] = rootParent;
+                this.parentChildMap[id] = parent;
               }
-              this.segment = this.generateSegment(rootParent, location);
-              this.segmentMap[id] = this.segment;
+              if (rootParent) {
+                this.segment = this.generateSegment(rootParent, location);
+              } else {
+                this.segment = this.generateSegment(parent, location);
+              }
+              if (this.segment) {
+                this.segmentMap[id] = this.segment;
+              } else {
+                this.segmentMap[id] = "initialization";
+                this.segment = "initialization";
+              }
               return this.segment;
             }
           }
         } else {
+          if (
+            action.rawAction?.args?.[1]?.element &&
+            action.rawAction?.args?.[1]?.loc === "top"
+          ) {
+            let currentBlockID = action.rawAction?.args?.[1]?.element;
+            let treeRoots = store.getters.getTreeRoots;
+            this.parentChildMap[currentBlockID] = this.findParentBlockID(
+              treeRoots,
+              currentBlockID
+            );
+          } else if (action.rawAction?.args?.[1]?.element) {
+            let parent = action.rawAction?.args?.[1]?.element;
+            if (parent.includes("/")) {
+              let parentSplitList = parent.split("/");
+              parent = parentSplitList[0];
+              location = parentSplitList[1];
+            }
+            if (parent in this.parentChildMap) {
+              this.parentChildMap[id] = parent;
+              let rootParent = this.getRootParent(parent);
+              this.segment = this.generateSegment(rootParent, location);
+              this.segmentMap[id] = this.segment;
+              return this.segment;
+            } else if (parent in this.parentNameMap) {
+              this.parentChildMap[id] = parent;
+              return this.generateSegment(parent);
+            } else if (id in this.parentChildMap) {
+              let parent = this.parentChildMap[id];
+              let rootParent = this.getRootParent(parent);
+              this.segment = this.generateSegment(rootParent);
+              this.segmentMap[id] = this.segment;
+              return this.segment;
+            }
+          }
           if (id in this.segmentMap) {
             return this.segmentMap[id];
           } else {
@@ -149,8 +251,18 @@ export default class SegmentParser {
           return "initialization";
         }
       } else {
-        this.segmentMap[id] = this.segment;
-        return this.segment;
+        if (id in this.parentChildMap) {
+          let parent = this.parentChildMap[id];
+          let rootParent = this.getRootParent(parent);
+          this.segment = this.generateSegment(rootParent);
+          this.segmentMap[id] = this.segment;
+          return this.segment;
+        } else if (id in this.parentNameMap) {
+          return this.generateSegment(id);
+        } else {
+          this.segmentMap[id] = this.segment;
+          return this.segment;
+        }
       }
     } else {
       this.segmentMap[id] = this.segment;

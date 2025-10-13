@@ -148,10 +148,27 @@ export default class ActionScorer {
   isInsideIfBlock(ast, searchText) {
     const lines = ast.split("\n");
 
-    for (let i = 0; i < lines.length - 1; i++) {
+    for (let i = 0; i < lines.length; i++) {
+      // Found an if statement
       if (lines[i].includes("if")) {
-        if (lines[i + 1].includes(searchText) && lines[i + 1].includes("\t")) {
-          return true;
+        // Check all following lines until we find a non-indented line or end of file
+        for (let j = i + 1; j < lines.length; j++) {
+          const line = lines[j];
+
+          // Empty line, skip
+          if (line.trim() === "") {
+            break; // End of this if block's body
+          }
+
+          // If line starts with tab, it's inside the if block body
+          if (line.startsWith("\t")) {
+            if (line.includes(searchText)) {
+              return true;
+            }
+          } else {
+            // Non-indented line means we've exited the if block
+            break;
+          }
         }
       }
     }
@@ -161,12 +178,20 @@ export default class ActionScorer {
 
   findIfExpressionByCondition(ast, searchString) {
     const lines = ast.split("\n");
+    let result = "";
+    let j = 1;
     for (let i = 0; i < lines.length - 1; i++) {
       if (lines[i].includes("if") && lines[i].includes(searchString)) {
-        const nextLine = lines[i + 1];
+        let nextLine = lines[i + j];
         if (nextLine.includes("\t")) {
-          return nextLine;
+          while (nextLine.includes("\t")) {
+            result += nextLine;
+            j += 1;
+            nextLine = lines[i + j];
+          }
+          return result;
         }
+        j += 1;
       }
     }
     return null;

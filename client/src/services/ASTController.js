@@ -995,16 +995,15 @@ export default class ASTController {
 
       if (actionRep.valid) {
         this.actions.push(actionRep);
-        if (segmentparser) {
-          try {
-            let segment = segmentparser.extractSegment(actionRep);
-            this.store.dispatch("updateSegment", segment);
-          } catch (error) {
-            console.error("ASTController: Error extracting segment", error);
-          }
+      }
+      if (segmentparser) {
+        try {
+          let segment = segmentparser.extractSegment(actionRep);
+          this.store.dispatch("updateSegment", segment);
+        } catch (error) {
+          console.error("ASTController: Error extracting segment", error);
         }
       }
-
       // console.log(actions);
       // console.log(treeRoots);
       // window.sessionStorage.setItem(this.blocksName, JSON.stringify(this.blocks));
