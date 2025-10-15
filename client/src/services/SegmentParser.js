@@ -138,7 +138,7 @@ export default class SegmentParser {
             return this.segment;
           } else if (actionName === "doIf") {
             this.parentNameMap[id] = actionName;
-            this.segment = "initialization";
+            this.segment = "conditional-clause";
           }
         }
         this.segmentMap[id] = this.segment;
@@ -152,6 +152,7 @@ export default class SegmentParser {
             if (!(id in this.parentNameMap)) {
               this.parentNameMap[id] = actionName;
             }
+            this.segment = "conditional-clause";
             this.segmentMap[id] = this.segment;
             return this.segment;
           } else {
@@ -173,11 +174,15 @@ export default class SegmentParser {
                   this.segmentMap[parent] ===
                     "updating-variables-under-conditons")
               ) {
-                if (this.segmentMap[parent] === "conditional-clause") {
+                if (
+                  this.segmentMap[parent] === "conditional-clause" &&
+                  !(parent in this.parentNameMap)
+                ) {
                   location = "0";
                 } else if (
                   this.segmentMap[parent] ===
-                  "updating-variables-under-conditons"
+                    "updating-variables-under-conditons" &&
+                  !(parent in this.parentNameMap)
                 ) {
                   location = "1";
                 }
@@ -220,12 +225,24 @@ export default class SegmentParser {
             if (parent in this.parentChildMap) {
               this.parentChildMap[id] = parent;
               let rootParent = this.getRootParent(parent);
+              if (
+                rootParent in this.parentNameMap &&
+                this.parentNameMap[rootParent] === "doIf"
+              ) {
+                if (
+                  this.segmentMap[id] === "updating-variables-under-conditons"
+                ) {
+                  location = "1";
+                } else if (this.segmentMap[id] === "conditional-clause") {
+                  location = "0";
+                }
+              }
               this.segment = this.generateSegment(rootParent, location);
               this.segmentMap[id] = this.segment;
               return this.segment;
             } else if (parent in this.parentNameMap) {
               this.parentChildMap[id] = parent;
-              return this.generateSegment(parent);
+              return this.generateSegment(parent, location);
             } else if (id in this.parentChildMap) {
               let parent = this.parentChildMap[id];
               let rootParent = this.getRootParent(parent);
@@ -241,10 +258,13 @@ export default class SegmentParser {
           }
         }
       } else if (actionType === "setField" || actionType === "removeBlock") {
-        if (id in this.parentChildMap) {
-          let parent = this.parentChildMap[id];
-          this.segment = this.generateSegment(parent);
-          this.segmentMap[id] = this.segment;
+        // if (id in this.parentChildMap) {
+        //   let parent = this.parentChildMap[id];
+        //   this.segment = this.generateSegment(parent);
+        //   this.segmentMap[id] = this.segment;
+        //   return this.segment;
+        if (id in this.segmentMap) {
+          this.segment = this.segmentMap[id];
           return this.segment;
         } else {
           this.segmentMap[id] = "initialization";
@@ -254,7 +274,31 @@ export default class SegmentParser {
         if (id in this.parentChildMap) {
           let parent = this.parentChildMap[id];
           let rootParent = this.getRootParent(parent);
-          this.segment = this.generateSegment(rootParent);
+          let location = null;
+          if (
+            action.rawAction?.args?.[3]?.[1]?.element &&
+            action.rawAction?.args?.[3]?.[1]?.element.includes("/")
+          ) {
+            let parentSplitList =
+              action.rawAction?.args?.[3]?.[1]?.element.split("/");
+            parent = parentSplitList[0];
+            location = parentSplitList[1];
+            this.segment = this.generateSegment(rootParent, location);
+          } else {
+            if (
+              rootParent in this.parentNameMap &&
+              this.parentNameMap[rootParent] === "doIf"
+            ) {
+              if (
+                this.segmentMap[id] === "updating-variables-under-conditons"
+              ) {
+                location = "1";
+              } else if (this.segmentMap[id] === "conditional-clause") {
+                location = "0";
+              }
+            }
+            this.segment = this.generateSegment(rootParent, location);
+          }
           this.segmentMap[id] = this.segment;
           return this.segment;
         } else if (id in this.parentNameMap) {

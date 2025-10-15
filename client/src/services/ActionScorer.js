@@ -650,19 +650,19 @@ export default class ActionScorer {
         case "accurate_code_for_stopping": {
           let ifExpression = this.findIfExpressionByCondition(
             ast,
-            "(x_velocity) (<) (0)"
+            "((x_position) (>) (StopSignPosition)) (and) ((x_velocity) (<) (0))"
           );
           let ifExpression1 = this.findIfExpressionByCondition(
             ast,
-            "(0) (>) (x_velocity)"
+            "((x_position) (>) (StopSignPosition)) (and) ((0) (>) (x_velocity))"
           );
           let ifExpression2 = this.findIfExpressionByCondition(
             ast,
-            "(x_position) (>) (StopSignPosition)"
+            "((x_position) (>) (StopSignPosition)) (and) ((0) (>) (x_velocity))"
           );
           let ifExpression3 = this.findIfExpressionByCondition(
             ast,
-            "(StopSignPosition) (<) (x_position)"
+            "((StopSignPosition) (<) (x_position)) (and) ((0) (>) (x_velocity))"
           );
           let expression;
           if (ifExpression && ifExpression.includes("stop simulation")) {
