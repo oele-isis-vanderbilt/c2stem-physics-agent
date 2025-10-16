@@ -541,29 +541,26 @@ export default class ActionScorer {
         }
         case "code_accuracy_to_stop_truck": {
           let parentValue;
-          let block = this.getMatchingBlock(ast, "(x_velocity) (<) (0)");
-          let block1 = this.getMatchingBlock(ast, "(0) (>) (x_velocity)");
-          let block2 = this.getMatchingBlock(
-            ast,
-            "(x_position) (>) (StopSignPosition)"
-          );
-          let block3 = this.getMatchingBlock(
-            ast,
-            "(StopSignPosition) (<) (x_position)"
-          );
-
-          if (block.length > 0) {
-            parentValue = "(x_velocity) (<) (0)";
-          } else if (block1.length > 0) {
-            parentValue = "(0) (>) (x_velocity)";
-          } else if (block2.length > 0) {
-            parentValue = "(x_position) (>) (StopSignPosition)";
-          } else if (block3.length > 0) {
-            parentValue = "(StopSignPosition) (<) (x_position)";
+          let searchStrings = [
+            "((x_position) (>) (StopSignPosition)) (and) ((x_velocity) (<) (0))",
+            "((x_position) (>) (StopSignPosition)) (and) ((0) (>) (x_velocity))",
+            "((StopSignPosition) (<) (x_position)) (and) ((0) (>) (x_velocity))",
+            "((StopSignPosition) (<) (x_position)) (and) ((x_velocity) (<) (0))",
+            "((x_velocity) (<) (0)) (and) ((x_position) (>) (StopSignPosition))",
+            "((x_velocity) (<) (0)) (and) ((StopSignPosition) (<) (x_position))",
+            "((0) (>) (x_velocity)) (and) ((x_position) (>) (StopSignPosition))",
+            "((0) (>) (x_velocity)) (and) ((StopSignPosition) (<) (x_position))",
+          ];
+          for (const searchString of searchStrings) {
+            let block = this.getMatchingBlock(ast, searchString);
+            if (block && block.length > 0) {
+              parentValue = searchString;
+              break;
+            }
           }
           let parent = this.getRootBlock(ast, parentValue);
           if (
-            (block || block1 || block2 || block3) &&
+            parentValue &&
             parent === "simulation step" &&
             scoringRubric.code_accuracy_to_slowdown_truck === 1
           ) {
@@ -648,42 +645,26 @@ export default class ActionScorer {
           break;
         }
         case "accurate_code_for_stopping": {
-          let ifExpression = this.findIfExpressionByCondition(
-            ast,
-            "((x_position) (>) (StopSignPosition)) (and) ((x_velocity) (<) (0))"
-          );
-          let ifExpression1 = this.findIfExpressionByCondition(
-            ast,
-            "((x_position) (>) (StopSignPosition)) (and) ((0) (>) (x_velocity))"
-          );
-          let ifExpression2 = this.findIfExpressionByCondition(
-            ast,
-            "((x_position) (>) (StopSignPosition)) (and) ((0) (>) (x_velocity))"
-          );
-          let ifExpression3 = this.findIfExpressionByCondition(
-            ast,
-            "((StopSignPosition) (<) (x_position)) (and) ((0) (>) (x_velocity))"
-          );
-          let expression;
-          if (ifExpression && ifExpression.includes("stop simulation")) {
-            expression = ifExpression;
-          } else if (
-            ifExpression1 &&
-            ifExpression1.includes("stop simulation")
-          ) {
-            expression = ifExpression1;
-          } else if (
-            ifExpression2 &&
-            ifExpression2.includes("stop simulation")
-          ) {
-            expression = ifExpression2;
-          } else if (
-            ifExpression3 &&
-            ifExpression3.includes("stop simulation")
-          ) {
-            expression = ifExpression3;
-          } else {
-            expression = null;
+          let expression = null;
+          let searchStrings = [
+            "((x_position) (>) (StopSignPosition)) (and) ((x_velocity) (<) (0))",
+            "((x_position) (>) (StopSignPosition)) (and) ((0) (>) (x_velocity))",
+            "((StopSignPosition) (<) (x_position)) (and) ((0) (>) (x_velocity))",
+            "((StopSignPosition) (<) (x_position)) (and) ((x_velocity) (<) (0))",
+            "((x_velocity) (<) (0)) (and) ((x_position) (>) (StopSignPosition))",
+            "((x_velocity) (<) (0)) (and) ((StopSignPosition) (<) (x_position))",
+            "((0) (>) (x_velocity)) (and) ((x_position) (>) (StopSignPosition))",
+            "((0) (>) (x_velocity)) (and) ((StopSignPosition) (<) (x_position))",
+          ];
+          for (const searchString of searchStrings) {
+            let ifExpression = this.findIfExpressionByCondition(
+              ast,
+              searchString
+            );
+            if (ifExpression && ifExpression.includes("stop simulation")) {
+              expression = ifExpression;
+              break;
+            }
           }
           if (
             expression &&

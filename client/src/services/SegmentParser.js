@@ -152,6 +152,16 @@ export default class SegmentParser {
             if (!(id in this.parentNameMap)) {
               this.parentNameMap[id] = actionName;
             }
+            if (action.rawAction?.args?.[1]?.element) {
+              parent = action.rawAction?.args?.[1]?.element;
+              if (parent in this.parentNameMap) {
+                if (this.parentNameMap[parent] === "receiveGo") {
+                  this.segment = "initialization";
+                  this.segmentMap[id] = this.segment;
+                  return this.segment;
+                }
+              }
+            }
             this.segment = "conditional-clause";
             this.segmentMap[id] = this.segment;
             return this.segment;
@@ -168,6 +178,17 @@ export default class SegmentParser {
                 location = parentSplitList[1];
               }
               let rootParent = this.getRootParent(parent);
+              if (!rootParent && !(parent in this.parentNameMap)) {
+                this.segmentMap[id] = this.segment;
+                this.parentChildMap[id] = parent;
+                return this.segment;
+              }
+              if (this.segmentMap[rootParent] === "initialization") {
+                this.parentChildMap[id] = parent;
+                this.segment = "initialization";
+                this.segmentMap[id] = this.segment;
+                return this.segment;
+              }
               if (
                 this.parentNameMap[rootParent] === "doIf" &&
                 (this.segmentMap[parent] === "conditional-clause" ||
@@ -217,6 +238,11 @@ export default class SegmentParser {
             );
           } else if (action.rawAction?.args?.[1]?.element) {
             let parent = action.rawAction?.args?.[1]?.element;
+            if (id in this.parentNameMap) {
+              this.segment = this.segmentMap[id];
+              this.parentChildMap[id] = parent;
+              return this.segment;
+            }
             if (parent.includes("/")) {
               let parentSplitList = parent.split("/");
               parent = parentSplitList[0];
@@ -242,7 +268,18 @@ export default class SegmentParser {
               return this.segment;
             } else if (parent in this.parentNameMap) {
               this.parentChildMap[id] = parent;
-              return this.generateSegment(parent, location);
+              if (
+                this.parentNameMap[id] === "doIf" &&
+                this.parentNameMap[parent] !== "receiveGo"
+              ) {
+                this.segment = "conditional-clause";
+                this.segmentMap[id] = this.segment;
+                return this.segment;
+              } else {
+                this.segment = this.generateSegment(parent, location);
+                this.segmentMap[id] = this.segment;
+                return this.segment;
+              }
             } else if (id in this.parentChildMap) {
               let parent = this.parentChildMap[id];
               let rootParent = this.getRootParent(parent);
@@ -271,43 +308,54 @@ export default class SegmentParser {
           return "initialization";
         }
       } else {
-        if (id in this.parentChildMap) {
-          let parent = this.parentChildMap[id];
-          let rootParent = this.getRootParent(parent);
-          let location = null;
-          if (
-            action.rawAction?.args?.[3]?.[1]?.element &&
-            action.rawAction?.args?.[3]?.[1]?.element.includes("/")
-          ) {
-            let parentSplitList =
-              action.rawAction?.args?.[3]?.[1]?.element.split("/");
-            parent = parentSplitList[0];
-            location = parentSplitList[1];
-            this.segment = this.generateSegment(rootParent, location);
-          } else {
-            if (
-              rootParent in this.parentNameMap &&
-              this.parentNameMap[rootParent] === "doIf"
-            ) {
-              if (
-                this.segmentMap[id] === "updating-variables-under-conditons"
-              ) {
-                location = "1";
-              } else if (this.segmentMap[id] === "conditional-clause") {
-                location = "0";
-              }
-            }
-            this.segment = this.generateSegment(rootParent, location);
-          }
-          this.segmentMap[id] = this.segment;
-          return this.segment;
-        } else if (id in this.parentNameMap) {
-          return this.generateSegment(id);
+        if (id in this.segmentMap) {
+          return this.segmentMap[id];
         } else {
-          this.segmentMap[id] = this.segment;
-          return this.segment;
+          return "issue";
         }
       }
+      // } else {
+      //   if (id in this.parentChildMap) {
+      //     let parent = this.parentChildMap[id];
+      //     let rootParent = this.getRootParent(parent);
+      //     let location = null;
+      //     if (
+      //       action.rawAction?.args?.[3]?.[1]?.element &&
+      //       action.rawAction?.args?.[3]?.[1]?.element.includes("/")
+      //     ) {
+      //       let parentSplitList =
+      //         action.rawAction?.args?.[3]?.[1]?.element.split("/");
+      //       parent = parentSplitList[0];
+      //       location = parentSplitList[1];
+      //       this.segment = this.generateSegment(rootParent, location);
+      //     } else {
+      //       if (
+      //         rootParent in this.parentNameMap &&
+      //         this.parentNameMap[rootParent] === "doIf"
+      //       ) {
+      //         if (
+      //           this.segmentMap[id] === "updating-variables-under-conditons"
+      //         ) {
+      //           location = "1";
+      //         } else if (this.segmentMap[id] === "conditional-clause") {
+      //           location = "0";
+      //         }
+      //       }
+      //       if (id in this.parentNameMap) {
+      //         this.segment = this.generateSegment(id, location);
+      //       } else {
+      //         this.segment = this.generateSegment(rootParent, location);
+      //       }
+      //     }
+      //     this.segmentMap[id] = this.segment;
+      //     return this.segment;
+      //   } else if (id in this.parentNameMap) {
+      //     return this.generateSegment(id);
+      //   } else {
+      //     this.segmentMap[id] = this.segment;
+      //     return this.segment;
+      //   }
+      // }
     } else {
       this.segmentMap[id] = this.segment;
       return this.segment;
