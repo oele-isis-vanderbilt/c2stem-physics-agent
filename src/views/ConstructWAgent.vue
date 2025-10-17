@@ -20,8 +20,8 @@
     <div class="collapse bottom-0 end-0" id="collapseWindow">
       <div class="card card-body mb-5">
         <iframe
-          v-if="chat_URL.length !== 0"
-          :src="chat_URL"
+          v-if="getChatURL.length !== 0"
+          :src="getChatURL"
           id="chat-iframe"
           sandbox="allow-scripts allow-same-origin"
           height="100%"
@@ -50,7 +50,7 @@
 import IframeLoader from "../components/IframeLoader.vue";
 import { Collapse } from "bootstrap";
 import ASTController from "../services/ASTController";
-import Websockets from "@/services/Websockets";
+// import Websockets from "@/services/Websockets";
 import BlockParser from "@/services/BlockParser_v1";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";
@@ -70,17 +70,21 @@ export default {
       username: "",
       collapseInstance: null,
       pendingNavigation: null,
+      socket: WebSocket,
     };
   },
   computed: {
     getChatURL() {
-      return this.chat_URL;
+      return this.$store.getters.getAgentURL;
     },
     getScore() {
       return this.$store.getters.getScore;
     },
     getSegment() {
       return this.$store.getters.getSegment;
+    },
+    getSocket() {
+      return this.$store.getters.getSocketInstance;
     },
   },
   methods: {
@@ -136,23 +140,24 @@ export default {
       segment.data = segment.data ? segment.data : "";
       this.socket.send(JSON.stringify(segment));
     },
-    setupSocket(username) {
-      this.socket = Websockets.connect(username);
-      this.socket.onmessage = (event) => {
-        if (event.data.includes("URL")) {
-          this.chat_URL = event.data.split("URL=")[1] + "?username=" + username;
-          console.log(this.chat_URL);
-        }
-        console.log(event.data);
-        let state = BlockParser.generate(this.$store);
-        if (state.trim().length > 1) {
-          this.sendState({ type: "state", data: state });
-        }
-      };
-      this.socket.onclose = () => {
-        console.log("Disconnected from the WebSocket server");
-        this.setupSocket();
-      };
+    setupSocket() {
+      // this.socket = Websockets.connect(username);
+      // this.socket.onmessage = (event) => {
+      //   if (event.data.includes("URL")) {
+      //     this.chat_URL = event.data.split("URL=")[1] + "?username=" + username;
+      //     console.log(this.chat_URL);
+      //   }
+      //   console.log(event.data);
+      //   let state = BlockParser.generate(this.$store);
+      //   if (state.trim().length > 1) {
+      //     this.sendState({ type: "state", data: state });
+      //   }
+      // };
+      // this.socket.onclose = () => {
+      //   console.log("Disconnected from the WebSocket server");
+      //   this.setupSocket();
+      // };
+      this.socket = this.getSocket;
     },
   },
   beforeRouteLeave(to, from, next) {
@@ -178,7 +183,7 @@ export default {
     this.username = this.getUser();
     let blocks = this.$store.getters.getBlocks;
     let treeRoots = this.$store.getters.getTreeRoots;
-    let actions = this.$store.getters.getActions;
+    let actions = [];
     const astController = new ASTController(
       blocks,
       treeRoots,
@@ -226,7 +231,7 @@ export default {
 
     // };
     // let username = document.cookie.split("=")[1];
-    this.setupSocket(this.username);
+    this.setupSocket();
   },
 };
 </script>

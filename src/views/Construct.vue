@@ -65,7 +65,7 @@ export default {
     try {
       let blocks = this.$store.getters.getBlocks;
       let treeRoots = this.$store.getters.getTreeRoots;
-      let actions = this.$store.getters.getActions;
+      let actions = [];
       const astController = new ASTController(
         blocks,
         treeRoots,

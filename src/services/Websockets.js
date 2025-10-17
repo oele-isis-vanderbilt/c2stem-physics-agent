@@ -8,7 +8,7 @@ export default {
     )}`;
     const socket = new WebSocket(ws_url);
     socket.onopen = () => {
-      console.log("Connected to the WebSocket server");
+      console.log("Connected to the WebSocket server for", username);
       // Last socket activity can be added here. Recording the last time a socket was connected
     };
     // socket.onclose = () => {

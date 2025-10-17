@@ -1028,7 +1028,7 @@ export default class ASTController {
         this.store.dispatch("updateCurrentGroup", actionRep.group);
         this.store.dispatch("updateTreeRoots", this.treeRoots);
         this.store.dispatch("updateBlocks", this.blocks);
-        this.store.dispatch("updateActions", this.actions);
+        // this.store.dispatch("updateActions", this.actions);
       } catch (error) {
         console.error("ASTController: Error dispatching store updates", error);
       }

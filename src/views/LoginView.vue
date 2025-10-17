@@ -62,6 +62,8 @@
 import auth from "../services/Auth.js";
 import Token from "../services/Token.js";
 import AlertBox from "../components/AlertBox.vue";
+import Websockets from "@/services/Websockets";
+import BlockParser from "@/services/BlockParser_v1";
 // import LiveKit from "../services/LiveKit.js";
 export default {
   components: { AlertBox },
@@ -115,6 +117,7 @@ export default {
                 data.username = this.username;
                 document.cookie = "username=" + data.username;
                 this.$store.dispatch("saveCredentials", data);
+                this.setupSocket(this.username);
                 Token.setAccessToken(data.token);
                 // try {
                 //   await LiveKit.tryAndPublish(data.username, this.$store);
@@ -129,12 +132,34 @@ export default {
             });
         })
         .catch((err) => {
+          this.cardActive = true;
+          this.alertMessage = "Username or Password is incorrect";
           console.log(err);
         });
     },
 
     toggleShow() {
       this.showPassword = !this.showPassword;
+    },
+    setupSocket(username) {
+      let socket = Websockets.connect(username);
+      this.$store.dispatch("setSocketInstance", socket);
+      socket.onmessage = (event) => {
+        if (event.data.includes("URL")) {
+          let chat_URL = event.data.split("URL=")[1] + "?username=" + username;
+          this.$store.dispatch("setAgentURL", chat_URL);
+          console.log(chat_URL);
+        }
+        console.log(event.data);
+        let state = BlockParser.generate(this.$store);
+        if (state.trim().length > 1) {
+          this.sendState({ type: "state", data: state });
+        }
+      };
+      socket.onclose = () => {
+        console.log("Disconnected from the WebSocket server");
+        this.setupSocket();
+      };
     },
   },
   mounted() {
