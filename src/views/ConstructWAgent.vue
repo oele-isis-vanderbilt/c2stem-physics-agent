@@ -100,7 +100,7 @@ export default {
       this.socket.send(JSON.stringify(data));
     },
     sendState(state) {
-      state = state ? state : "";
+      state.data = state.data ? state.data : "";
       this.socket.send(JSON.stringify(state));
     },
     sendActionGroup(action) {
@@ -129,11 +129,11 @@ export default {
       }
     },
     sendScore(score) {
-      score = score ? score : {};
+      score.data = score.data ? score.data : {};
       this.socket.send(JSON.stringify(score));
     },
     sendSegment(segment) {
-      segment = segment ? segment : "";
+      segment.data = segment.data ? segment.data : "";
       this.socket.send(JSON.stringify(segment));
     },
     setupSocket(username) {

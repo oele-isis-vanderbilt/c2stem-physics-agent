@@ -64,6 +64,24 @@ export default {
       return "[" + text + "]";
     }
 
+    // Decorate each line in a multiline string with brackets
+    function decorateAllLines(text) {
+      return text
+        .split("\n")
+        .map((line) => {
+          const trimmed = line.trim();
+          if (trimmed === "") return "";
+          // Preserve indentation
+          const indent = line.match(/^\s*/)[0];
+          // Only add brackets if they're not already there
+          if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+            return line;
+          }
+          return indent + decorate(trimmed);
+        })
+        .join("\n");
+    }
+
     function processNode(node) {
       if (!node || !node.name) {
         return "no value";
@@ -102,8 +120,40 @@ export default {
         for (let contained of node.next.contained) {
           if (contained) {
             if (contained.id) {
-              // This is a nested block - process it recursively
-              operands.push(processNode(contained));
+              // This is a nested block - process it and any blocks chained after it
+              let blockChain = [];
+              let currentBlock = contained;
+              let visitedBlocks = new Set();
+
+              while (currentBlock && currentBlock.id) {
+                // Prevent infinite loops
+                if (visitedBlocks.has(currentBlock.id)) {
+                  break;
+                }
+                visitedBlocks.add(currentBlock.id);
+
+                let processedBlock = processNode(currentBlock);
+                blockChain.push({
+                  block: processedBlock,
+                  template:
+                    MapBlocks.get(currentBlock.name) || currentBlock.name,
+                });
+
+                // Check if there's a next block in the chain
+                if (currentBlock.next && currentBlock.next.next) {
+                  currentBlock = currentBlock.next.next;
+                } else {
+                  break;
+                }
+              }
+
+              // When blocks are used as operands, NEVER decorate them
+              // Brackets are ONLY added at the final output stage
+              let formattedChain = blockChain
+                .map((item) => item.block)
+                .join("\n\t");
+
+              operands.push(formattedChain);
             } else {
               // This is a simple value - use exactly what's in the input
               let value = contained.name;
@@ -130,31 +180,36 @@ export default {
       if (template === "if %b %c") {
         let condition = operands[0] || "no value";
         let body = operands[1] || "no value";
-        return `if (${condition})\n\t[${body}]`;
+        // Body already has brackets from formatting, don't add more
+        return `if (${condition})\n\t${body}`;
       }
 
       if (template === "if %b %c else %c") {
         let condition = operands[0] || "no value";
         let thenBody = operands[1] || "no value";
         let elseBody = operands[2] || "no value";
-        return `if (${condition})\n\t[${thenBody}]\nelse\n\t[${elseBody}]`;
+        // Bodies already have brackets from formatting, don't add more
+        return `if (${condition})\n\t${thenBody}\nelse\n\t${elseBody}`;
       }
 
       if (template === "forever %c") {
         let body = operands[0] || "no value";
-        return `forever\n\t[${body}]`;
+        // Body already has brackets from formatting, don't add more
+        return `forever\n\t${body}`;
       }
 
       if (template === "repeat %n %c") {
         let times = operands[0] || "no value";
         let body = operands[1] || "no value";
-        return `repeat (${times})\n\t[${body}]`;
+        // Body already has brackets from formatting, don't add more
+        return `repeat (${times})\n\t${body}`;
       }
 
       if (template === "repeat until %b %c") {
         let condition = operands[0] || "no value";
         let body = operands[1] || "no value";
-        return `repeat until (${condition})\n\t[${body}]`;
+        // Body already has brackets from formatting, don't add more
+        return `repeat until (${condition})\n\t${body}`;
       }
 
       // Handle binary operators (two operands)
@@ -271,12 +326,8 @@ export default {
       // Process the root block
       let result = processNode(root);
 
-      // Format the result
-      if (result.includes("if") && result.includes("\n")) {
-        finalString += result + "\n";
-      } else {
-        finalString += decorate(result) + "\n";
-      }
+      // Format the result - ALWAYS decorate every line
+      finalString += decorateAllLines(result) + "\n";
 
       // Process any following blocks
       let currentNode = root;
@@ -294,11 +345,8 @@ export default {
         visitedNodes.add(currentNode.id);
 
         let nextResult = processNode(currentNode);
-        if (nextResult.includes("if") && nextResult.includes("\n")) {
-          finalString += nextResult + "\n";
-        } else {
-          finalString += decorate(nextResult) + "\n";
-        }
+        // ALWAYS decorate every line
+        finalString += decorateAllLines(nextResult) + "\n";
       }
 
       finalString += "\n";
