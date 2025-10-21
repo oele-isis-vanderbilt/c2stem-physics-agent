@@ -32,11 +32,28 @@ export default {
       projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
       api: null,
       pendingNavigation: null,
+      autoSaveInterval: null,
     };
   },
   methods: {
     saveProject() {
       this.emitter.emit("save-project", { status: true });
+    },
+    async autoSaveProject() {
+      const projectName = this.$store.getters.getProjectName;
+      if (!projectName) {
+        return;
+      }
+
+      try {
+        console.log(`[Auto-save] Saving project "${projectName}"...`);
+        await Simulation.saveToCloud(projectName);
+        console.log(
+          `[Auto-save] Project "${projectName}" saved successfully at ${new Date().toLocaleTimeString()}`
+        );
+      } catch (error) {
+        console.error("[Auto-save] Failed to save project:", error);
+      }
     },
     getUser() {
       return this.$store.state.user;
@@ -118,6 +135,20 @@ export default {
     } catch (error) {
       console.error("Construct: Error in mounted hook", error);
       // Continue - let the component render even if ASTController fails
+    }
+
+    // Set up auto-save every 2 minutes
+    this.autoSaveInterval = setInterval(() => {
+      this.autoSaveProject();
+    }, 120000); // 2 minutes = 120000ms
+
+    console.log("[Auto-save] Auto-save enabled (every 2 minutes)");
+  },
+  beforeUnmount() {
+    // Clear the auto-save interval when component is destroyed
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval);
+      console.log("[Auto-save] Auto-save disabled");
     }
   },
 };

@@ -70,7 +70,8 @@ export default {
       username: "",
       collapseInstance: null,
       pendingNavigation: null,
-      socket: WebSocket,
+      socket: null,
+      autoSaveInterval: null,
     };
   },
   computed: {
@@ -96,18 +97,53 @@ export default {
     saveProject() {
       this.emitter.emit("save-project", { status: true });
     },
+    async autoSaveProject() {
+      const projectName = this.$store.getters.getProjectName;
+      if (!projectName) {
+        return;
+      }
+
+      try {
+        console.log(`[Auto-save] Saving project "${projectName}"...`);
+        await Simulation.saveToCloud(projectName);
+        console.log(
+          `[Auto-save] Project "${projectName}" saved successfully at ${new Date().toLocaleTimeString()}`
+        );
+      } catch (error) {
+        console.error("[Auto-save] Failed to save project:", error);
+      }
+    },
     getUser() {
       return this.$store.state.user;
     },
-    sendActions(data) {
+    async sendActions(data) {
+      if (!this.socket) {
+        console.warn("Socket not initialized, cannot send actions");
+        return;
+      }
       data = data ? data : "";
-      this.socket.send(JSON.stringify(data));
+      try {
+        // Use sendWithAck for critical action messages
+        await this.socket.sendWithAck(data);
+      } catch (error) {
+        console.error("Failed to send action:", error);
+        // Message will be queued automatically if connection is down
+      }
     },
     sendState(state) {
+      if (!this.socket) {
+        console.warn("Socket not initialized, cannot send state");
+        return;
+      }
       state.data = state.data ? state.data : "";
-      this.socket.send(JSON.stringify(state));
+      // Use regular send for state updates (less critical)
+      this.socket.send(state);
     },
     sendActionGroup(action) {
+      if (!this.socket) {
+        console.warn("Socket not initialized, cannot send action group");
+        return;
+      }
       let group = this.$store.getters.getCurrentGroup;
       let name = this.$store.getters.getCurrentActionName;
       if (
@@ -116,7 +152,7 @@ export default {
         name !== "doSimulationStep"
       ) {
         this.lastGroup = "DRAFT";
-        this.socket.send(JSON.stringify({ type: "group", data: "DRAFT" }));
+        this.socket.send({ type: "group", data: "DRAFT" });
       } else {
         if (group) {
           let exists = !!action.args[3]?.[1];
@@ -124,40 +160,89 @@ export default {
             group = "DRAFT";
           }
           this.lastGroup = group;
-          this.socket.send(JSON.stringify({ type: "group", data: group }));
+          this.socket.send({ type: "group", data: group });
         } else {
-          this.socket.send(
-            JSON.stringify({ type: "group", data: "VISUALIZE" })
-          );
+          this.socket.send({ type: "group", data: "VISUALIZE" });
         }
       }
     },
     sendScore(score) {
+      if (!this.socket) {
+        console.warn("Socket not initialized, cannot send score");
+        return;
+      }
       score.data = score.data ? score.data : {};
-      this.socket.send(JSON.stringify(score));
+      this.socket.send(score);
     },
     sendSegment(segment) {
+      if (!this.socket) {
+        console.warn("Socket not initialized, cannot send segment");
+        return;
+      }
       segment.data = segment.data ? segment.data : "";
-      this.socket.send(JSON.stringify(segment));
+      this.socket.send(segment);
+    },
+    reconnectSocket(username) {
+      console.log("Reconnecting WebSocket after page refresh...");
+
+      const Websockets = require("@/services/Websockets").default;
+      const BlockParser = require("@/services/BlockParser_v1").default;
+
+      const onMessage = (event) => {
+        if (event.data.includes("URL")) {
+          let chat_URL = event.data.split("URL=")[1] + "?username=" + username;
+          this.$store.dispatch("setAgentURL", chat_URL);
+          console.log(chat_URL);
+        }
+        console.log(event.data);
+        let state = BlockParser.generate(this.$store);
+        if (state.trim().length > 1) {
+          Websockets.send({ type: "state", data: state });
+        }
+      };
+
+      const onClose = (event) => {
+        console.log("WebSocket connection closed", event.code, event.reason);
+      };
+
+      const onReconnect = () => {
+        console.log("WebSocket reconnected successfully");
+        let state = BlockParser.generate(this.$store);
+        if (state.trim().length > 1) {
+          Websockets.send({ type: "state", data: state });
+        }
+      };
+
+      Websockets.connect(username, onMessage, onClose, onReconnect);
+      this.$store.dispatch("setSocketInstance", Websockets);
+      this.socket = Websockets;
     },
     setupSocket() {
-      // this.socket = Websockets.connect(username);
-      // this.socket.onmessage = (event) => {
-      //   if (event.data.includes("URL")) {
-      //     this.chat_URL = event.data.split("URL=")[1] + "?username=" + username;
-      //     console.log(this.chat_URL);
-      //   }
-      //   console.log(event.data);
-      //   let state = BlockParser.generate(this.$store);
-      //   if (state.trim().length > 1) {
-      //     this.sendState({ type: "state", data: state });
-      //   }
-      // };
-      // this.socket.onclose = () => {
-      //   console.log("Disconnected from the WebSocket server");
-      //   this.setupSocket();
-      // };
+      // Get the WebSocket service instance from the store
+      // The socket was already initialized in LoginView
       this.socket = this.getSocket;
+
+      // Handle case where socket might be null (e.g., after page reload)
+      if (!this.socket) {
+        const username = this.$store.state.user;
+
+        // If user is logged in but socket is null (page refresh scenario)
+        if (username) {
+          this.reconnectSocket(username);
+        } else {
+          // No user logged in, redirect to login
+          console.error(
+            "WebSocket service not initialized. Please log in again."
+          );
+          this.$router.push({ name: "login" });
+          return;
+        }
+      }
+
+      // Verify connection
+      if (!this.socket.isConnected()) {
+        console.warn("WebSocket not connected yet, messages will be queued");
+      }
     },
   },
   beforeRouteLeave(to, from, next) {
@@ -232,6 +317,20 @@ export default {
     // };
     // let username = document.cookie.split("=")[1];
     this.setupSocket();
+
+    // Set up auto-save every 2 minutes
+    this.autoSaveInterval = setInterval(() => {
+      this.autoSaveProject();
+    }, 120000); // 2 minutes = 120000ms
+
+    console.log("[Auto-save] Auto-save enabled (every 2 minutes)");
+  },
+  beforeUnmount() {
+    // Clear the auto-save interval when component is destroyed
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval);
+      console.log("[Auto-save] Auto-save disabled");
+    }
   },
 };
 </script>

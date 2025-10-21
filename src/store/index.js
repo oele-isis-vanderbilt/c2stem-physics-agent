@@ -5,6 +5,21 @@ import VuexPersistence from "vuex-persist";
 const vuexLocal = new VuexPersistence({
   storage: window.sessionStorage,
   key: "store",
+  // Exclude socket from persistence - it cannot be serialized and will be recreated on login
+  reducer: (state) => ({
+    treeRoots: state.treeRoots,
+    blocks: state.blocks,
+    actions: state.actions,
+    currentGroup: state.currentGroup,
+    currentActionName: state.currentActionName,
+    currentSegment: state.currentSegment,
+    truck_score: state.truck_score,
+    user: state.user,
+    projectName: state.projectName,
+    role: state.role,
+    agentURL: state.agentURL,
+    // Explicitly exclude socket - it will be null after page reload
+  }),
 });
 
 const store = createStore({
@@ -62,7 +77,7 @@ const store = createStore({
     projectName: "",
     role: "",
     agentURL: "",
-    socket: WebSocket,
+    socket: null, // Will store the Websockets service instance
   },
   getters: {
     // getLiveKitRoom(state) {
@@ -187,6 +202,8 @@ const store = createStore({
       state.user = "";
       state.projectName = "";
       state.role = "";
+      state.socket = null; // Clear WebSocket reference
+      state.agentURL = ""; // Clear agent URL
     },
     setProjectName(state, name) {
       state.projectName = name;

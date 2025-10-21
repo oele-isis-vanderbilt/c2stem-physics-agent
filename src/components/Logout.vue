@@ -32,6 +32,33 @@ export default {
   },
   methods: {
     async logout() {
+      const currentRoute = this.$route.name;
+      const projectName = this.$store.getters.getProjectName;
+
+      // If on Construct or ConstructAgent page and there's a project, save it first
+      if (
+        (currentRoute === "Construct" || currentRoute === "ConstructAgent") &&
+        projectName
+      ) {
+        try {
+          console.log("Saving project before logout...");
+          const Simulation = require("@/services/Simulation.js").default;
+
+          // Save the project and wait for it to complete
+          await Simulation.saveToCloud(projectName);
+          console.log("Project saved successfully");
+        } catch (error) {
+          console.error("Error saving project before logout:", error);
+          // Continue with logout even if save fails
+        }
+      }
+
+      // Disconnect WebSocket before logout
+      const socket = this.$store.getters.getSocketInstance;
+      if (socket && socket.disconnect) {
+        socket.disconnect();
+      }
+
       await authService.netsbloxLogout();
       this.$store.dispatch("resetStore");
       sessionStorage.clear();

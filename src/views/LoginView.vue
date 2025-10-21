@@ -142,9 +142,7 @@ export default {
       this.showPassword = !this.showPassword;
     },
     setupSocket(username) {
-      let socket = Websockets.connect(username);
-      this.$store.dispatch("setSocketInstance", socket);
-      socket.onmessage = (event) => {
+      const onMessage = (event) => {
         if (event.data.includes("URL")) {
           let chat_URL = event.data.split("URL=")[1] + "?username=" + username;
           this.$store.dispatch("setAgentURL", chat_URL);
@@ -153,13 +151,26 @@ export default {
         console.log(event.data);
         let state = BlockParser.generate(this.$store);
         if (state.trim().length > 1) {
-          this.sendState({ type: "state", data: state });
+          Websockets.send({ type: "state", data: state });
         }
       };
-      socket.onclose = () => {
-        console.log("Disconnected from the WebSocket server");
-        this.setupSocket();
+
+      const onClose = (event) => {
+        console.log("WebSocket connection closed", event.code, event.reason);
+        // The Websockets service will automatically attempt to reconnect
       };
+
+      const onReconnect = () => {
+        console.log("WebSocket reconnected successfully");
+        // Optionally refresh state after reconnection
+        let state = BlockParser.generate(this.$store);
+        if (state.trim().length > 1) {
+          Websockets.send({ type: "state", data: state });
+        }
+      };
+
+      Websockets.connect(username, onMessage, onClose, onReconnect);
+      this.$store.dispatch("setSocketInstance", Websockets);
     },
   },
   mounted() {
