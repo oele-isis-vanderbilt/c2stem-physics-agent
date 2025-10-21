@@ -4,17 +4,11 @@ module.exports = defineConfig({
   devServer: {
     client: {
       webSocketURL: {
-        protocol: "wss", // Use secure WebSocket protocol
-        hostname: "collaboration.c2stem.org", // Use your actual domain name
-        port: 443, // If your certificate is for port 443, use it. Otherwise, adjust to your public port.
-        pathname: "/ws", // This should match what your server (or reverse proxy) expects
+        protocol: process.env.VUE_APP_DEV_WS_PROTOCOL || "wss",
+        hostname: process.env.VUE_APP_DEV_WS_HOSTNAME || "collaboration.c2stem.org",
+        port: process.env.VUE_APP_DEV_WS_PORT || 443,
+        pathname: "/ws",
       },
-      // webSocketURL: {
-      //   protocol: "ws", // Regular WebSocket for local development
-      //   hostname: "localhost",
-      //   port: 8002, // Your local dev server port
-      //   pathname: "/ws",
-      // },
     },
     allowedHosts: ["localhost", "c2-stem.org", ".c2stem.org", "127.0.0.1"],
   },

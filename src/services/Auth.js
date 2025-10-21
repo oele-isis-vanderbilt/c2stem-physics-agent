@@ -29,6 +29,16 @@ export default {
     return this._requestPromise(request, loginData);
   },
 
+  logout(credentials) {
+    try {
+      return axiosInstance.post("app/api/logout", credentials, {
+        withCredentials: true,
+      });
+    } catch (error) {
+      return error;
+    }
+  },
+
   netsbloxLogout() {
     const serverUrl = "https://physics.c2stem.org";
     const request = new XMLHttpRequest();

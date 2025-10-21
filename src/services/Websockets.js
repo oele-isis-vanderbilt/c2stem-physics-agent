@@ -20,12 +20,9 @@ export default {
     this.onCloseCallback = onClose;
     this.onReconnectCallback = onReconnect;
 
-    // const ws_url = `ws://localhost:8000/app/ws/data?username=${encodeURIComponent(
-    //   username
-    // )}`;
-    const ws_url = `wss://agent.c2-stem.org/app/ws/data?username=${encodeURIComponent(
-      username
-    )}`;
+    const wsBaseUrl =
+      process.env.VUE_APP_WS_BASE_URL || "wss://agent.c2-stem.org/app/ws/data";
+    const ws_url = `${wsBaseUrl}?username=${encodeURIComponent(username)}`;
 
     this.connectionState = "connecting";
     this.socket = new WebSocket(ws_url);

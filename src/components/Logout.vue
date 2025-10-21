@@ -34,6 +34,7 @@ export default {
     async logout() {
       const currentRoute = this.$route.name;
       const projectName = this.$store.getters.getProjectName;
+      let username = this.$store.state.user;
 
       // If on Construct or ConstructAgent page and there's a project, save it first
       if (
@@ -58,7 +59,7 @@ export default {
       if (socket && socket.disconnect) {
         socket.disconnect();
       }
-
+      await authService.logout({ username: username });
       await authService.netsbloxLogout();
       this.$store.dispatch("resetStore");
       sessionStorage.clear();

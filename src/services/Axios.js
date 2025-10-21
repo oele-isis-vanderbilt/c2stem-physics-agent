@@ -1,7 +1,6 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  // baseURL: "http://localhost:8000/",
-  baseURL: "https://agent.c2-stem.org/",
+  baseURL: process.env.VUE_APP_API_BASE_URL || "https://agent.c2-stem.org/",
 });
 export default axiosInstance;
