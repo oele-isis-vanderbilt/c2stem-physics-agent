@@ -23,6 +23,14 @@
       </button>
       <div class="bttn-auth ms-2 me-2">
         <button
+          v-if="loggedIn && isAdmin && currentRouteName !== 'dashboard'"
+          type="button"
+          class="btn btn-primary btn-lg me-3"
+          @click="$router.push('/dashboard')"
+        >
+          Dashboard
+        </button>
+        <button
           v-if="loggedIn && isAdmin && currentRouteName !== 'logs'"
           type="button"
           class="btn btn-primary btn-lg me-3"

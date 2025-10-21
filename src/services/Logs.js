@@ -19,4 +19,14 @@ export default {
       return error;
     }
   },
+
+  async getUserStatus() {
+    try {
+      return await axiosInstance.get("app/api/websocket-status", {
+        withCredentials: true,
+      });
+    } catch (error) {
+      return error;
+    }
+  },
 };

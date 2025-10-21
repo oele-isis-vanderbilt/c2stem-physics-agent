@@ -7,6 +7,7 @@ import Construct from "@/views/Construct.vue";
 import ConstructWAgent from "@/views/ConstructWAgent.vue";
 import store from "@/store";
 import LogView from "@/views/LogView.vue";
+import Dashboard from "@/views/Dashboard.vue";
 
 function islogin(to, from, next) {
   if (!store.state.user) {
@@ -60,6 +61,11 @@ const routes = [
     path: "/logs",
     name: "logs",
     component: LogView,
+  },
+  {
+    path: "/dashboard",
+    name: "dashboard",
+    component: Dashboard,
   },
 ];
 
