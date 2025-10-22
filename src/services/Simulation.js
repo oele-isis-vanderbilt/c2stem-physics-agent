@@ -104,6 +104,13 @@ export default {
       return false;
     }
   },
+
+  async getProjectServerXML() {
+    const iframe = document.getElementById("iframe-id"),
+      api = new window.EmbeddedNetsBloxAPI(iframe);
+    return await api.getProjectXML();
+  },
+
   async getProject(projectName) {
     const iframe = document.getElementById("iframe-id"),
       api = new window.EmbeddedNetsBloxAPI(iframe);

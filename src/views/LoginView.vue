@@ -46,7 +46,20 @@
               </button>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">Login</button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            :disabled="currentlyLoading"
+          >
+            <span
+              v-if="currentlyLoading"
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span v-if="currentlyLoading">Connecting...</span>
+            <span v-else>Login</span>
+          </button>
         </form>
       </div>
     </div>
@@ -75,6 +88,7 @@ export default {
       cardActive: false,
       alertMessage: "",
       showPassword: false,
+      isLoading: false,
     };
   },
   computed: {
@@ -83,6 +97,9 @@ export default {
     },
     isActive() {
       return this.cardActive;
+    },
+    currentlyLoading() {
+      return this.isLoading;
     },
   },
   methods: {
@@ -93,6 +110,7 @@ export default {
      * On successful login route the user to landing page.
      */
     login() {
+      this.isLoading = true;
       auth
         .login({
           username: this.username,
@@ -106,6 +124,7 @@ export default {
               ServerURL: this.ServerURL,
             })
             .catch((err) => {
+              this.isLoading = false;
               this.cardActive = true;
               this.alertMessage = "Username or Password is incorrect";
               console.log(err);
@@ -117,21 +136,34 @@ export default {
                 data.username = this.username;
                 document.cookie = "username=" + data.username;
                 this.$store.dispatch("saveCredentials", data);
-                this.setupSocket(this.username);
                 Token.setAccessToken(data.token);
-                // try {
-                //   await LiveKit.tryAndPublish(data.username, this.$store);
-                // } catch (err) {
-                //   console.log(err);
-                // }
-                this.$router.push({ name: "home" });
+
+                // Setup socket and wait for connection
+                try {
+                  await this.setupSocket(this.username);
+                  this.alertMessage = "Connected! Redirecting...";
+                  // try {
+                  //   await LiveKit.tryAndPublish(data.username, this.$store);
+                  // } catch (err) {
+                  //   console.log(err);
+                  // }
+                  this.$router.push({ name: "home" });
+                } catch (err) {
+                  this.isLoading = false;
+                  this.cardActive = true;
+                  this.alertMessage =
+                    "WebSocket connection failed. Please try again.";
+                  console.error("WebSocket connection error:", err);
+                }
               }
             })
             .catch((err) => {
+              this.isLoading = false;
               console.log(err);
             });
         })
         .catch((err) => {
+          this.isLoading = false;
           this.cardActive = true;
           this.alertMessage = "Username or Password is incorrect";
           console.log(err);
@@ -142,35 +174,65 @@ export default {
       this.showPassword = !this.showPassword;
     },
     setupSocket(username) {
-      const onMessage = (event) => {
-        if (event.data.includes("URL")) {
-          let chat_URL = event.data.split("URL=")[1] + "?username=" + username;
-          this.$store.dispatch("setAgentURL", chat_URL);
-          console.log(chat_URL);
-        }
-        console.log(event.data);
-        let state = BlockParser.generate(this.$store);
-        if (state.trim().length > 1) {
-          Websockets.send({ type: "state", data: state });
-        }
-      };
+      return new Promise((resolve, reject) => {
+        const connectionTimeout = setTimeout(() => {
+          reject(new Error("WebSocket connection timeout after 10 seconds"));
+        }, 10000); // 10 second timeout
 
-      const onClose = (event) => {
-        console.log("WebSocket connection closed", event.code, event.reason);
-        // The Websockets service will automatically attempt to reconnect
-      };
+        const onMessage = (event) => {
+          if (event.data.includes("URL")) {
+            let chat_URL =
+              event.data.split("URL=")[1] + "?username=" + username;
+            this.$store.dispatch("setAgentURL", chat_URL);
+            console.log(chat_URL);
+          }
+          console.log(event.data);
+          let state = BlockParser.generate(this.$store);
+          if (state.trim().length > 1) {
+            Websockets.send({ type: "state", data: state });
+          }
+        };
 
-      const onReconnect = () => {
-        console.log("WebSocket reconnected successfully");
-        // Optionally refresh state after reconnection
-        let state = BlockParser.generate(this.$store);
-        if (state.trim().length > 1) {
-          Websockets.send({ type: "state", data: state });
+        const onClose = (event) => {
+          console.log("WebSocket connection closed", event.code, event.reason);
+          // The Websockets service will automatically attempt to reconnect
+        };
+
+        const onReconnect = () => {
+          console.log("WebSocket reconnected successfully");
+          // Optionally refresh state after reconnection
+          let state = BlockParser.generate(this.$store);
+          if (state.trim().length > 1) {
+            Websockets.send({ type: "state", data: state });
+          }
+        };
+
+        Websockets.connect(username, onMessage, onClose, onReconnect);
+        this.$store.dispatch("setSocketInstance", Websockets);
+
+        // Poll for connection status
+        const checkConnection = setInterval(() => {
+          if (Websockets.isConnected()) {
+            clearInterval(checkConnection);
+            clearTimeout(connectionTimeout);
+            console.log("WebSocket connection established successfully");
+            resolve();
+          }
+        }, 100); // Check every 100ms
+
+        // Also handle immediate errors
+        if (Websockets.socket) {
+          Websockets.socket.addEventListener(
+            "error",
+            (error) => {
+              clearInterval(checkConnection);
+              clearTimeout(connectionTimeout);
+              reject(new Error("WebSocket connection error: " + error.message));
+            },
+            { once: true }
+          );
         }
-      };
-
-      Websockets.connect(username, onMessage, onClose, onReconnect);
-      this.$store.dispatch("setSocketInstance", Websockets);
+      });
     },
   },
   mounted() {
