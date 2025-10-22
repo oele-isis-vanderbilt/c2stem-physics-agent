@@ -289,7 +289,9 @@ export default {
     const collapseElement = document.getElementById("collapseWindow");
     this.collapseInstance = new Collapse(collapseElement, { toggle: false });
 
+    // Wait longer for iframe NetsBlox IDE to fully initialize
     setTimeout(() => {
+      console.log("Setting up embedded API listeners...");
       this.api.addActionListener((action) => {
         if (action.type !== "openProject") {
           this.sendActions({ type: "action", data: action });
@@ -312,7 +314,8 @@ export default {
           this.pendingNavigation = null;
         }
       });
-    }, 2000);
+      console.log("Embedded API listeners set up successfully");
+    }, 8000);
 
     // };
     // let username = document.cookie.split("=")[1];
