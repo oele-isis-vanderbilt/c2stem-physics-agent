@@ -25,10 +25,10 @@ export default {
   },
   data() {
     return {
-      names: ["Truck Task: Problem Solving", "Truck Task: Debugging"],
-      description: ["Complete your computational model lessons", ""],
-      route: ["ConstructAgent", "Construct"],
-      logo: [c2stemTruckLogo, c2stemTruckLogo],
+      names: ["Truck Task: Problem Solving"],
+      description: ["Complete your computational model lessons"],
+      route: ["ConstructAgent"],
+      logo: [c2stemTruckLogo],
     };
   },
 };
