@@ -82,8 +82,8 @@ export default {
       let name = this.$store.getters.getCurrentActionName;
       if (
         action.args[1] === "item_0" &&
-        name !== "receiveGo" &&
-        name !== "doSimulationStep"
+        name.includes("receiveGo") &&
+        name.includes("doSimulationStep")
       ) {
         this.lastGroup = "DRAFT";
         this.socket.send(JSON.stringify({ type: "group", data: "DRAFT" }));
