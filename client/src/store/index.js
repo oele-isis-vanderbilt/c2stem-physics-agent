@@ -8,7 +8,7 @@ const store = createStore({
     currentGroup: "",
     currentActionName: "",
     currentSegment: "",
-    sprites: {},
+    sprites: { item_12: "Target", item_6: "Package", item_0: "Drone" },
     one_drone_score: {
       drone_initialize_x_position: 0,
       drone_initialize_y_position: 0,

@@ -1365,9 +1365,7 @@ export default class ActionScorer {
             scoringRubric.drone_initialize_y_velocity +
             scoringRubric.drone_update_x_position +
             scoringRubric.drone_update_y_position;
-          scoringRubric.drone_physics_mastery = Math.floor(
-            (dronePhysicsTotal / 6) * 100
-          );
+          scoringRubric.drone_physics_mastery = dronePhysicsTotal;
           break;
         }
         case "package_physics_mastery": {
@@ -1382,9 +1380,7 @@ export default class ActionScorer {
             scoringRubric.package_update_y_position +
             scoringRubric.package_update_x_velocity +
             scoringRubric.package_update_y_velocity;
-          scoringRubric.package_physics_mastery = Math.floor(
-            (packagePhysicsTotal / 10) * 100
-          );
+          scoringRubric.package_physics_mastery = packagePhysicsTotal;
           break;
         }
         case "physics_mastery": {
@@ -1405,7 +1401,7 @@ export default class ActionScorer {
             scoringRubric.package_update_y_position +
             scoringRubric.package_update_x_velocity +
             scoringRubric.package_update_y_velocity;
-          scoringRubric.physics_mastery = Math.floor((physicsTotal / 16) * 100);
+          scoringRubric.physics_mastery = physicsTotal;
           break;
         }
         case "truck_physics_mastery": {
@@ -1430,9 +1426,7 @@ export default class ActionScorer {
           let droneComputingTotal =
             scoringRubric.drone_initialize_deltaT +
             scoringRubric.drone_start_simulation;
-          scoringRubric.drone_computing_mastery = Math.floor(
-            (droneComputingTotal / 2) * 100
-          );
+          scoringRubric.drone_computing_mastery = droneComputingTotal;
           break;
         }
         case "package_computing_mastery": {
@@ -1443,9 +1437,7 @@ export default class ActionScorer {
             scoringRubric.package_accurate_comparison_with_target_position +
             scoringRubric.package_stop_simulation +
             scoringRubric.package_update_position_velocity_above_if;
-          scoringRubric.package_computing_mastery = Math.floor(
-            (packageComputingTotal / 6) * 100
-          );
+          scoringRubric.package_computing_mastery = packageComputingTotal;
           break;
         }
         case "computing_mastery": {
@@ -1458,9 +1450,7 @@ export default class ActionScorer {
             scoringRubric.package_accurate_comparison_with_target_position +
             scoringRubric.package_stop_simulation +
             scoringRubric.package_update_position_velocity_above_if;
-          scoringRubric.computing_mastery = Math.floor(
-            (computingTotal / 8) * 100
-          );
+          scoringRubric.computing_mastery = computingTotal;
           break;
         }
         case "truck_computing_mastery": {
@@ -1501,7 +1491,7 @@ export default class ActionScorer {
             scoringRubric.accurate_code_for_stopping +
             scoringRubric.accurate_order_cruising_slowing_stopping +
             scoringRubric.set_speed_limit;
-          scoringRubric.overall_mastery = Math.floor((truckTotal / 20) * 100);
+          scoringRubric.overall_mastery = truckTotal;
           break;
         }
         case "overall_mastery": {
@@ -1530,7 +1520,7 @@ export default class ActionScorer {
             scoringRubric.package_accurate_comparison_with_target_position +
             scoringRubric.package_stop_simulation +
             scoringRubric.package_update_position_velocity_above_if;
-          scoringRubric.overall_mastery = Math.floor((total / 24) * 100);
+          scoringRubric.overall_mastery = total;
           break;
         }
       }
