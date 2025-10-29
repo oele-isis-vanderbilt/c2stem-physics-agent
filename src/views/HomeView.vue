@@ -15,6 +15,7 @@ import LessonCard from "../components/LessonCard.vue";
 // import BuildEnv from "@/components/BuildEnv.vue";
 // import slothLogo from "@/assets/sloth.png";
 import c2stemTruckLogo from "@/assets/c2stem_truck.png";
+import droneLogo from "@/assets/drone.png";
 // import farmTruckLogo from "@/assets/farm.png";
 
 export default {
@@ -25,10 +26,10 @@ export default {
   },
   data() {
     return {
-      names: ["Truck Task: Problem Solving"],
-      description: ["Complete your computational model lessons"],
-      route: ["ConstructAgent"],
-      logo: [c2stemTruckLogo],
+      names: ["Truck Task: Problem Solving", "Drone Task: Problem Solving"],
+      description: ["Complete your computational model lessons", ""],
+      route: ["Construct", "ConstructAgent"],
+      logo: [c2stemTruckLogo, droneLogo],
     };
   },
 };

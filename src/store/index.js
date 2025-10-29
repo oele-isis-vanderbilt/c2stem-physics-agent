@@ -31,31 +31,65 @@ const store = createStore({
     currentGroup: "",
     currentActionName: "",
     currentSegment: "",
-    truck_score: {
-      initialize_velocity: 0,
-      initialize_position: 0,
-      initialize_acceleration: 0,
-      initialize_deltaT: 0,
-      set_speed_limit: 0,
-      start_simulation: 0,
-      accurate_comparison_position_velocity_time: 0,
-      accurate_comparison_velocity_acceleration_time: 0,
-      update_order_of_velocity_position: 0,
-      code_accuracy_to_accelerate_truck: 0,
-      setting_acceleration_to_cruise_truck: 0,
-      setting_acceleration_to_decelerate_truck: 0,
-      stop_simulation: 0,
-      code_accuracy_to_cruise_truck: 0,
-      code_accuracy_to_slowdown_truck: 0,
-      code_accuracy_to_stop_truck: 0,
-      accurate_acceleration_velocity_for_cruising: 0,
-      accurate_acceleration_position_for_slowing: 0,
-      accurate_code_for_stopping: 0,
-      accurate_order_cruising_slowing_stopping: 0,
+    sprites: { item_12: "Target", item_6: "Package", item_0: "Drone" },
+    one_drone_score: {
+      drone_initialize_x_position: 0,
+      drone_initialize_y_position: 0,
+      drone_initialize_x_velocity: 0,
+      drone_initialize_y_velocity: 0,
+      drone_update_x_position: 0,
+      drone_update_y_position: 0,
+      drone_initialize_deltaT: 0,
+      drone_start_simulation: 0,
+      package_initialize_x_position: 0,
+      package_initialize_y_position: 0,
+      package_initialize_x_velocity: 0,
+      package_initialize_y_velocity: 0,
+      package_initialize_x_acceleration: 0,
+      package_initialize_y_acceleration: 0,
+      package_update_x_position: 0,
+      package_update_y_position: 0,
+      package_update_x_velocity: 0,
+      package_update_y_velocity: 0,
+      package_initialize_deltaT: 0,
+      package_start_simulation: 0,
+      package_update_order_of_position_velocity: 0,
+      package_accurate_comparison_with_target_position: 0,
+      package_stop_simulation: 0,
+      package_update_position_velocity_above_if: 0,
+      drone_physics_mastery: 0,
+      package_physics_mastery: 0,
       physics_mastery: 0,
+      drone_computing_mastery: 0,
+      package_computing_mastery: 0,
       computing_mastery: 0,
       overall_mastery: 0,
     },
+    // truck_score: {
+    //   initialize_velocity: 0,
+    //   initialize_position: 0,
+    //   initialize_acceleration: 0,
+    //   initialize_deltaT: 0,
+    //   set_speed_limit: 0,
+    //   start_simulation: 0,
+    //   accurate_comparison_position_velocity_time: 0,
+    //   accurate_comparison_velocity_acceleration_time: 0,
+    //   update_order_of_velocity_position: 0,
+    //   code_accuracy_to_accelerate_truck: 0,
+    //   setting_acceleration_to_cruise_truck: 0,
+    //   setting_acceleration_to_decelerate_truck: 0,
+    //   stop_simulation: 0,
+    //   code_accuracy_to_cruise_truck: 0,
+    //   code_accuracy_to_slowdown_truck: 0,
+    //   code_accuracy_to_stop_truck: 0,
+    //   accurate_acceleration_velocity_for_cruising: 0,
+    //   accurate_acceleration_position_for_slowing: 0,
+    //   accurate_code_for_stopping: 0,
+    //   accurate_order_cruising_slowing_stopping: 0,
+    //   physics_mastery: 0,
+    //   computing_mastery: 0,
+    //   overall_mastery: 0,
+    // },
     // farm_score: {
     //   initialize_velocity: 0,
     //   initialize_position: 0,
@@ -99,7 +133,7 @@ const store = createStore({
       return state.currentActionName;
     },
     getScore(state) {
-      return state.truck_score;
+      return state.one_drone_score;
     },
     getSegment(state) {
       return state.currentSegment;
@@ -115,6 +149,9 @@ const store = createStore({
     },
     getSocketInstance(state) {
       return state.socket;
+    },
+    getSprites(state) {
+      return state.sprites;
     },
   },
   mutations: {
@@ -137,7 +174,7 @@ const store = createStore({
       state.currentActionName = name;
     },
     updateScore(state, score) {
-      state.truck_score = score;
+      state.one_drone_score = score;
     },
     updateSegment(state, segment) {
       state.currentSegment = segment;

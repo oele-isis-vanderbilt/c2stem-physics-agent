@@ -3,7 +3,11 @@ import MapBlocks from "@/services/MapBlocks";
 export default {
   generate(store) {
     const treeRoots = store.getters.getTreeRoots;
+    const sprites = store.getters.getSprites;
     let finalString = "";
+
+    // Check if we have multiple sprites (like DRONE and PACKAGE)
+    const hasMultipleSprites = Object.keys(sprites).length > 1;
 
     // List of blocks that have operands
     const operatorBlocks = [
@@ -53,6 +57,11 @@ export default {
       "turn %clockwise %n degrees",
       "turn %counterclockwise %n degrees",
       "go to x: %n y: %n",
+      "set position to x: %n y: %n",
+      "change position by x: %n y: %n",
+      "set velocity to x: %n y: %n",
+      "change velocity by x: %n y: %n",
+      "set acceleration to x: %n y: %n",
       "glide %n secs to x: %n y: %n",
       "change x by %n",
       "set x to %n",
@@ -82,11 +91,15 @@ export default {
         .join("\n");
     }
 
-    function processNode(node) {
+    function processNode(pNode) {
+      let node = { ...pNode };
       if (!node || !node.name) {
         return "no value";
       }
-
+      if (node.name.includes("_sprite_")) {
+        let nodeNameList = node.name.split("_sprite_");
+        node.name = nodeNameList[0];
+      }
       // Get the block template from MapBlocks
       let blockTemplate = MapBlocks.get(node.name);
       if (!blockTemplate) {
@@ -265,17 +278,27 @@ export default {
         let property = operands[0] || "no value";
         let sprite = operands[1] || "no value";
 
+        // Replace spaces with underscores in property name (e.g., "x position" -> "x_position")
+        if (property !== "no value") {
+          property = property.replace(/ /g, "_");
+        }
+
         // If sprite is empty or "no value", show full format
         if (sprite === "no value" || sprite === "") {
           return `(${property}) of (no value)`;
         } else {
-          // If sprite has a value, show just the sprite value
-          if (sprite.includes("Stop")) {
-            sprite = "StopSignPosition";
-          } else if (sprite.includes("Truck")) {
-            sprite = "x_position";
+          // If we have multiple sprites (e.g., DRONE and PACKAGE), show full format
+          if (hasMultipleSprites) {
+            return `${property} of ${sprite}`;
+          } else {
+            // Original behavior for single sprite projects
+            if (sprite.includes("Stop")) {
+              sprite = "StopSignPosition";
+            } else if (sprite.includes("Truck")) {
+              sprite = "x_position";
+            }
+            return sprite;
           }
-          return sprite;
         }
       }
 
@@ -319,10 +342,17 @@ export default {
     // Process each tree root
     for (let root of treeRoots) {
       // Add connection status
-      if (root.name !== "receiveGo" && root.name !== "doSimulationStep") {
+      if (root.name.includes("receiveGo")) {
+        if (root.name.includes("_sprite_")) {
+          let nodeNameList = root.name.split("_sprite_");
+          finalString += decorate(nodeNameList[1]) + "\n";
+        }
+      } else if (
+        root.name !== "receiveGo" &&
+        root.name !== "doSimulationStep"
+      ) {
         finalString += decorate("Not Connected") + "\n";
       }
-
       // Process the root block
       let result = processNode(root);
 

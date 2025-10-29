@@ -5,7 +5,7 @@
       source="https://physics.c2stem.org"
       iframeid="iframe-id"
       username="oele"
-      projectname="Truck_Model_full_empty_HIDDEN_BLOCKS"
+      projectname="Drone_Model_one_package_empty_HIDDEN_BLOCKS"
       :embed="false"
     ></iframe-loader>
     <button
@@ -64,7 +64,7 @@ export default {
   },
   data() {
     return {
-      projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
+      projectName: "Drone_Model_one_package_empty_HIDDEN_BLOCKS",
       chat_URL: "",
       lastGroup: "",
       username: "",
@@ -148,8 +148,8 @@ export default {
       let name = this.$store.getters.getCurrentActionName;
       if (
         action.args[1] === "item_0" &&
-        name !== "receiveGo" &&
-        name !== "doSimulationStep"
+        !name.includes("receiveGo") &&
+        !name.includes("doSimulationStep")
       ) {
         this.lastGroup = "DRAFT";
         this.socket.send({ type: "group", data: "DRAFT" });
