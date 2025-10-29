@@ -1,6 +1,6 @@
 <template>
   <iframe
-    src=" https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Drone_Model_one_package_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
+    src="https://physics.c2stem.org/?action=present&Username=oele&ProjectName=Drone_Model_one_package_empty_HIDDEN_BLOCKS&noExitWarning&noRun&editMode&noExitWarning"
     id="iframe-id"
     sandbox="allow-scripts allow-same-origin"
     height="100%"
@@ -46,6 +46,7 @@ import BlockParser from "@/services/BlockParser_v1";
 import ASTController from "@/services/ASTController";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";
+import ProjectXMLParser from "@/services/ProjectXMLParser";
 
 export default {
   name: "BuildEnv",
@@ -53,6 +54,7 @@ export default {
     return {
       chat_URL: "",
       lastGroup: "",
+      sprites: {},
     };
   },
   computed: {
@@ -158,6 +160,12 @@ export default {
           this.sendState({ type: "state", data: state });
           this.sendScore({ type: "score", data: this.getScore });
           this.sendSegment({ type: "segment", data: this.getSegment });
+        } else if (action.type === "openProject") {
+          let projectXML = action.args[0];
+          const parser = new ProjectXMLParser(projectXML);
+          this.sprites = parser.parse();
+          this.$store.dispatch("setSprites", this.sprites);
+          console.log(this.sprites);
         }
       });
       this.api.addEventListener("startScript", console.log);

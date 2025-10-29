@@ -214,6 +214,14 @@ export default class ASTController {
             name = "var: " + (blockEl.getAttribute("var") || "unknown");
           }
 
+          let sprites = this.store.getters.getSprites;
+          let parentSprite = action.args[1];
+          if (parentSprite in sprites) {
+            let spriteName = sprites[parentSprite];
+            if (spriteName && ["receiveGo"].includes(name)) {
+              name = name + "_sprite_" + spriteName.toUpperCase();
+            }
+          }
           // Create block, root, and add to block map
           let block = new Block(id, name, contained);
           this.blocks[id] = block;
