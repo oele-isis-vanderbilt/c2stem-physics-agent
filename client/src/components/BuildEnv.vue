@@ -104,6 +104,7 @@ export default {
     },
     sendScore(score) {
       score.data = score.data ? score.data : {};
+      console.log(score.data);
       this.socket.send(JSON.stringify(score));
     },
     sendSegment(segment) {
