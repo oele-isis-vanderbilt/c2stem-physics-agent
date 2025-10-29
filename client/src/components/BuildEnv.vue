@@ -170,7 +170,7 @@ export default {
         }
       });
       this.api.addEventListener("startScript", console.log);
-    }, 8000);
+    }, 2000);
 
     // };
     this.setupSocket();
