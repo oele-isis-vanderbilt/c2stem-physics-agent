@@ -1173,7 +1173,14 @@ export default class ActionScorer {
           );
           if (
             block[0] &&
-            block[0].includes("[change velocity by x: (0)") &&
+            (block[0].includes("[change velocity by x: (0)") ||
+              block[0].includes("[change velocity by x: (no value)") ||
+              block[0].includes(
+                "[change velocity by x: ((x_acceleration) (×) (DeltaT))"
+              ) ||
+              block[0].includes(
+                "[change velocity by x: ((DeltaT) (×) (x_acceleration))"
+              )) &&
             parent === "simulation step"
           ) {
             scoringRubric.package_update_x_velocity = 1;

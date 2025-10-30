@@ -287,9 +287,37 @@ export default {
         if (sprite === "no value" || sprite === "") {
           return `(${property}) of (no value)`;
         } else {
-          // If we have multiple sprites (e.g., DRONE and PACKAGE), show full format
+          // If we have multiple sprites (e.g., DRONE and PACKAGE), check context
           if (hasMultipleSprites) {
-            return `${property} of ${sprite}`;
+            // Find the closest sprite header above the current block in finalString
+            const droneIndex = finalString.lastIndexOf("[DRONE]");
+            const packageIndex = finalString.lastIndexOf("[PACKAGE]");
+
+            // Determine which sprite section we're currently under
+            // The one with the higher index (most recent) is the current context
+            let currentSpriteHeader = null;
+            if (droneIndex === -1 && packageIndex === -1) {
+              // No headers found yet, default to full format
+              return `${property} of ${sprite}`;
+            } else if (droneIndex > packageIndex) {
+              currentSpriteHeader = "DRONE";
+            } else {
+              currentSpriteHeader = "PACKAGE";
+            }
+
+            // Check if the sprite matches the current header
+            const spriteLower = sprite.toLowerCase();
+            if (currentSpriteHeader === "DRONE" && spriteLower === "drone") {
+              return property;
+            } else if (
+              currentSpriteHeader === "PACKAGE" &&
+              spriteLower === "package"
+            ) {
+              return property;
+            } else {
+              // Header and sprite don't match
+              return `${property} of ${sprite}`;
+            }
           } else {
             // Original behavior for single sprite projects
             if (sprite.includes("Stop")) {
