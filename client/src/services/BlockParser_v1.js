@@ -212,7 +212,10 @@ export default {
       }
 
       if (template === "repeat %n %c") {
-        let times = operands[0] || "0";
+        let times =
+          operands[0] === "" || operands[0] === "no value"
+            ? "0"
+            : operands[0] || "0";
         let body = operands[1] || "no value";
         // Body already has brackets from formatting, don't add more
         return `repeat (${times})\n\t${body}`;
@@ -253,8 +256,14 @@ export default {
         ];
         const defaultValue = numericOps.includes(template) ? "0" : "no value";
 
-        let left = operands[0] || defaultValue;
-        let right = operands[1] || defaultValue;
+        let left =
+          operands[0] === "" || operands[0] === "no value"
+            ? defaultValue
+            : operands[0] || defaultValue;
+        let right =
+          operands[1] === "" || operands[1] === "no value"
+            ? defaultValue
+            : operands[1] || defaultValue;
         let operator = binaryOps[template];
 
         // Wrap complex expressions in extra parentheses
@@ -345,19 +354,28 @@ export default {
       // Handle variable assignment blocks
       if (template === "set %var to %s") {
         let variable = operands[0] || "no value";
-        let value = operands[1] || "0"; // Default value is 0 for set blocks
+        let value =
+          operands[1] === "" || operands[1] === "no value"
+            ? "0"
+            : operands[1] || "0";
         return `set (${variable}) to (${value})`;
       }
 
       if (template === "change %var by %n") {
         let variable = operands[0] || "no value";
-        let amount = operands[1] || "1"; // Default value is 1 for change blocks
+        let amount =
+          operands[1] === "" || operands[1] === "no value"
+            ? "1"
+            : operands[1] || "1";
         return `change (${variable}) by (${amount})`;
       }
 
       // Handle DeltaTime block specifically
       if (template === "set DeltaT to %n") {
-        let value = operands[0] || "0";
+        let value =
+          operands[0] === "" || operands[0] === "no value"
+            ? "0"
+            : operands[0] || "0";
         return `set DeltaT to (${value})`;
       }
 
@@ -368,7 +386,12 @@ export default {
         if (index < operands.length) {
           let operand = operands[index++];
           // Handle empty or undefined operands
-          if (operand === "" || operand === undefined || operand === null) {
+          if (
+            operand === "" ||
+            operand === undefined ||
+            operand === null ||
+            operand === "no value"
+          ) {
             // For numeric placeholders, default to 0 instead of "no value"
             return match === "%n" ? "(0)" : "(no value)";
           }
