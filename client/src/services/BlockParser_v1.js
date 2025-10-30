@@ -212,7 +212,7 @@ export default {
       }
 
       if (template === "repeat %n %c") {
-        let times = operands[0] || "no value";
+        let times = operands[0] || "0";
         let body = operands[1] || "no value";
         // Body already has brackets from formatting, don't add more
         return `repeat (${times})\n\t${body}`;
@@ -241,8 +241,20 @@ export default {
       };
 
       if (binaryOps[template]) {
-        let left = operands[0] || "no value";
-        let right = operands[1] || "no value";
+        // Determine default value based on operator type
+        // Numeric operators default to 0, others default to "no value"
+        const numericOps = [
+          "%n + %n",
+          "%n \u2212 %n",
+          "%n \u00D7 %n",
+          "%n / %n",
+          "%n mod %n",
+          "%n power %n",
+        ];
+        const defaultValue = numericOps.includes(template) ? "0" : "no value";
+
+        let left = operands[0] || defaultValue;
+        let right = operands[1] || defaultValue;
         let operator = binaryOps[template];
 
         // Wrap complex expressions in extra parentheses
@@ -345,23 +357,25 @@ export default {
 
       // Handle DeltaTime block specifically
       if (template === "set DeltaT to %n") {
-        let value = operands[0] || "no value";
+        let value = operands[0] || "0";
         return `set DeltaT to (${value})`;
       }
 
       // Fallback: replace placeholders in template
       let result = template;
       let index = 0;
-      result = result.replace(/%\w+/g, () => {
+      result = result.replace(/%\w+/g, (match) => {
         if (index < operands.length) {
           let operand = operands[index++];
           // Handle empty or undefined operands
           if (operand === "" || operand === undefined || operand === null) {
-            return "(no value)";
+            // For numeric placeholders, default to 0 instead of "no value"
+            return match === "%n" ? "(0)" : "(no value)";
           }
           return `(${operand})`;
         }
-        return "(no value)";
+        // For numeric placeholders, default to 0 instead of "no value"
+        return match === "%n" ? "(0)" : "(no value)";
       });
 
       return result;
