@@ -250,12 +250,12 @@ export default class ActionScorer {
     // let nextSpriteIndex = ast.length;
     const lines = ast.substring(spriteIndex).split("\n");
 
-    // Look for the next sprite header (line that starts with [ and ends with ] and is all caps)
+    // Look for the next sprite header (line that starts with [ and ends with ] and contains alphanumeric characters)
     let sectionLines = [];
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
-      // Check if this is another sprite header (format: [UPPERCASE])
-      if (line.match(/^\[[A-Z]+\]$/)) {
+      // Check if this is another sprite header (format: [ALPHANUMERIC])
+      if (line.match(/^\[[A-Za-z0-9]+\]$/)) {
         break;
       }
       sectionLines.push(lines[i]);
