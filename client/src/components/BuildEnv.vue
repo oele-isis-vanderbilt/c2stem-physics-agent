@@ -42,7 +42,7 @@
 </template>
 <script>
 import Websockets from "@/services/Websockets";
-import BlockParser from "@/services/BlockParser_v1";
+import BlockParser from "@/services/BlockParser_v2";
 import ASTController from "@/services/ASTController";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";
@@ -111,7 +111,7 @@ export default {
       segment.data = segment.data ? segment.data : "";
       this.socket.send(JSON.stringify(segment));
     },
-    setupSocket() {
+    setupSocket(blockParser) {
       this.socket = Websockets.connect();
       this.socket.onmessage = (event) => {
         if (event.data.includes("URL")) {
@@ -119,7 +119,7 @@ export default {
           console.log(this.chat_URL);
         }
         console.log(event.data);
-        let state = BlockParser.generate(this.$store);
+        let state = blockParser.generate(this.$store);
         if (state.trim().length > 1) {
           this.sendState({ type: "state", data: state });
         }
@@ -147,6 +147,7 @@ export default {
       this.$store
     );
     const segmentparser = new SegmentParser();
+    const blockParser = new BlockParser(["DRONE", "PACKAGE", "PACKAGE2"]);
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
     // ifr_window.onload = () => {
@@ -156,7 +157,7 @@ export default {
           this.sendActions({ type: "action", data: action });
           astController.actionListener(action, segmentparser);
           this.sendActionGroup(action);
-          let state = BlockParser.generate(this.$store);
+          let state = blockParser.generate(this.$store);
           actionScorer.updateScore(state);
           this.sendState({ type: "state", data: state });
           this.sendScore({ type: "score", data: this.getScore });
@@ -173,7 +174,7 @@ export default {
     }, 2000);
 
     // };
-    this.setupSocket();
+    this.setupSocket(blockParser);
   },
 };
 </script>
