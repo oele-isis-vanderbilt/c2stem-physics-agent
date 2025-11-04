@@ -13,7 +13,7 @@ const vuexLocal = new VuexPersistence({
     currentGroup: state.currentGroup,
     currentActionName: state.currentActionName,
     currentSegment: state.currentSegment,
-    truck_score: state.truck_score,
+    two_drone_score: state.two_drone_score,
     user: state.user,
     projectName: state.projectName,
     role: state.role,
@@ -31,8 +31,15 @@ const store = createStore({
     currentGroup: "",
     currentActionName: "",
     currentSegment: "",
-    sprites: { item_12: "Target", item_6: "Package", item_0: "Drone" },
-    one_drone_score: {
+    sprites: {
+      "item_-1": "Tower",
+      "item_-1_4": "Target",
+      "item_-1_8": "Target2",
+      "item_-1_12": "Package",
+      "item_-1_36": "Package2",
+      "item_-1_65": "Drone",
+    },
+    two_drone_score: {
       drone_initialize_x_position: 0,
       drone_initialize_y_position: 0,
       drone_initialize_x_velocity: 0,
@@ -55,16 +62,63 @@ const store = createStore({
       package_start_simulation: 0,
       package_update_order_of_position_velocity: 0,
       package_accurate_comparison_with_target_position: 0,
-      package_stop_simulation: 0,
+      package_accurate_x_velocity_inside_if: 0,
+      package_accurate_y_velocity_inside_if: 0,
       package_update_position_velocity_above_if: 0,
-      drone_physics_mastery: 0,
-      package_physics_mastery: 0,
+      package2_initialize_x_position: 0,
+      package2_initialize_y_position: 0,
+      package2_initialize_x_velocity: 0,
+      package2_initialize_y_velocity: 0,
+      package2_initialize_x_acceleration: 0,
+      package2_initialize_y_acceleration: 0,
+      package2_update_x_position: 0,
+      package2_update_y_position: 0,
+      package2_update_x_velocity: 0,
+      package2_update_y_velocity: 0,
+      package2_initialize_deltaT: 0,
+      package2_start_simulation: 0,
+      package2_accurate_condition_x_position: 0,
+      package2_accurate_condition_y_position: 0,
+      package2_condition_position_x_above_y: 0,
+      package2_stop_simulation: 0,
+      package2_update_position_above_if: 0,
       physics_mastery: 0,
-      drone_computing_mastery: 0,
-      package_computing_mastery: 0,
       computing_mastery: 0,
       overall_mastery: 0,
     },
+    // one_drone_score: {
+    //   drone_initialize_x_position: 0,
+    //   drone_initialize_y_position: 0,
+    //   drone_initialize_x_velocity: 0,
+    //   drone_initialize_y_velocity: 0,
+    //   drone_update_x_position: 0,
+    //   drone_update_y_position: 0,
+    //   drone_initialize_deltaT: 0,
+    //   drone_start_simulation: 0,
+    //   package_initialize_x_position: 0,
+    //   package_initialize_y_position: 0,
+    //   package_initialize_x_velocity: 0,
+    //   package_initialize_y_velocity: 0,
+    //   package_initialize_x_acceleration: 0,
+    //   package_initialize_y_acceleration: 0,
+    //   package_update_x_position: 0,
+    //   package_update_y_position: 0,
+    //   package_update_x_velocity: 0,
+    //   package_update_y_velocity: 0,
+    //   package_initialize_deltaT: 0,
+    //   package_start_simulation: 0,
+    //   package_update_order_of_position_velocity: 0,
+    //   package_accurate_comparison_with_target_position: 0,
+    //   package_stop_simulation: 0,
+    //   package_update_position_velocity_above_if: 0,
+    //   drone_physics_mastery: 0,
+    //   package_physics_mastery: 0,
+    //   physics_mastery: 0,
+    //   drone_computing_mastery: 0,
+    //   package_computing_mastery: 0,
+    //   computing_mastery: 0,
+    //   overall_mastery: 0,
+    // },
     // truck_score: {
     //   initialize_velocity: 0,
     //   initialize_position: 0,
@@ -133,7 +187,7 @@ const store = createStore({
       return state.currentActionName;
     },
     getScore(state) {
-      return state.one_drone_score;
+      return state.two_drone_score;
     },
     getSegment(state) {
       return state.currentSegment;
@@ -174,7 +228,7 @@ const store = createStore({
       state.currentActionName = name;
     },
     updateScore(state, score) {
-      state.one_drone_score = score;
+      state.two_drone_score = score;
     },
     updateSegment(state, segment) {
       state.currentSegment = segment;

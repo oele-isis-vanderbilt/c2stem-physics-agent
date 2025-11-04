@@ -40,7 +40,7 @@ const routes = [
     component: ConversationView,
   },
   {
-    path: "/construct",
+    path: "/construct/:userID/:projectName/:source",
     name: "Construct",
     component: Construct,
     meta: {
@@ -49,7 +49,7 @@ const routes = [
     },
   },
   {
-    path: "/constructAgent",
+    path: "/constructAgent/:userID/:projectName/:source",
     name: "ConstructAgent",
     component: ConstructWAgent,
     meta: {

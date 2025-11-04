@@ -2,10 +2,10 @@
   <!-- Construct View for CMISE -->
   <div class="container">
     <iframe-loader
-      source="https://physics.c2stem.org"
+      :source="source"
       iframeid="iframe-id"
-      username="oele"
-      projectname="Truck_Model_full_empty_HIDDEN_BLOCKS"
+      :username="userID"
+      :projectname="projectLessonName"
       :embed="false"
     ></iframe-loader>
   </div>
@@ -29,6 +29,9 @@ export default {
   },
   data() {
     return {
+      userID: this.$route.params.userID,
+      projectLessonName: this.$route.params.projectName,
+      source: this.$route.params.source,
       projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
       api: null,
       pendingNavigation: null,

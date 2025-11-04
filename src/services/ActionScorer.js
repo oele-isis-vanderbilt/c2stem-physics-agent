@@ -254,8 +254,8 @@ export default class ActionScorer {
     let sectionLines = [];
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
-      // Check if this is another sprite header (format: [UPPERCASE])
-      if (line.match(/^\[[A-Z]+\]$/)) {
+      // Check if this is another sprite header (format: [ALPHANUMERIC])
+      if (line.match(/^\[[A-Za-z0-9]+\]$/)) {
         break;
       }
       sectionLines.push(lines[i]);
@@ -803,7 +803,9 @@ export default class ActionScorer {
           );
           if (block && parent === "green flag clicked") {
             let value = parseFloat(block[0].split("(")[1].split(")")[0]);
-            if (value >= -23 && value <= -18.5) {
+            // if (value >= -23 && value <= -18.5) {// Condition for the one_drone_task
+            // Condition for the two_drone_task
+            if (value >= -20.63 && value <= -19.63) {
               scoringRubric.drone_initialize_x_position = 1;
             } else {
               scoringRubric.drone_initialize_x_position = 0;
@@ -826,7 +828,10 @@ export default class ActionScorer {
           );
           if (block && parent === "green flag clicked") {
             let value = block[0].split("(")[2].split(")")[0];
-            if (value === "4.5") {
+            // Condition for one_drone_task
+            // if (value === "4.5") {
+            // Condition for two_drone_task
+            if (value === "6.5") {
               scoringRubric.drone_initialize_y_position = 1;
             } else {
               scoringRubric.drone_initialize_y_position = 0;
@@ -1007,7 +1012,8 @@ export default class ActionScorer {
             if (
               block[0].includes("(y_position of Drone)") &&
               block[0].includes("(−)") &&
-              block[0].includes("(1)")
+              // block[0].includes("(1)") // one_drone requirement.
+              block[0].includes("(2)") // two_drone requirement.
             ) {
               scoringRubric.package_initialize_y_position = 1;
             } else {
@@ -1054,7 +1060,10 @@ export default class ActionScorer {
           );
           if (block && parent === "green flag clicked") {
             // Check if it references drone's y_velocity
-            if (block[0].includes("(y_velocity of Drone)")) {
+            if (
+              block[0].includes("(y_velocity of Drone)") ||
+              block[0].includes("y: (0)")
+            ) {
               scoringRubric.package_initialize_y_velocity = 1;
             } else {
               scoringRubric.package_initialize_y_velocity = 0;
@@ -1173,7 +1182,14 @@ export default class ActionScorer {
           );
           if (
             block[0] &&
-            block[0].includes("[change velocity by x: (0)") &&
+            (block[0].includes("[change velocity by x: (0)") ||
+              block[0].includes("[change velocity by x: (no value)") ||
+              block[0].includes(
+                "[change velocity by x: ((x_acceleration) (×) (DeltaT))"
+              ) ||
+              block[0].includes(
+                "[change velocity by x: ((DeltaT) (×) (x_acceleration))"
+              )) &&
             parent === "simulation step"
           ) {
             scoringRubric.package_update_x_velocity = 1;
@@ -1298,6 +1314,58 @@ export default class ActionScorer {
           }
           break;
         }
+        case "package_accurate_x_velocity_inside_if": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "set velocity to x: (0) y: (0)",
+            "PACKAGE"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "set velocity to x: (0) y: (0)",
+            "PACKAGE"
+          );
+          if (
+            block &&
+            parent === "simulation step" &&
+            this.isInsideIfBlockInSprite(
+              ast,
+              "set velocity to x: (0)",
+              "PACKAGE"
+            )
+          ) {
+            scoringRubric.package_accurate_x_velocity_inside_if = 1;
+          } else {
+            scoringRubric.package_accurate_x_velocity_inside_if = 0;
+          }
+          break;
+        }
+        case "package_accurate_y_velocity_inside_if": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "set velocity to x: (0) y: (0)",
+            "PACKAGE"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "set velocity to x: (0) y: (0)",
+            "PACKAGE"
+          );
+          if (
+            block &&
+            parent === "simulation step" &&
+            this.isInsideIfBlockInSprite(
+              ast,
+              "set velocity to x: (0) y: (0)",
+              "PACKAGE"
+            )
+          ) {
+            scoringRubric.package_accurate_y_velocity_inside_if = 1;
+          } else {
+            scoringRubric.package_accurate_y_velocity_inside_if = 0;
+          }
+          break;
+        }
         case "package_stop_simulation": {
           let block = this.getMatchingBlockInSprite(
             ast,
@@ -1357,32 +1425,478 @@ export default class ActionScorer {
           }
           break;
         }
-        case "drone_physics_mastery": {
-          let dronePhysicsTotal =
-            scoringRubric.drone_initialize_x_position +
-            scoringRubric.drone_initialize_y_position +
-            scoringRubric.drone_initialize_x_velocity +
-            scoringRubric.drone_initialize_y_velocity +
-            scoringRubric.drone_update_x_position +
-            scoringRubric.drone_update_y_position;
-          scoringRubric.drone_physics_mastery = dronePhysicsTotal;
+        case "package2_initialize_x_position": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "set position to",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "set position to",
+            "PACKAGE2"
+          );
+          if (block && parent === "green flag clicked") {
+            if (block[0].includes("(x_position of Drone)")) {
+              scoringRubric.package2_initialize_x_position = 1;
+            } else {
+              scoringRubric.package2_initialize_x_position = 0;
+            }
+          } else {
+            scoringRubric.package2_initialize_x_position = 0;
+          }
           break;
         }
-        case "package_physics_mastery": {
-          let packagePhysicsTotal =
-            scoringRubric.package_initialize_x_position +
-            scoringRubric.package_initialize_y_position +
-            scoringRubric.package_initialize_x_velocity +
-            scoringRubric.package_initialize_y_velocity +
-            scoringRubric.package_initialize_x_acceleration +
-            scoringRubric.package_initialize_y_acceleration +
-            scoringRubric.package_update_x_position +
-            scoringRubric.package_update_y_position +
-            scoringRubric.package_update_x_velocity +
-            scoringRubric.package_update_y_velocity;
-          scoringRubric.package_physics_mastery = packagePhysicsTotal;
+        case "package2_initialize_y_position": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "set position to",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "set position to",
+            "PACKAGE2"
+          );
+          if (block && parent === "green flag clicked") {
+            if (
+              block[0].includes("(y_position of Drone)") &&
+              block[0].includes("(−)") &&
+              block[0].includes("(1)")
+            ) {
+              scoringRubric.package2_initialize_y_position = 1;
+            } else {
+              scoringRubric.package2_initialize_y_position = 0;
+            }
+          } else {
+            scoringRubric.package2_initialize_y_position = 0;
+          }
           break;
         }
+        case "package2_initialize_x_velocity": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "set velocity to",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "set velocity to",
+            "PACKAGE2"
+          );
+          if (block && parent === "green flag clicked") {
+            if (block[0].includes("(x_velocity of Drone)")) {
+              scoringRubric.package2_initialize_x_velocity = 1;
+            } else {
+              scoringRubric.package2_initialize_x_velocity = 0;
+            }
+          } else {
+            scoringRubric.package2_initialize_x_velocity = 0;
+          }
+          break;
+        }
+        case "package2_initialize_y_velocity": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "set velocity to",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "set velocity to",
+            "PACKAGE2"
+          );
+          if (block && parent === "green flag clicked") {
+            let value = parseFloat(block[0].split("(")[2].split(")")[0]);
+            if (value === 0) {
+              scoringRubric.package2_initialize_y_velocity = 1;
+            } else {
+              scoringRubric.package2_initialize_y_velocity = 0;
+            }
+          } else {
+            scoringRubric.package2_initialize_y_velocity = 0;
+          }
+          break;
+        }
+        case "package2_initialize_x_acceleration": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "set acceleration to",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "set acceleration to",
+            "PACKAGE2"
+          );
+          if (block && parent === "green flag clicked") {
+            let value = parseFloat(block[0].split("(")[1].split(")")[0]);
+            if (value === 0) {
+              scoringRubric.package2_initialize_x_acceleration = 1;
+            } else {
+              scoringRubric.package2_initialize_x_acceleration = 0;
+            }
+          } else {
+            scoringRubric.package2_initialize_x_acceleration = 0;
+          }
+          break;
+        }
+        case "package2_initialize_y_acceleration": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "set acceleration to",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "set acceleration to",
+            "PACKAGE2"
+          );
+          if (block && parent === "green flag clicked") {
+            if (block[0].includes("(gravity)")) {
+              scoringRubric.package2_initialize_y_acceleration = 1;
+            } else {
+              scoringRubric.package2_initialize_y_acceleration = 0;
+            }
+          } else {
+            scoringRubric.package2_initialize_y_acceleration = 0;
+          }
+          break;
+        }
+        case "package2_update_x_position": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "change position by",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "change position by",
+            "PACKAGE2"
+          );
+          if (
+            block[0] &&
+            (block[0].includes(
+              "[change position by x: ((DeltaT) (×) (x_velocity))"
+            ) ||
+              block[0].includes(
+                "[change position by x: ((x_velocity) (×) (DeltaT))"
+              )) &&
+            parent === "simulation step"
+          ) {
+            scoringRubric.package2_update_x_position = 1;
+          } else {
+            scoringRubric.package2_update_x_position = 0;
+          }
+          break;
+        }
+        case "package2_update_y_position": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "change position by",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "change position by",
+            "PACKAGE2"
+          );
+          if (
+            block[0] &&
+            (block[0].includes("y: ((DeltaT) (×) (y_velocity))]") ||
+              block[0].includes("y: ((y_velocity) (×) (DeltaT))]")) &&
+            parent === "simulation step"
+          ) {
+            scoringRubric.package2_update_y_position = 1;
+          } else {
+            scoringRubric.package2_update_y_position = 0;
+          }
+          break;
+        }
+        case "package2_update_x_velocity": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "change velocity by",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "change velocity by",
+            "PACKAGE2"
+          );
+          if (
+            block[0] &&
+            block[0].includes("x: (0)") &&
+            parent === "simulation step" &&
+            this.isInsideIfBlockInSprite(ast, "change velocity by", "PACKAGE2")
+          ) {
+            scoringRubric.package2_update_x_velocity = 1;
+          } else {
+            scoringRubric.package2_update_x_velocity = 0;
+          }
+          break;
+        }
+        case "package2_update_y_velocity": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "change velocity by",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "change velocity by",
+            "PACKAGE2"
+          );
+          if (
+            block[0] &&
+            (block[0].includes("y: ((DeltaT) (×) (y_acceleration))]") ||
+              block[0].includes("y: ((y_acceleration) (×) (DeltaT))]")) &&
+            parent === "simulation step" &&
+            this.isInsideIfBlockInSprite(ast, "change velocity by", "PACKAGE2")
+          ) {
+            scoringRubric.package2_update_y_velocity = 1;
+          } else {
+            scoringRubric.package2_update_y_velocity = 0;
+          }
+          break;
+        }
+
+        case "package2_initialize_deltaT": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "set DeltaT to",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "set DeltaT to",
+            "PACKAGE2"
+          );
+          if (block && parent === "green flag clicked") {
+            let value = block[0].split("(")[1].split(")")[0];
+            if (value === "0.1") {
+              scoringRubric.package2_initialize_deltaT = 1;
+            } else {
+              scoringRubric.package2_initialize_deltaT = 0;
+            }
+          } else {
+            scoringRubric.package2_initialize_deltaT = 0;
+          }
+          break;
+        }
+        case "package2_start_simulation": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "start simulation",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "start simulation",
+            "PACKAGE2"
+          );
+          if (block && parent === "green flag clicked") {
+            scoringRubric.package2_start_simulation = 1;
+          } else {
+            scoringRubric.package2_start_simulation = 0;
+          }
+          break;
+        }
+        case "package2_accurate_condition_x_position": {
+          let block = this.getMatchingBlockInSprite(ast, "if", "PACKAGE2");
+          let parent = this.getRootBlockInSprite(ast, "if", "PACKAGE2");
+          if (block && parent === "simulation step") {
+            let hasCondition = block.some((line) => {
+              if (line.includes("(x_position)") && line.includes("(>)")) {
+                let match = line.match(/\((\d+\.?\d*)\)/g);
+                if (match && match.length > 0) {
+                  let value = parseFloat(
+                    match[match.length - 1].replace(/[()]/g, "")
+                  );
+                  return value >= 18.92 && value <= 19.92;
+                }
+              }
+              return false;
+            });
+            if (hasCondition) {
+              scoringRubric.package2_accurate_condition_x_position = 1;
+            } else {
+              scoringRubric.package2_accurate_condition_x_position = 0;
+            }
+          } else {
+            scoringRubric.package2_accurate_condition_x_position = 0;
+          }
+          break;
+        }
+        case "package2_accurate_condition_y_position": {
+          let block = this.getMatchingBlockInSprite(ast, "if", "PACKAGE2");
+          let parent = this.getRootBlockInSprite(ast, "if", "PACKAGE2");
+          if (block && parent === "simulation step") {
+            let hasCondition = block.some(
+              (line) =>
+                line.includes("(y_position)") &&
+                line.includes("(<)") &&
+                line.includes("(y_position of Target2)")
+            );
+            if (hasCondition) {
+              scoringRubric.package2_accurate_condition_y_position = 1;
+            } else {
+              scoringRubric.package2_accurate_condition_y_position = 0;
+            }
+          } else {
+            scoringRubric.package2_accurate_condition_y_position = 0;
+          }
+          break;
+        }
+        case "package2_condition_position_x_above_y": {
+          const spriteSection = this.getSpriteSection(ast, "PACKAGE2");
+          const lines = spriteSection.split("\n");
+          let firstIfIndex = -1;
+          let secondIfIndex = -1;
+
+          for (let i = 0; i < lines.length; i++) {
+            if (
+              lines[i].includes("if") &&
+              lines[i].includes("(x_position)") &&
+              lines[i].includes("(>)") &&
+              firstIfIndex === -1
+            ) {
+              firstIfIndex = i;
+            } else if (
+              lines[i].includes("if") &&
+              lines[i].includes("(y_position)") &&
+              lines[i].includes("(<)") &&
+              secondIfIndex === -1
+            ) {
+              secondIfIndex = i;
+            }
+          }
+
+          if (
+            firstIfIndex !== -1 &&
+            secondIfIndex !== -1 &&
+            firstIfIndex < secondIfIndex
+          ) {
+            scoringRubric.package2_condition_position_x_above_y = 1;
+          } else {
+            scoringRubric.package2_condition_position_x_above_y = 0;
+          }
+          break;
+        }
+        case "package2_stop_simulation": {
+          let block = this.getMatchingBlockInSprite(
+            ast,
+            "stop simulation",
+            "PACKAGE2"
+          );
+          let parent = this.getRootBlockInSprite(
+            ast,
+            "stop simulation",
+            "PACKAGE2"
+          );
+          if (
+            block &&
+            parent === "simulation step" &&
+            this.isInsideIfBlockInSprite(ast, "stop simulation", "PACKAGE2")
+          ) {
+            scoringRubric.package2_stop_simulation = 1;
+          } else {
+            scoringRubric.package2_stop_simulation = 0;
+          }
+          break;
+        }
+        case "package2_update_position_above_if": {
+          const spriteSection = this.getSpriteSection(ast, "PACKAGE2");
+          const lines = spriteSection.split("\n");
+          let positionIndex = -1;
+          let ifIndex = -1;
+
+          for (let i = 0; i < lines.length; i++) {
+            if (
+              lines[i].includes("change position by") &&
+              positionIndex === -1
+            ) {
+              positionIndex = i;
+            }
+            if (lines[i].includes("if") && ifIndex === -1) {
+              ifIndex = i;
+            }
+          }
+
+          if (
+            positionIndex !== -1 &&
+            ifIndex !== -1 &&
+            positionIndex < ifIndex
+          ) {
+            scoringRubric.package2_update_position_above_if = 1;
+          } else {
+            scoringRubric.package2_update_position_above_if = 0;
+          }
+          break;
+        }
+
+        // case "drone_physics_mastery": {
+        //   let dronePhysicsTotal =
+        //     scoringRubric.drone_initialize_x_position +
+        //     scoringRubric.drone_initialize_y_position +
+        //     scoringRubric.drone_initialize_x_velocity +
+        //     scoringRubric.drone_initialize_y_velocity +
+        //     scoringRubric.drone_update_x_position +
+        //     scoringRubric.drone_update_y_position;
+        //   scoringRubric.drone_physics_mastery = dronePhysicsTotal;
+        //   break;
+        // }
+        // case "package_physics_mastery": {
+        //   let packagePhysicsTotal =
+        //     scoringRubric.package_initialize_x_position +
+        //     scoringRubric.package_initialize_y_position +
+        //     scoringRubric.package_initialize_x_velocity +
+        //     scoringRubric.package_initialize_y_velocity +
+        //     scoringRubric.package_initialize_x_acceleration +
+        //     scoringRubric.package_initialize_y_acceleration +
+        //     scoringRubric.package_update_x_position +
+        //     scoringRubric.package_update_y_position +
+        //     scoringRubric.package_update_x_velocity +
+        //     scoringRubric.package_update_y_velocity;
+        //   scoringRubric.package_physics_mastery = packagePhysicsTotal;
+        //   break;
+        // }
+        // case "package2_physics_mastery": {
+        //   let package2PhysicsTotal =
+        //     scoringRubric.package2_initialize_x_position +
+        //     scoringRubric.package2_initialize_y_position +
+        //     scoringRubric.package2_initialize_x_velocity +
+        //     scoringRubric.package2_initialize_y_velocity +
+        //     scoringRubric.package2_initialize_x_acceleration +
+        //     scoringRubric.package2_initialize_y_acceleration +
+        //     scoringRubric.package2_update_x_position +
+        //     scoringRubric.package2_update_y_position +
+        //     scoringRubric.package2_update_x_velocity +
+        //     scoringRubric.package2_update_y_velocity;
+        //   scoringRubric.package2_physics_mastery = package2PhysicsTotal;
+        //   break;
+        // }
+        // case "one_drone_physics_mastery": {
+        //   let oneDronePhysicsTotal =
+        //     scoringRubric.drone_initialize_x_position +
+        //     scoringRubric.drone_initialize_y_position +
+        //     scoringRubric.drone_initialize_x_velocity +
+        //     scoringRubric.drone_initialize_y_velocity +
+        //     scoringRubric.drone_update_x_position +
+        //     scoringRubric.drone_update_y_position +
+        //     scoringRubric.package_initialize_x_position +
+        //     scoringRubric.package_initialize_y_position +
+        //     scoringRubric.package_initialize_x_velocity +
+        //     scoringRubric.package_initialize_y_velocity +
+        //     scoringRubric.package_initialize_x_acceleration +
+        //     scoringRubric.package_initialize_y_acceleration +
+        //     scoringRubric.package_update_x_position +
+        //     scoringRubric.package_update_y_position +
+        //     scoringRubric.package_update_x_velocity +
+        //     scoringRubric.package_update_y_velocity;
+        //   scoringRubric.physics_mastery = oneDronePhysicsTotal;
+        //   break;
+        // }
         case "physics_mastery": {
           let physicsTotal =
             scoringRubric.drone_initialize_x_position +
@@ -1400,46 +1914,85 @@ export default class ActionScorer {
             scoringRubric.package_update_x_position +
             scoringRubric.package_update_y_position +
             scoringRubric.package_update_x_velocity +
-            scoringRubric.package_update_y_velocity;
+            scoringRubric.package_update_y_velocity +
+            scoringRubric.package2_initialize_x_position +
+            scoringRubric.package2_initialize_y_position +
+            scoringRubric.package2_initialize_x_velocity +
+            scoringRubric.package2_initialize_y_velocity +
+            scoringRubric.package2_initialize_x_acceleration +
+            scoringRubric.package2_initialize_y_acceleration +
+            scoringRubric.package2_update_x_position +
+            scoringRubric.package2_update_y_position +
+            scoringRubric.package2_update_x_velocity +
+            scoringRubric.package2_update_y_velocity;
           scoringRubric.physics_mastery = physicsTotal;
           break;
         }
-        case "truck_physics_mastery": {
-          let truckPhysicsTotal =
-            scoringRubric.initialize_position +
-            scoringRubric.initialize_velocity +
-            scoringRubric.initialize_acceleration +
-            scoringRubric.accurate_comparison_velocity_acceleration_time +
-            scoringRubric.accurate_comparison_position_velocity_time +
-            scoringRubric.code_accuracy_to_accelerate_truck +
-            scoringRubric.setting_acceleration_to_cruise_truck +
-            scoringRubric.setting_acceleration_to_decelerate_truck +
-            scoringRubric.code_accuracy_to_cruise_truck +
-            scoringRubric.code_accuracy_to_slowdown_truck +
-            scoringRubric.code_accuracy_to_stop_truck;
-          scoringRubric.physics_mastery = Math.floor(
-            (truckPhysicsTotal / 11) * 100
-          );
-          break;
-        }
-        case "drone_computing_mastery": {
-          let droneComputingTotal =
-            scoringRubric.drone_initialize_deltaT +
-            scoringRubric.drone_start_simulation;
-          scoringRubric.drone_computing_mastery = droneComputingTotal;
-          break;
-        }
-        case "package_computing_mastery": {
-          let packageComputingTotal =
-            scoringRubric.package_initialize_deltaT +
-            scoringRubric.package_start_simulation +
-            scoringRubric.package_update_order_of_position_velocity +
-            scoringRubric.package_accurate_comparison_with_target_position +
-            scoringRubric.package_stop_simulation +
-            scoringRubric.package_update_position_velocity_above_if;
-          scoringRubric.package_computing_mastery = packageComputingTotal;
-          break;
-        }
+        // case "truck_physics_mastery": {
+        //   let truckPhysicsTotal =
+        //     scoringRubric.initialize_position +
+        //     scoringRubric.initialize_velocity +
+        //     scoringRubric.initialize_acceleration +
+        //     scoringRubric.accurate_comparison_velocity_acceleration_time +
+        //     scoringRubric.accurate_comparison_position_velocity_time +
+        //     scoringRubric.code_accuracy_to_accelerate_truck +
+        //     scoringRubric.setting_acceleration_to_cruise_truck +
+        //     scoringRubric.setting_acceleration_to_decelerate_truck +
+        //     scoringRubric.code_accuracy_to_cruise_truck +
+        //     scoringRubric.code_accuracy_to_slowdown_truck +
+        //     scoringRubric.code_accuracy_to_stop_truck;
+        //   scoringRubric.physics_mastery = Math.floor(
+        //     (truckPhysicsTotal / 11) * 100
+        //   );
+        //   break;
+        // }
+        // case "drone_computing_mastery": {
+        //   let droneComputingTotal =
+        //     scoringRubric.drone_initialize_deltaT +
+        //     scoringRubric.drone_start_simulation;
+        //   scoringRubric.drone_computing_mastery = droneComputingTotal;
+        //   break;
+        // }
+        // case "package_computing_mastery": {
+        //   let packageComputingTotal =
+        //     scoringRubric.package_initialize_deltaT +
+        //     scoringRubric.package_start_simulation +
+        //     scoringRubric.package_update_order_of_position_velocity +
+        //     scoringRubric.package_accurate_comparison_with_target_position +
+        //     scoringRubric.package_stop_simulation +
+        //     scoringRubric.package_update_position_velocity_above_if;
+        //   scoringRubric.package_computing_mastery = packageComputingTotal;
+        //   break;
+        // }
+        // case "one_drone_computing_mastery": {
+        //   let oneDroneComputingTotal =
+        //     scoringRubric.drone_initialize_deltaT +
+        //     scoringRubric.drone_start_simulation +
+        //     scoringRubric.package_initialize_deltaT +
+        //     scoringRubric.package_start_simulation +
+        //     scoringRubric.package_update_order_of_position_velocity +
+        //     scoringRubric.package_accurate_comparison_with_target_position +
+        //     scoringRubric.package_stop_simulation +
+        //     scoringRubric.package_update_position_velocity_above_if;
+        //   scoringRubric.computing_mastery = oneDroneComputingTotal;
+        //   break;
+        // }
+        // case "truck_computing_mastery": {
+        //   let truckComputingTotal =
+        //     scoringRubric.start_simulation +
+        //     scoringRubric.stop_simulation +
+        //     scoringRubric.initialize_deltaT +
+        //     scoringRubric.update_order_of_velocity_position +
+        //     scoringRubric.accurate_acceleration_velocity_for_cruising +
+        //     scoringRubric.accurate_acceleration_position_for_slowing +
+        //     scoringRubric.accurate_code_for_stopping +
+        //     scoringRubric.accurate_order_cruising_slowing_stopping +
+        //     scoringRubric.set_speed_limit;
+        //   scoringRubric.computing_mastery = Math.floor(
+        //     (truckComputingTotal / 9) * 100
+        //   );
+        //   break;
+        // }
         case "computing_mastery": {
           let computingTotal =
             scoringRubric.drone_initialize_deltaT +
@@ -1448,52 +2001,73 @@ export default class ActionScorer {
             scoringRubric.package_start_simulation +
             scoringRubric.package_update_order_of_position_velocity +
             scoringRubric.package_accurate_comparison_with_target_position +
-            scoringRubric.package_stop_simulation +
-            scoringRubric.package_update_position_velocity_above_if;
+            scoringRubric.package_accurate_x_velocity_inside_if +
+            scoringRubric.package_accurate_y_velocity_inside_if +
+            scoringRubric.package_update_position_velocity_above_if +
+            scoringRubric.package2_initialize_deltaT +
+            scoringRubric.package2_start_simulation +
+            scoringRubric.package2_accurate_condition_x_position +
+            scoringRubric.package2_accurate_condition_y_position +
+            scoringRubric.package2_condition_position_x_above_y +
+            scoringRubric.package2_stop_simulation +
+            scoringRubric.package2_update_position_above_if;
           scoringRubric.computing_mastery = computingTotal;
           break;
         }
-        case "truck_computing_mastery": {
-          let truckComputingTotal =
-            scoringRubric.start_simulation +
-            scoringRubric.stop_simulation +
-            scoringRubric.initialize_deltaT +
-            scoringRubric.update_order_of_velocity_position +
-            scoringRubric.accurate_acceleration_velocity_for_cruising +
-            scoringRubric.accurate_acceleration_position_for_slowing +
-            scoringRubric.accurate_code_for_stopping +
-            scoringRubric.accurate_order_cruising_slowing_stopping +
-            scoringRubric.set_speed_limit;
-          scoringRubric.computing_mastery = Math.floor(
-            (truckComputingTotal / 9) * 100
-          );
-          break;
-        }
-        case "truck_overall_mastery": {
-          let truckTotal =
-            scoringRubric.initialize_position +
-            scoringRubric.initialize_velocity +
-            scoringRubric.initialize_acceleration +
-            scoringRubric.accurate_comparison_velocity_acceleration_time +
-            scoringRubric.accurate_comparison_position_velocity_time +
-            scoringRubric.code_accuracy_to_accelerate_truck +
-            scoringRubric.setting_acceleration_to_cruise_truck +
-            scoringRubric.setting_acceleration_to_decelerate_truck +
-            scoringRubric.code_accuracy_to_cruise_truck +
-            scoringRubric.code_accuracy_to_slowdown_truck +
-            scoringRubric.code_accuracy_to_stop_truck +
-            scoringRubric.start_simulation +
-            scoringRubric.stop_simulation +
-            scoringRubric.initialize_deltaT +
-            scoringRubric.update_order_of_velocity_position +
-            scoringRubric.accurate_acceleration_velocity_for_cruising +
-            scoringRubric.accurate_acceleration_position_for_slowing +
-            scoringRubric.accurate_code_for_stopping +
-            scoringRubric.accurate_order_cruising_slowing_stopping +
-            scoringRubric.set_speed_limit;
-          scoringRubric.overall_mastery = truckTotal;
-          break;
-        }
+        // case "truck_overall_mastery": {
+        //   let truckTotal =
+        //     scoringRubric.initialize_position +
+        //     scoringRubric.initialize_velocity +
+        //     scoringRubric.initialize_acceleration +
+        //     scoringRubric.accurate_comparison_velocity_acceleration_time +
+        //     scoringRubric.accurate_comparison_position_velocity_time +
+        //     scoringRubric.code_accuracy_to_accelerate_truck +
+        //     scoringRubric.setting_acceleration_to_cruise_truck +
+        //     scoringRubric.setting_acceleration_to_decelerate_truck +
+        //     scoringRubric.code_accuracy_to_cruise_truck +
+        //     scoringRubric.code_accuracy_to_slowdown_truck +
+        //     scoringRubric.code_accuracy_to_stop_truck +
+        //     scoringRubric.start_simulation +
+        //     scoringRubric.stop_simulation +
+        //     scoringRubric.initialize_deltaT +
+        //     scoringRubric.update_order_of_velocity_position +
+        //     scoringRubric.accurate_acceleration_velocity_for_cruising +
+        //     scoringRubric.accurate_acceleration_position_for_slowing +
+        //     scoringRubric.accurate_code_for_stopping +
+        //     scoringRubric.accurate_order_cruising_slowing_stopping +
+        //     scoringRubric.set_speed_limit;
+        //   scoringRubric.overall_mastery = truckTotal;
+        //   break;
+        // }
+        // case "one_drone_overall_mastery": {
+        //   let packageTotal =
+        //     scoringRubric.drone_initialize_x_position +
+        //     scoringRubric.drone_initialize_y_position +
+        //     scoringRubric.drone_initialize_x_velocity +
+        //     scoringRubric.drone_initialize_y_velocity +
+        //     scoringRubric.drone_update_x_position +
+        //     scoringRubric.drone_update_y_position +
+        //     scoringRubric.package_initialize_x_position +
+        //     scoringRubric.package_initialize_y_position +
+        //     scoringRubric.package_initialize_x_velocity +
+        //     scoringRubric.package_initialize_y_velocity +
+        //     scoringRubric.package_initialize_x_acceleration +
+        //     scoringRubric.package_initialize_y_acceleration +
+        //     scoringRubric.package_update_x_position +
+        //     scoringRubric.package_update_y_position +
+        //     scoringRubric.package_update_x_velocity +
+        //     scoringRubric.package_update_y_velocity +
+        //     scoringRubric.drone_initialize_deltaT +
+        //     scoringRubric.drone_start_simulation +
+        //     scoringRubric.package_initialize_deltaT +
+        //     scoringRubric.package_start_simulation +
+        //     scoringRubric.package_update_order_of_position_velocity +
+        //     scoringRubric.package_accurate_comparison_with_target_position +
+        //     scoringRubric.package_stop_simulation +
+        //     scoringRubric.package_update_position_velocity_above_if;
+        //   scoringRubric.overall_mastery = packageTotal;
+        //   break;
+        // }
         case "overall_mastery": {
           let total =
             scoringRubric.drone_initialize_x_position +
@@ -1502,6 +2076,8 @@ export default class ActionScorer {
             scoringRubric.drone_initialize_y_velocity +
             scoringRubric.drone_update_x_position +
             scoringRubric.drone_update_y_position +
+            scoringRubric.drone_initialize_deltaT +
+            scoringRubric.drone_start_simulation +
             scoringRubric.package_initialize_x_position +
             scoringRubric.package_initialize_y_position +
             scoringRubric.package_initialize_x_velocity +
@@ -1512,14 +2088,30 @@ export default class ActionScorer {
             scoringRubric.package_update_y_position +
             scoringRubric.package_update_x_velocity +
             scoringRubric.package_update_y_velocity +
-            scoringRubric.drone_initialize_deltaT +
-            scoringRubric.drone_start_simulation +
             scoringRubric.package_initialize_deltaT +
             scoringRubric.package_start_simulation +
             scoringRubric.package_update_order_of_position_velocity +
             scoringRubric.package_accurate_comparison_with_target_position +
-            scoringRubric.package_stop_simulation +
-            scoringRubric.package_update_position_velocity_above_if;
+            scoringRubric.package_accurate_x_velocity_inside_if +
+            scoringRubric.package_accurate_y_velocity_inside_if +
+            scoringRubric.package_update_position_velocity_above_if +
+            scoringRubric.package2_initialize_x_position +
+            scoringRubric.package2_initialize_y_position +
+            scoringRubric.package2_initialize_x_velocity +
+            scoringRubric.package2_initialize_y_velocity +
+            scoringRubric.package2_initialize_x_acceleration +
+            scoringRubric.package2_initialize_y_acceleration +
+            scoringRubric.package2_update_x_position +
+            scoringRubric.package2_update_y_position +
+            scoringRubric.package2_update_x_velocity +
+            scoringRubric.package2_update_y_velocity +
+            scoringRubric.package2_initialize_deltaT +
+            scoringRubric.package2_start_simulation +
+            scoringRubric.package2_accurate_condition_x_position +
+            scoringRubric.package2_accurate_condition_y_position +
+            scoringRubric.package2_condition_position_x_above_y +
+            scoringRubric.package2_stop_simulation +
+            scoringRubric.package2_update_position_above_if;
           scoringRubric.overall_mastery = total;
           break;
         }

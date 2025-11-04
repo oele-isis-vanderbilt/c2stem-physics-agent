@@ -1,12 +1,35 @@
 import MapBlocks from "@/services/MapBlocks";
 
-export default {
+export default class BlockParser_v2 {
+  /**
+   * Constructor to initialize the parser with sprite headers
+   * @param {Array<string>} spriteHeaders - Array of sprite names to focus on (e.g., ['DRONE', 'PACKAGE', 'PACKAGE2'])
+   */
+  constructor(spriteHeaders = []) {
+    this.spriteHeaders = spriteHeaders;
+    this.spriteSections = {};
+
+    // Initialize each sprite section as an empty string
+    spriteHeaders.forEach((header) => {
+      this.spriteSections[header] = "";
+    });
+  }
+
+  /**
+   * Generate the final string with sprite headers
+   * @param {Object} store - Vuex store
+   * @returns {string} - Formatted string with sprite sections
+   */
   generate(store) {
     const treeRoots = store.getters.getTreeRoots;
     const sprites = store.getters.getSprites;
-    let finalString = "";
 
-    // Check if we have multiple sprites (like DRONE and PACKAGE)
+    // Reset sprite sections
+    this.spriteHeaders.forEach((header) => {
+      this.spriteSections[header] = "";
+    });
+
+    // Check if we have multiple sprites
     const hasMultipleSprites = Object.keys(sprites).length > 1;
 
     // List of blocks that have operands
@@ -17,8 +40,8 @@ export default {
       "repeat %n %c",
       "repeat until %b %c",
       "%n + %n",
-      "%n \u2212 %n", // minus sign from MapBlocks
-      "%n \u00D7 %n", // multiply sign from MapBlocks
+      "%n − %n", // minus sign from MapBlocks
+      "%n × %n", // multiply sign from MapBlocks
       "%n / %n",
       "%n mod %n",
       "%n power %n",
@@ -69,12 +92,12 @@ export default {
       "set y to %n",
     ];
 
-    function decorate(text) {
+    const decorate = (text) => {
       return "[" + text + "]";
-    }
+    };
 
     // Decorate each line in a multiline string with brackets
-    function decorateAllLines(text) {
+    const decorateAllLines = (text) => {
       return text
         .split("\n")
         .map((line) => {
@@ -89,9 +112,9 @@ export default {
           return indent + decorate(trimmed);
         })
         .join("\n");
-    }
+    };
 
-    function processNode(pNode) {
+    const processNode = (pNode, currentSpriteHeader) => {
       let node = { ...pNode };
       if (!node || !node.name) {
         return "no value";
@@ -145,7 +168,10 @@ export default {
                 }
                 visitedBlocks.add(currentBlock.id);
 
-                let processedBlock = processNode(currentBlock);
+                let processedBlock = processNode(
+                  currentBlock,
+                  currentSpriteHeader
+                );
                 blockChain.push({
                   block: processedBlock,
                   template:
@@ -185,10 +211,10 @@ export default {
       }
 
       // Build the result based on the block type
-      return buildExpression(blockTemplate, operands);
-    }
+      return buildExpression(blockTemplate, operands, currentSpriteHeader);
+    };
 
-    function buildExpression(template, operands) {
+    const buildExpression = (template, operands, currentSpriteHeader) => {
       // Handle special control blocks
       if (template === "if %b %c") {
         let condition = operands[0] || "no value";
@@ -231,8 +257,8 @@ export default {
       // Handle binary operators (two operands)
       const binaryOps = {
         "%n + %n": "+",
-        "%n \u2212 %n": "−",
-        "%n \u00D7 %n": "×",
+        "%n − %n": "−",
+        "%n × %n": "×",
         "%n / %n": "/",
         "%n mod %n": "mod",
         "%n power %n": "power",
@@ -248,8 +274,8 @@ export default {
         // Numeric operators default to 0, others default to "no value"
         const numericOps = [
           "%n + %n",
-          "%n \u2212 %n",
-          "%n \u00D7 %n",
+          "%n − %n",
+          "%n × %n",
           "%n / %n",
           "%n mod %n",
           "%n power %n",
@@ -308,52 +334,13 @@ export default {
         if (sprite === "no value" || sprite === "") {
           return `(${property}) of (no value)`;
         } else {
-          // If we have multiple sprites (e.g., DRONE and PACKAGE), check context
-          if (hasMultipleSprites) {
-            // Find the closest sprite header above the current block in finalString
-            const droneIndex = finalString.lastIndexOf("[DRONE]");
-            const packageIndex = finalString.lastIndexOf("[PACKAGE]");
-            const package2Index = finalString.lastIndexOf("[PACKAGE2]");
-
-            // Determine which sprite section we're currently under
-            // The one with the higher index (most recent) is the current context
-            let currentSpriteHeader = null;
-            if (
-              droneIndex === -1 &&
-              packageIndex === -1 &&
-              package2Index === -1
-            ) {
-              // No headers found yet, default to full format
-              return `${property} of ${sprite}`;
-            } else {
-              // Find the maximum index to determine current context
-              const maxIndex = Math.max(
-                droneIndex,
-                packageIndex,
-                package2Index
-              );
-              if (maxIndex === droneIndex) {
-                currentSpriteHeader = "DRONE";
-              } else if (maxIndex === package2Index) {
-                currentSpriteHeader = "PACKAGE2";
-              } else {
-                currentSpriteHeader = "PACKAGE";
-              }
-            }
+          // If we have multiple sprites, check if sprite matches current header
+          if (hasMultipleSprites && currentSpriteHeader) {
+            const spriteLower = sprite.toLowerCase();
+            const headerLower = currentSpriteHeader.toLowerCase();
 
             // Check if the sprite matches the current header
-            const spriteLower = sprite.toLowerCase();
-            if (currentSpriteHeader === "DRONE" && spriteLower === "drone") {
-              return property;
-            } else if (
-              currentSpriteHeader === "PACKAGE" &&
-              spriteLower === "package"
-            ) {
-              return property;
-            } else if (
-              currentSpriteHeader === "PACKAGE2" &&
-              spriteLower === "package2"
-            ) {
+            if (spriteLower === headerLower) {
               return property;
             } else {
               // Header and sprite don't match
@@ -422,27 +409,60 @@ export default {
       });
 
       return result;
-    }
+    };
 
-    // Process each tree root
-    for (let root of treeRoots) {
-      // Add connection status
-      if (root.name.includes("receiveGo")) {
-        if (root.name.includes("_sprite_")) {
-          let nodeNameList = root.name.split("_sprite_");
-          finalString += decorate(nodeNameList[1]) + "\n";
-        }
-      } else if (
-        root.name !== "receiveGo" &&
-        root.name !== "doSimulationStep"
-      ) {
-        finalString += decorate("Not Connected") + "\n";
+    // Helper function to get sprite header from ownerId
+    const getSpriteHeaderFromOwnerId = (ownerId) => {
+      if (!ownerId || !sprites[ownerId]) {
+        return null;
       }
+
+      // Get the sprite name from the sprites dictionary using ownerId as key
+      const spriteName = sprites[ownerId];
+      if (!spriteName) {
+        return null;
+      }
+
+      // Match the sprite name to a sprite header (case-insensitive)
+      const spriteNameLower = spriteName.toLowerCase();
+      for (let header of this.spriteHeaders) {
+        if (spriteNameLower === header.toLowerCase()) {
+          return header;
+        }
+      }
+
+      return null;
+    };
+
+    // Process each tree root and organize by ownerId
+    for (let root of treeRoots) {
+      // Determine which sprite section this block belongs to
+      let spriteHeader = getSpriteHeaderFromOwnerId(root.ownerId);
+
+      // If no matching sprite header found, skip this block
+      if (!spriteHeader) {
+        console.warn(`No sprite header found for ownerId: ${root.ownerId}`);
+        continue;
+      }
+
+      let blockText = "";
+
+      // Add connection status
+      // if (root.name.includes("receiveGo")) {
+      //   if (root.name.includes("_sprite_")) {
+      //     let nodeNameList = root.name.split("_sprite_");
+      //     blockText += decorate(nodeNameList[1]) + "\n";
+      //   }
+      // } else if (
+      if (root.name !== "receiveGo" && root.name !== "doSimulationStep") {
+        blockText += decorate("Not Connected") + "\n";
+      }
+
       // Process the root block
-      let result = processNode(root);
+      let result = processNode(root, spriteHeader);
 
       // Format the result - ALWAYS decorate every line
-      finalString += decorateAllLines(result) + "\n";
+      blockText += decorateAllLines(result) + "\n";
 
       // Process any following blocks
       let currentNode = root;
@@ -459,14 +479,24 @@ export default {
         }
         visitedNodes.add(currentNode.id);
 
-        let nextResult = processNode(currentNode);
+        let nextResult = processNode(currentNode, spriteHeader);
         // ALWAYS decorate every line
-        finalString += decorateAllLines(nextResult) + "\n";
+        blockText += decorateAllLines(nextResult) + "\n";
       }
 
-      finalString += "\n";
+      blockText += "\n";
+
+      // Append to the appropriate sprite section
+      this.spriteSections[spriteHeader] += blockText;
+    }
+
+    // Build final string with sprite headers
+    let finalString = "";
+    for (let header of this.spriteHeaders) {
+      finalString += `[${header}]\n`;
+      finalString += this.spriteSections[header];
     }
 
     return finalString;
-  },
-};
+  }
+}

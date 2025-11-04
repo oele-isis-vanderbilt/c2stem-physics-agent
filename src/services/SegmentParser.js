@@ -60,7 +60,7 @@ export default class SegmentParser {
           if (location === "0") {
             return "conditional-clause";
           } else if (location === "1") {
-            return "updating-variables-under-conditons";
+            return "updating-variables-under-conditions";
           }
         } else {
           return "conditional-clause";
@@ -193,7 +193,7 @@ export default class SegmentParser {
                 this.parentNameMap[rootParent] === "doIf" &&
                 (this.segmentMap[parent] === "conditional-clause" ||
                   this.segmentMap[parent] ===
-                    "updating-variables-under-conditons")
+                    "updating-variables-under-conditions")
               ) {
                 if (
                   this.segmentMap[parent] === "conditional-clause" &&
@@ -202,7 +202,7 @@ export default class SegmentParser {
                   location = "0";
                 } else if (
                   this.segmentMap[parent] ===
-                    "updating-variables-under-conditons" &&
+                    "updating-variables-under-conditions" &&
                   !(parent in this.parentNameMap)
                 ) {
                   location = "1";
@@ -256,7 +256,7 @@ export default class SegmentParser {
                 this.parentNameMap[rootParent] === "doIf"
               ) {
                 if (
-                  this.segmentMap[id] === "updating-variables-under-conditons"
+                  this.segmentMap[id] === "updating-variables-under-conditions"
                 ) {
                   location = "1";
                 } else if (this.segmentMap[id] === "conditional-clause") {

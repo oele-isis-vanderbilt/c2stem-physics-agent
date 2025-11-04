@@ -140,13 +140,15 @@ export default class ASTController {
       // Block class -- used to create standardized objects
       // that represent new blocks in C2STEM
       class Block {
-        constructor(id, name, contained) {
+        constructor(id, name, contained, ownerId) {
           // C2STEM official block id
           // Set to undefined if "ephemeral" block, like a number input (e.g. move *10* steps)
           this.id = id;
           // Block name (from C2STEM)
           // Displayed in graph
           this.name = name;
+          // ID of the sprite the block belongs to
+          this.ownerId = ownerId;
           // Has this block been modified before? (for epemeral blocks only)
           this.modifiedBefore = false;
           // Has this block been connected before?
@@ -205,7 +207,9 @@ export default class ASTController {
               element = element.children[0];
             }
 
-            contained.push(new Block(undefined, element.innerHTML || "", []));
+            contained.push(
+              new Block(undefined, element.innerHTML || "", [], "")
+            );
           }
 
           // Get name of block
@@ -214,16 +218,17 @@ export default class ASTController {
             name = "var: " + (blockEl.getAttribute("var") || "unknown");
           }
 
-          let sprites = this.store.getters.getSprites;
-          let parentSprite = action.args[1];
-          if (parentSprite in sprites) {
-            let spriteName = sprites[parentSprite];
-            if (spriteName && ["receiveGo"].includes(name)) {
-              name = name + "_sprite_" + spriteName.toUpperCase();
-            }
-          }
+          // let sprites = this.store.getters.getSprites;
+          // let parentSprite = action.args[1];
+          // if (parentSprite in sprites) {
+          //   let spriteName = sprites[parentSprite];
+          //   if (spriteName && ["receiveGo"].includes(name)) {
+          //     name = name + "_sprite_" + spriteName.toUpperCase();
+          //   }
+          // }
+          let ownerId = action.owner.split("/")[0];
           // Create block, root, and add to block map
-          let block = new Block(id, name, contained);
+          let block = new Block(id, name, contained, ownerId);
           this.blocks[id] = block;
           this.treeRoots.push(block);
           return id;
@@ -412,7 +417,7 @@ export default class ASTController {
               console.warn(
                 "ASTController: No contained block found, creating empty block"
               );
-              containedBlock = new Block(undefined, "", []);
+              containedBlock = new Block(undefined, "", [], "");
             }
 
             // If the contained block is an ephemeral block (e.g. just a number) and thus has no id,
@@ -653,7 +658,9 @@ export default class ASTController {
               this.blocks[t[0]].next.contained[t[1]] = new Block(
                 undefined,
                 "",
-                []
+                [],
+                "",
+                ""
               );
             }
           } else {
@@ -811,7 +818,7 @@ export default class ASTController {
           if (!block[v]) {
             // If field does not currently exist, create it.
             actionRep.group = "BUILD";
-            block[v] = new Block(undefined, "", []);
+            block[v] = new Block(undefined, "", [], "");
           } else {
             if (!block[v].modifiedBefore) {
               actionRep.group = "BUILD";
@@ -921,7 +928,9 @@ export default class ASTController {
             this.blocks[t[0]].next.contained = [];
           }
 
-          this.blocks[t[0]].next.contained.push(new Block(undefined, "", []));
+          this.blocks[t[0]].next.contained.push(
+            new Block(undefined, "", [], "")
+          );
           break;
         }
         case "removeListInput": {

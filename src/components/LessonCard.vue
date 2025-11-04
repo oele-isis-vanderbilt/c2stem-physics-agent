@@ -12,7 +12,14 @@
           <p class="card-text">
             <img :src="logo[index]" alt="" width="100" height="60" />
           </p>
-          <router-link :to="{ name: route[index] }"
+          <router-link
+            v-if="routeParams"
+            :to="{ name: route[index], params: routeParams[index] }"
+            ><button type="button" class="btn btn-primary">
+              Continue
+            </button></router-link
+          >
+          <router-link v-else :to="{ name: route[index] }"
             ><button type="button" class="btn btn-primary">
               Continue
             </button></router-link

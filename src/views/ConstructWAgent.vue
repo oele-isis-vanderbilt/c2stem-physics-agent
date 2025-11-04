@@ -2,10 +2,10 @@
   <!-- Construct View for CMISE -->
   <div class="container">
     <iframe-loader
-      source="https://physics.c2stem.org"
+      :source="source"
       iframeid="iframe-id"
-      username="oele"
-      projectname="Drone_Model_one_package_empty_HIDDEN_BLOCKS"
+      :username="userID"
+      :projectname="projectLessonName"
       :embed="false"
     ></iframe-loader>
     <button
@@ -51,7 +51,7 @@ import IframeLoader from "../components/IframeLoader.vue";
 import { Collapse } from "bootstrap";
 import ASTController from "../services/ASTController";
 // import Websockets from "@/services/Websockets";
-import BlockParser from "@/services/BlockParser_v1";
+import BlockParser from "@/services/BlockParser_v2";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";
 import Simulation from "../services/Simulation.js";
@@ -64,6 +64,9 @@ export default {
   },
   data() {
     return {
+      userID: this.$route.params.userID,
+      projectLessonName: this.$route.params.projectName,
+      source: this.$route.params.source,
       projectName: "Drone_Model_one_package_empty_HIDDEN_BLOCKS",
       chat_URL: "",
       lastGroup: "",
@@ -182,11 +185,11 @@ export default {
       segment.data = segment.data ? segment.data : "";
       this.socket.send(segment);
     },
-    reconnectSocket(username) {
+    reconnectSocket(username, blockParser) {
       console.log("Reconnecting WebSocket after page refresh...");
 
       const Websockets = require("@/services/Websockets").default;
-      const BlockParser = require("@/services/BlockParser_v1").default;
+      // const BlockParser = require("@/services/BlockParser_v1").default;
 
       const onMessage = (event) => {
         if (event.data.includes("URL")) {
@@ -195,7 +198,7 @@ export default {
           console.log(chat_URL);
         }
         console.log(event.data);
-        let state = BlockParser.generate(this.$store);
+        let state = blockParser.generate(this.$store);
         if (state.trim().length > 1) {
           Websockets.send({ type: "state", data: state });
         }
@@ -207,7 +210,7 @@ export default {
 
       const onReconnect = () => {
         console.log("WebSocket reconnected successfully");
-        let state = BlockParser.generate(this.$store);
+        let state = blockParser.generate(this.$store);
         if (state.trim().length > 1) {
           Websockets.send({ type: "state", data: state });
         }
@@ -217,7 +220,7 @@ export default {
       this.$store.dispatch("setSocketInstance", Websockets);
       this.socket = Websockets;
     },
-    setupSocket() {
+    setupSocket(blockParser) {
       // Get the WebSocket service instance from the store
       // The socket was already initialized in LoginView
       this.socket = this.getSocket;
@@ -228,7 +231,7 @@ export default {
 
         // If user is logged in but socket is null (page refresh scenario)
         if (username) {
-          this.reconnectSocket(username);
+          this.reconnectSocket(username, blockParser);
         } else {
           // No user logged in, redirect to login
           console.error(
@@ -282,6 +285,7 @@ export default {
       this.$store
     );
     const segmentparser = new SegmentParser();
+    const blockParser = new BlockParser(["DRONE", "PACKAGE", "PACKAGE2"]);
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
 
@@ -297,7 +301,7 @@ export default {
           this.sendActions({ type: "action", data: action });
           astController.actionListener(action, segmentparser);
           this.sendActionGroup(action);
-          let state = BlockParser.generate(this.$store);
+          let state = blockParser.generate(this.$store);
           actionScorer.updateScore(state);
           this.sendState({ type: "state", data: state });
           this.sendScore({ type: "score", data: this.getScore });
@@ -319,7 +323,7 @@ export default {
 
     // };
     // let username = document.cookie.split("=")[1];
-    this.setupSocket();
+    this.setupSocket(blockParser);
 
     // Set up auto-save every 2 minutes
     this.autoSaveInterval = setInterval(() => {
