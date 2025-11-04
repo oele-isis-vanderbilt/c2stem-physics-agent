@@ -133,13 +133,8 @@ export default {
   mounted() {
     let blocks = this.$store.getters.getBlocks;
     let treeRoots = this.$store.getters.getTreeRoots;
-    let actions = this.$store.getters.getActions;
-    const astController = new ASTController(
-      blocks,
-      treeRoots,
-      actions,
-      this.$store
-    );
+    // let actions = this.$store.getters.getActions;
+    const astController = new ASTController(blocks, treeRoots, [], this.$store);
     const actionScorer = new ActionScorer(
       "blocks",
       "treeRoots",

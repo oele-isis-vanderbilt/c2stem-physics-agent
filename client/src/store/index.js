@@ -4,7 +4,6 @@ const store = createStore({
   state: {
     treeRoots: [],
     blocks: {},
-    actions: [],
     currentGroup: "",
     currentActionName: "",
     currentSegment: "",
