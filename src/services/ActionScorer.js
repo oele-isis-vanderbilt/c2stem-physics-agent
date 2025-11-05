@@ -1750,7 +1750,7 @@ export default class ActionScorer {
           if (block && parent === "simulation step") {
             let hasCondition = block.some((line) => {
               if (
-                line.includes("(x_position)") &&
+                line.includes("(x_position of Package2)") &&
                 (line.includes("(>)") || line.includes("(<)"))
               ) {
                 let match = line.match(/\((\d+\.?\d*)\)/g);
@@ -1802,14 +1802,14 @@ export default class ActionScorer {
           for (let i = 0; i < lines.length; i++) {
             if (
               lines[i].includes("if") &&
-              lines[i].includes("(x_position)") &&
+              lines[i].includes("(x_position of Package2)") &&
               (lines[i].includes("(>)") || lines[i].includes("(<)")) &&
               firstIfIndex === -1
             ) {
               firstIfIndex = i;
             } else if (
               lines[i].includes("if") &&
-              lines[i].includes("(y_position)") &&
+              lines[i].includes("(y_position of Target2)") &&
               (lines[i].includes("(>)") || lines[i].includes("(<)")) &&
               secondIfIndex === -1
             ) {
