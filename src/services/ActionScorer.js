@@ -250,7 +250,7 @@ export default class ActionScorer {
     // let nextSpriteIndex = ast.length;
     const lines = ast.substring(spriteIndex).split("\n");
 
-    // Look for the next sprite header (line that starts with [ and ends with ] and is all caps)
+    // Look for the next sprite header (line that starts with [ and ends with ] and contains alphanumeric characters)
     let sectionLines = [];
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -297,12 +297,48 @@ export default class ActionScorer {
       });
     }
 
+    // Helper function to check if searchString is directly connected to the root block
+    const isDirectlyConnected = (section, rootBlockPattern) => {
+      if (!section.includes(searchString)) return false;
+
+      const lines = section.split("\n");
+      let foundRoot = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        // Found the root block (e.g., [when green flag clicked])
+        if (line.includes(rootBlockPattern)) {
+          foundRoot = true;
+          continue;
+        }
+
+        if (foundRoot) {
+          // If we encounter an empty line or [not connected] before finding searchString,
+          // it means the searchString is not directly connected
+          if (line === "" || line.includes("[not connected]")) {
+            return false;
+          }
+
+          // If we find the searchString, it's directly connected
+          if (line.includes(searchString)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    };
+
     let result;
-    if (greenFlagSection && greenFlagSection.includes(searchString)) {
+    if (
+      greenFlagSection &&
+      isDirectlyConnected(greenFlagSection, "[when green flag clicked]")
+    ) {
       result = "green flag clicked";
     } else if (
       simulationStepSection &&
-      simulationStepSection.includes(searchString)
+      isDirectlyConnected(simulationStepSection, "[simulation step]")
     ) {
       result = "simulation step";
     } else {
@@ -827,7 +863,7 @@ export default class ActionScorer {
             "DRONE"
           );
           if (block && parent === "green flag clicked") {
-            let value = block[0].split("(")[2].split(")")[0];
+            let value = block[0].split("y:")[1].split("(")[1].split(")")[0];
             // Condition for one_drone_task
             // if (value === "4.5") {
             // Condition for two_drone_task
@@ -876,7 +912,7 @@ export default class ActionScorer {
             "DRONE"
           );
           if (block && parent === "green flag clicked") {
-            let value = block[0].split("(")[2].split(")")[0];
+            let value = block[0].split("y:")[1].split("(")[1].split(")")[0];
             if (value === "0") {
               scoringRubric.drone_initialize_y_velocity = 1;
             } else {
@@ -986,7 +1022,7 @@ export default class ActionScorer {
           );
           if (block && parent === "green flag clicked") {
             // Check if it references drone's x_position
-            if (block[0].includes("(x_position of Drone)")) {
+            if (block[0].includes("x: (x_position of Drone)")) {
               scoringRubric.package_initialize_x_position = 1;
             } else {
               scoringRubric.package_initialize_x_position = 0;
@@ -1010,7 +1046,7 @@ export default class ActionScorer {
           if (block && parent === "green flag clicked") {
             // Check if it's drone's y_position - 1
             if (
-              block[0].includes("(y_position of Drone)") &&
+              block[0].includes("y: ((y_position of Drone)") &&
               block[0].includes("(−)") &&
               // block[0].includes("(1)") // one_drone requirement.
               block[0].includes("(2)") // two_drone requirement.
@@ -1037,7 +1073,7 @@ export default class ActionScorer {
           );
           if (block && parent === "green flag clicked") {
             // Check if it references drone's x_velocity
-            if (block[0].includes("(x_velocity of Drone)")) {
+            if (block[0].includes("x: (x_velocity of Drone)")) {
               scoringRubric.package_initialize_x_velocity = 1;
             } else {
               scoringRubric.package_initialize_x_velocity = 0;
@@ -1061,7 +1097,7 @@ export default class ActionScorer {
           if (block && parent === "green flag clicked") {
             // Check if it references drone's y_velocity
             if (
-              block[0].includes("(y_velocity of Drone)") ||
+              block[0].includes("y: (y_velocity of Drone)") ||
               block[0].includes("y: (0)")
             ) {
               scoringRubric.package_initialize_y_velocity = 1;
@@ -1109,7 +1145,7 @@ export default class ActionScorer {
           );
           if (block && parent === "green flag clicked") {
             // Check if it's set to gravity constant
-            if (block[0].includes("(gravity)")) {
+            if (block[0].includes("y: (gravity)")) {
               scoringRubric.package_initialize_y_acceleration = 1;
             } else {
               scoringRubric.package_initialize_y_acceleration = 0;
@@ -1301,7 +1337,7 @@ export default class ActionScorer {
             let hasCondition = block.some(
               (line) =>
                 line.includes("(y_position)") &&
-                line.includes("(<)") &&
+                (line.includes("(<)") || line.includes("(>)")) &&
                 line.includes("(y_position of Target)")
             );
             if (hasCondition) {
@@ -1417,7 +1453,11 @@ export default class ActionScorer {
             velocityIndex !== -1 &&
             ifIndex !== -1 &&
             positionIndex < ifIndex &&
-            velocityIndex < ifIndex
+            velocityIndex < ifIndex &&
+            scoringRubric.package_accurate_comparison_with_target_position ===
+              1 &&
+            scoringRubric.package_accurate_x_velocity_inside_if === 1 &&
+            scoringRubric.package_accurate_y_velocity_inside_if === 1
           ) {
             scoringRubric.package_update_position_velocity_above_if = 1;
           } else {
@@ -1437,7 +1477,7 @@ export default class ActionScorer {
             "PACKAGE2"
           );
           if (block && parent === "green flag clicked") {
-            if (block[0].includes("(x_position of Drone)")) {
+            if (block[0].includes("x: (x_position of Drone)")) {
               scoringRubric.package2_initialize_x_position = 1;
             } else {
               scoringRubric.package2_initialize_x_position = 0;
@@ -1485,7 +1525,7 @@ export default class ActionScorer {
             "PACKAGE2"
           );
           if (block && parent === "green flag clicked") {
-            if (block[0].includes("(x_velocity of Drone)")) {
+            if (block[0].includes("x: (x_velocity of Drone)")) {
               scoringRubric.package2_initialize_x_velocity = 1;
             } else {
               scoringRubric.package2_initialize_x_velocity = 0;
@@ -1507,7 +1547,9 @@ export default class ActionScorer {
             "PACKAGE2"
           );
           if (block && parent === "green flag clicked") {
-            let value = parseFloat(block[0].split("(")[2].split(")")[0]);
+            let value = parseFloat(
+              block[0].split("y:")[1].split("(")[1].split(")")[0]
+            );
             if (value === 0) {
               scoringRubric.package2_initialize_y_velocity = 1;
             } else {
@@ -1553,7 +1595,7 @@ export default class ActionScorer {
             "PACKAGE2"
           );
           if (block && parent === "green flag clicked") {
-            if (block[0].includes("(gravity)")) {
+            if (block[0].includes("y: (gravity)")) {
               scoringRubric.package2_initialize_y_acceleration = 1;
             } else {
               scoringRubric.package2_initialize_y_acceleration = 0;
@@ -1707,7 +1749,10 @@ export default class ActionScorer {
           let parent = this.getRootBlockInSprite(ast, "if", "PACKAGE2");
           if (block && parent === "simulation step") {
             let hasCondition = block.some((line) => {
-              if (line.includes("(x_position)") && line.includes("(>)")) {
+              if (
+                line.includes("(x_position)") &&
+                (line.includes("(>)") || line.includes("(<)"))
+              ) {
                 let match = line.match(/\((\d+\.?\d*)\)/g);
                 if (match && match.length > 0) {
                   let value = parseFloat(
@@ -1735,7 +1780,7 @@ export default class ActionScorer {
             let hasCondition = block.some(
               (line) =>
                 line.includes("(y_position)") &&
-                line.includes("(<)") &&
+                (line.includes("(>)") || line.includes("(<)")) &&
                 line.includes("(y_position of Target2)")
             );
             if (hasCondition) {
@@ -1758,14 +1803,14 @@ export default class ActionScorer {
             if (
               lines[i].includes("if") &&
               lines[i].includes("(x_position)") &&
-              lines[i].includes("(>)") &&
+              (lines[i].includes("(>)") || lines[i].includes("(<)")) &&
               firstIfIndex === -1
             ) {
               firstIfIndex = i;
             } else if (
               lines[i].includes("if") &&
               lines[i].includes("(y_position)") &&
-              lines[i].includes("(<)") &&
+              (lines[i].includes("(>)") || lines[i].includes("(<)")) &&
               secondIfIndex === -1
             ) {
               secondIfIndex = i;
