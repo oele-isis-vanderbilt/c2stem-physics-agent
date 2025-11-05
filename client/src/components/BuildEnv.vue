@@ -90,7 +90,11 @@ export default {
       } else {
         if (group) {
           let exists = !!action.args[3]?.[1];
-          if (exists && typeof action.args[3][1] === "object") {
+          if (
+            exists &&
+            typeof action.args[3][1] === "object" &&
+            typeof action.args[1] !== "object"
+          ) {
             group = "DRAFT";
           }
           this.lastGroup = group;
