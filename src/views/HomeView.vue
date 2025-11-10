@@ -27,19 +27,19 @@ export default {
   },
   data() {
     return {
-      names: ["Drone 1 Package: Debug", "Drone 2 Package: Problem Solving"],
+      names: ["Drone 2 Package: Problem Solving", "Drone 2 Package: Debug"],
       description: ["Complete your computational model lessons", ""],
-      route: ["Construct", "ConstructAgent"],
+      route: ["Construct", "Construct"],
       logo: [droneLogo, droneLogo],
       routeParams: [
         {
           userID: "oele",
-          projectName: "Drone_Model_one_package_debug_HIDDEN_BLOCKS",
+          projectName: "Drone_Model_two_packages_empty_HIDDEN_BLOCKS",
           source: "https://physics.c2stem.org",
         },
         {
           userID: "oele",
-          projectName: "Drone_Model_two_packages_empty_HIDDEN_BLOCKS",
+          projectName: "Drone_Model_two_packages_debug_HIDDEN_BLOCKS",
           source: "https://physics.c2stem.org",
         },
       ],
