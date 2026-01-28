@@ -29,7 +29,7 @@ export default {
     return {
       names: ["Drone 2 Package: Problem Solving", "Drone 2 Package: Debug"],
       description: ["Complete your computational model lessons", ""],
-      route: ["Construct", "Construct"],
+      route: ["ConstructAgent", "Construct"],
       logo: [droneLogo, droneLogo],
       routeParams: [
         {
