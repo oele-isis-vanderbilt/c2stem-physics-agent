@@ -1942,55 +1942,55 @@ export default class ActionScorer {
         //   scoringRubric.physics_mastery = oneDronePhysicsTotal;
         //   break;
         // }
-        case "physics_mastery": {
-          let physicsTotal =
-            scoringRubric.drone_initialize_x_position +
-            scoringRubric.drone_initialize_y_position +
-            scoringRubric.drone_initialize_x_velocity +
-            scoringRubric.drone_initialize_y_velocity +
-            scoringRubric.drone_update_x_position +
-            scoringRubric.drone_update_y_position +
-            scoringRubric.package_initialize_x_position +
-            scoringRubric.package_initialize_y_position +
-            scoringRubric.package_initialize_x_velocity +
-            scoringRubric.package_initialize_y_velocity +
-            scoringRubric.package_initialize_x_acceleration +
-            scoringRubric.package_initialize_y_acceleration +
-            scoringRubric.package_update_x_position +
-            scoringRubric.package_update_y_position +
-            scoringRubric.package_update_x_velocity +
-            scoringRubric.package_update_y_velocity +
-            scoringRubric.package2_initialize_x_position +
-            scoringRubric.package2_initialize_y_position +
-            scoringRubric.package2_initialize_x_velocity +
-            scoringRubric.package2_initialize_y_velocity +
-            scoringRubric.package2_initialize_x_acceleration +
-            scoringRubric.package2_initialize_y_acceleration +
-            scoringRubric.package2_update_x_position +
-            scoringRubric.package2_update_y_position +
-            scoringRubric.package2_update_x_velocity +
-            scoringRubric.package2_update_y_velocity;
-          scoringRubric.physics_mastery = physicsTotal;
-          break;
-        }
-        // case "truck_physics_mastery": {
-        //   let truckPhysicsTotal =
-        //     scoringRubric.initialize_position +
-        //     scoringRubric.initialize_velocity +
-        //     scoringRubric.initialize_acceleration +
-        //     scoringRubric.accurate_comparison_velocity_acceleration_time +
-        //     scoringRubric.accurate_comparison_position_velocity_time +
-        //     scoringRubric.code_accuracy_to_accelerate_truck +
-        //     scoringRubric.setting_acceleration_to_cruise_truck +
-        //     scoringRubric.setting_acceleration_to_decelerate_truck +
-        //     scoringRubric.code_accuracy_to_cruise_truck +
-        //     scoringRubric.code_accuracy_to_slowdown_truck +
-        //     scoringRubric.code_accuracy_to_stop_truck;
-        //   scoringRubric.physics_mastery = Math.floor(
-        //     (truckPhysicsTotal / 11) * 100
-        //   );
+        // case "two_drone_physics_mastery": {
+        //   let physicsTotal =
+        //     scoringRubric.drone_initialize_x_position +
+        //     scoringRubric.drone_initialize_y_position +
+        //     scoringRubric.drone_initialize_x_velocity +
+        //     scoringRubric.drone_initialize_y_velocity +
+        //     scoringRubric.drone_update_x_position +
+        //     scoringRubric.drone_update_y_position +
+        //     scoringRubric.package_initialize_x_position +
+        //     scoringRubric.package_initialize_y_position +
+        //     scoringRubric.package_initialize_x_velocity +
+        //     scoringRubric.package_initialize_y_velocity +
+        //     scoringRubric.package_initialize_x_acceleration +
+        //     scoringRubric.package_initialize_y_acceleration +
+        //     scoringRubric.package_update_x_position +
+        //     scoringRubric.package_update_y_position +
+        //     scoringRubric.package_update_x_velocity +
+        //     scoringRubric.package_update_y_velocity +
+        //     scoringRubric.package2_initialize_x_position +
+        //     scoringRubric.package2_initialize_y_position +
+        //     scoringRubric.package2_initialize_x_velocity +
+        //     scoringRubric.package2_initialize_y_velocity +
+        //     scoringRubric.package2_initialize_x_acceleration +
+        //     scoringRubric.package2_initialize_y_acceleration +
+        //     scoringRubric.package2_update_x_position +
+        //     scoringRubric.package2_update_y_position +
+        //     scoringRubric.package2_update_x_velocity +
+        //     scoringRubric.package2_update_y_velocity;
+        //   scoringRubric.physics_mastery = physicsTotal;
         //   break;
         // }
+        case "physics_mastery": {
+          let truckPhysicsTotal =
+            scoringRubric.initialize_position +
+            scoringRubric.initialize_velocity +
+            scoringRubric.initialize_acceleration +
+            scoringRubric.accurate_comparison_velocity_acceleration_time +
+            scoringRubric.accurate_comparison_position_velocity_time +
+            scoringRubric.code_accuracy_to_accelerate_truck +
+            scoringRubric.setting_acceleration_to_cruise_truck +
+            scoringRubric.setting_acceleration_to_decelerate_truck +
+            scoringRubric.code_accuracy_to_cruise_truck +
+            scoringRubric.code_accuracy_to_slowdown_truck +
+            scoringRubric.code_accuracy_to_stop_truck;
+          // scoringRubric.physics_mastery = Math.floor(
+          //   (truckPhysicsTotal / 11) * 100
+          scoringRubric.physics_mastery = truckPhysicsTotal;
+          break;
+        }
         // case "drone_computing_mastery": {
         //   let droneComputingTotal =
         //     scoringRubric.drone_initialize_deltaT +
@@ -2022,68 +2022,68 @@ export default class ActionScorer {
         //   scoringRubric.computing_mastery = oneDroneComputingTotal;
         //   break;
         // }
-        // case "truck_computing_mastery": {
-        //   let truckComputingTotal =
-        //     scoringRubric.start_simulation +
-        //     scoringRubric.stop_simulation +
-        //     scoringRubric.initialize_deltaT +
-        //     scoringRubric.update_order_of_velocity_position +
-        //     scoringRubric.accurate_acceleration_velocity_for_cruising +
-        //     scoringRubric.accurate_acceleration_position_for_slowing +
-        //     scoringRubric.accurate_code_for_stopping +
-        //     scoringRubric.accurate_order_cruising_slowing_stopping +
-        //     scoringRubric.set_speed_limit;
-        //   scoringRubric.computing_mastery = Math.floor(
-        //     (truckComputingTotal / 9) * 100
-        //   );
-        //   break;
-        // }
         case "computing_mastery": {
-          let computingTotal =
-            scoringRubric.drone_initialize_deltaT +
-            scoringRubric.drone_start_simulation +
-            scoringRubric.package_initialize_deltaT +
-            scoringRubric.package_start_simulation +
-            scoringRubric.package_update_order_of_position_velocity +
-            scoringRubric.package_accurate_comparison_with_target_position +
-            scoringRubric.package_accurate_x_velocity_inside_if +
-            scoringRubric.package_accurate_y_velocity_inside_if +
-            scoringRubric.package_update_position_velocity_above_if +
-            scoringRubric.package2_initialize_deltaT +
-            scoringRubric.package2_start_simulation +
-            scoringRubric.package2_accurate_condition_x_position +
-            scoringRubric.package2_accurate_condition_y_position +
-            scoringRubric.package2_condition_position_x_above_y +
-            scoringRubric.package2_stop_simulation +
-            scoringRubric.package2_update_position_above_if;
-          scoringRubric.computing_mastery = computingTotal;
+          let truckComputingTotal =
+            scoringRubric.start_simulation +
+            scoringRubric.stop_simulation +
+            scoringRubric.initialize_deltaT +
+            scoringRubric.update_order_of_velocity_position +
+            scoringRubric.accurate_acceleration_velocity_for_cruising +
+            scoringRubric.accurate_acceleration_position_for_slowing +
+            scoringRubric.accurate_code_for_stopping +
+            scoringRubric.accurate_order_cruising_slowing_stopping +
+            scoringRubric.set_speed_limit;
+          // scoringRubric.computing_mastery = Math.floor(
+          //   (truckComputingTotal / 9) * 100
+          scoringRubric.computing_mastery = truckComputingTotal;
           break;
         }
-        // case "truck_overall_mastery": {
-        //   let truckTotal =
-        //     scoringRubric.initialize_position +
-        //     scoringRubric.initialize_velocity +
-        //     scoringRubric.initialize_acceleration +
-        //     scoringRubric.accurate_comparison_velocity_acceleration_time +
-        //     scoringRubric.accurate_comparison_position_velocity_time +
-        //     scoringRubric.code_accuracy_to_accelerate_truck +
-        //     scoringRubric.setting_acceleration_to_cruise_truck +
-        //     scoringRubric.setting_acceleration_to_decelerate_truck +
-        //     scoringRubric.code_accuracy_to_cruise_truck +
-        //     scoringRubric.code_accuracy_to_slowdown_truck +
-        //     scoringRubric.code_accuracy_to_stop_truck +
-        //     scoringRubric.start_simulation +
-        //     scoringRubric.stop_simulation +
-        //     scoringRubric.initialize_deltaT +
-        //     scoringRubric.update_order_of_velocity_position +
-        //     scoringRubric.accurate_acceleration_velocity_for_cruising +
-        //     scoringRubric.accurate_acceleration_position_for_slowing +
-        //     scoringRubric.accurate_code_for_stopping +
-        //     scoringRubric.accurate_order_cruising_slowing_stopping +
-        //     scoringRubric.set_speed_limit;
-        //   scoringRubric.overall_mastery = truckTotal;
+        // case "two_drone_computing_mastery": {
+        //   let computingTotal =
+        //     scoringRubric.drone_initialize_deltaT +
+        //     scoringRubric.drone_start_simulation +
+        //     scoringRubric.package_initialize_deltaT +
+        //     scoringRubric.package_start_simulation +
+        //     scoringRubric.package_update_order_of_position_velocity +
+        //     scoringRubric.package_accurate_comparison_with_target_position +
+        //     scoringRubric.package_accurate_x_velocity_inside_if +
+        //     scoringRubric.package_accurate_y_velocity_inside_if +
+        //     scoringRubric.package_update_position_velocity_above_if +
+        //     scoringRubric.package2_initialize_deltaT +
+        //     scoringRubric.package2_start_simulation +
+        //     scoringRubric.package2_accurate_condition_x_position +
+        //     scoringRubric.package2_accurate_condition_y_position +
+        //     scoringRubric.package2_condition_position_x_above_y +
+        //     scoringRubric.package2_stop_simulation +
+        //     scoringRubric.package2_update_position_above_if;
+        //   scoringRubric.computing_mastery = computingTotal;
         //   break;
         // }
+        case "overall_mastery": {
+          let truckTotal =
+            scoringRubric.initialize_position +
+            scoringRubric.initialize_velocity +
+            scoringRubric.initialize_acceleration +
+            scoringRubric.accurate_comparison_velocity_acceleration_time +
+            scoringRubric.accurate_comparison_position_velocity_time +
+            scoringRubric.code_accuracy_to_accelerate_truck +
+            scoringRubric.setting_acceleration_to_cruise_truck +
+            scoringRubric.setting_acceleration_to_decelerate_truck +
+            scoringRubric.code_accuracy_to_cruise_truck +
+            scoringRubric.code_accuracy_to_slowdown_truck +
+            scoringRubric.code_accuracy_to_stop_truck +
+            scoringRubric.start_simulation +
+            scoringRubric.stop_simulation +
+            scoringRubric.initialize_deltaT +
+            scoringRubric.update_order_of_velocity_position +
+            scoringRubric.accurate_acceleration_velocity_for_cruising +
+            scoringRubric.accurate_acceleration_position_for_slowing +
+            scoringRubric.accurate_code_for_stopping +
+            scoringRubric.accurate_order_cruising_slowing_stopping +
+            scoringRubric.set_speed_limit;
+          scoringRubric.overall_mastery = truckTotal;
+          break;
+        }
         // case "one_drone_overall_mastery": {
         //   let packageTotal =
         //     scoringRubric.drone_initialize_x_position +
@@ -2113,53 +2113,53 @@ export default class ActionScorer {
         //   scoringRubric.overall_mastery = packageTotal;
         //   break;
         // }
-        case "overall_mastery": {
-          let total =
-            scoringRubric.drone_initialize_x_position +
-            scoringRubric.drone_initialize_y_position +
-            scoringRubric.drone_initialize_x_velocity +
-            scoringRubric.drone_initialize_y_velocity +
-            scoringRubric.drone_update_x_position +
-            scoringRubric.drone_update_y_position +
-            scoringRubric.drone_initialize_deltaT +
-            scoringRubric.drone_start_simulation +
-            scoringRubric.package_initialize_x_position +
-            scoringRubric.package_initialize_y_position +
-            scoringRubric.package_initialize_x_velocity +
-            scoringRubric.package_initialize_y_velocity +
-            scoringRubric.package_initialize_x_acceleration +
-            scoringRubric.package_initialize_y_acceleration +
-            scoringRubric.package_update_x_position +
-            scoringRubric.package_update_y_position +
-            scoringRubric.package_update_x_velocity +
-            scoringRubric.package_update_y_velocity +
-            scoringRubric.package_initialize_deltaT +
-            scoringRubric.package_start_simulation +
-            scoringRubric.package_update_order_of_position_velocity +
-            scoringRubric.package_accurate_comparison_with_target_position +
-            scoringRubric.package_accurate_x_velocity_inside_if +
-            scoringRubric.package_accurate_y_velocity_inside_if +
-            scoringRubric.package_update_position_velocity_above_if +
-            scoringRubric.package2_initialize_x_position +
-            scoringRubric.package2_initialize_y_position +
-            scoringRubric.package2_initialize_x_velocity +
-            scoringRubric.package2_initialize_y_velocity +
-            scoringRubric.package2_initialize_x_acceleration +
-            scoringRubric.package2_initialize_y_acceleration +
-            scoringRubric.package2_update_x_position +
-            scoringRubric.package2_update_y_position +
-            scoringRubric.package2_update_x_velocity +
-            scoringRubric.package2_update_y_velocity +
-            scoringRubric.package2_initialize_deltaT +
-            scoringRubric.package2_start_simulation +
-            scoringRubric.package2_accurate_condition_x_position +
-            scoringRubric.package2_accurate_condition_y_position +
-            scoringRubric.package2_condition_position_x_above_y +
-            scoringRubric.package2_stop_simulation +
-            scoringRubric.package2_update_position_above_if;
-          scoringRubric.overall_mastery = total;
-          break;
-        }
+        // case "two_drone_overall_mastery": {
+        //   let total =
+        //     scoringRubric.drone_initialize_x_position +
+        //     scoringRubric.drone_initialize_y_position +
+        //     scoringRubric.drone_initialize_x_velocity +
+        //     scoringRubric.drone_initialize_y_velocity +
+        //     scoringRubric.drone_update_x_position +
+        //     scoringRubric.drone_update_y_position +
+        //     scoringRubric.drone_initialize_deltaT +
+        //     scoringRubric.drone_start_simulation +
+        //     scoringRubric.package_initialize_x_position +
+        //     scoringRubric.package_initialize_y_position +
+        //     scoringRubric.package_initialize_x_velocity +
+        //     scoringRubric.package_initialize_y_velocity +
+        //     scoringRubric.package_initialize_x_acceleration +
+        //     scoringRubric.package_initialize_y_acceleration +
+        //     scoringRubric.package_update_x_position +
+        //     scoringRubric.package_update_y_position +
+        //     scoringRubric.package_update_x_velocity +
+        //     scoringRubric.package_update_y_velocity +
+        //     scoringRubric.package_initialize_deltaT +
+        //     scoringRubric.package_start_simulation +
+        //     scoringRubric.package_update_order_of_position_velocity +
+        //     scoringRubric.package_accurate_comparison_with_target_position +
+        //     scoringRubric.package_accurate_x_velocity_inside_if +
+        //     scoringRubric.package_accurate_y_velocity_inside_if +
+        //     scoringRubric.package_update_position_velocity_above_if +
+        //     scoringRubric.package2_initialize_x_position +
+        //     scoringRubric.package2_initialize_y_position +
+        //     scoringRubric.package2_initialize_x_velocity +
+        //     scoringRubric.package2_initialize_y_velocity +
+        //     scoringRubric.package2_initialize_x_acceleration +
+        //     scoringRubric.package2_initialize_y_acceleration +
+        //     scoringRubric.package2_update_x_position +
+        //     scoringRubric.package2_update_y_position +
+        //     scoringRubric.package2_update_x_velocity +
+        //     scoringRubric.package2_update_y_velocity +
+        //     scoringRubric.package2_initialize_deltaT +
+        //     scoringRubric.package2_start_simulation +
+        //     scoringRubric.package2_accurate_condition_x_position +
+        //     scoringRubric.package2_accurate_condition_y_position +
+        //     scoringRubric.package2_condition_position_x_above_y +
+        //     scoringRubric.package2_stop_simulation +
+        //     scoringRubric.package2_update_position_above_if;
+        //   scoringRubric.overall_mastery = total;
+        //   break;
+        // }
       }
     });
 

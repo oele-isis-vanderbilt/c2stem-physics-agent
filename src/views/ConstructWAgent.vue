@@ -51,7 +51,8 @@ import IframeLoader from "../components/IframeLoader.vue";
 import { Collapse } from "bootstrap";
 import ASTController from "../services/ASTController";
 // import Websockets from "@/services/Websockets";
-import BlockParser from "@/services/BlockParser_v2";
+// import BlockParser from "@/services/BlockParser_v2";
+import BlockParser from "@/services/BlockParser_v1_truck";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";
 import Simulation from "../services/Simulation.js";
@@ -67,7 +68,7 @@ export default {
       userID: this.$route.params.userID,
       projectLessonName: this.$route.params.projectName,
       source: this.$route.params.source,
-      projectName: "Drone_Model_one_package_empty_HIDDEN_BLOCKS",
+      projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
       chat_URL: "",
       lastGroup: "",
       username: "",

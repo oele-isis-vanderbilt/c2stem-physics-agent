@@ -32,7 +32,7 @@ export default {
       userID: this.$route.params.userID,
       projectLessonName: this.$route.params.projectName,
       source: this.$route.params.source,
-      projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
+      projectName: "Truck_Model_debug_HIDDEN_BLOCKS",
       api: null,
       pendingNavigation: null,
       autoSaveInterval: null,
