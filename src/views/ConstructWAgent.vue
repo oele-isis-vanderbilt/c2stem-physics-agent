@@ -190,7 +190,9 @@ export default {
       segment.data = segment.data ? segment.data : "";
       this.socket.send(segment);
     },
-    reconnectSocket(username, blockParser) {
+    // for one v1 and v2 versions of block parser file with multiple headers
+    // reconnectSocket(username, blockParser) {
+    reconnectSocket(username) {
       console.log("Reconnecting WebSocket after page refresh...");
 
       const Websockets = require("@/services/Websockets").default;
@@ -203,7 +205,9 @@ export default {
           console.log(chat_URL);
         }
         console.log(event.data);
-        let state = blockParser.generate(this.$store);
+        // for one v1 and v2 versions of block parser file with multiple headers
+        // let state = blockParser.generate(this.$store);
+        let state = BlockParser.generate(this.$store);
         if (state.trim().length > 1) {
           Websockets.send({ type: "state", data: state });
         }
@@ -215,7 +219,9 @@ export default {
 
       const onReconnect = () => {
         console.log("WebSocket reconnected successfully");
-        let state = blockParser.generate(this.$store);
+        // for one v1 and v2 versions of block parser file with multiple headers
+        // let state = blockParser.generate(this.$store);
+        let state = BlockParser.generate(this.$store);
         if (state.trim().length > 1) {
           Websockets.send({ type: "state", data: state });
         }
@@ -225,7 +231,9 @@ export default {
       this.$store.dispatch("setSocketInstance", Websockets);
       this.socket = Websockets;
     },
-    setupSocket(blockParser) {
+    // for one v1 and v2 versions of block parser file with multiple headers
+    // setupSocket(blockParser) {
+    setupSocket() {
       // Get the WebSocket service instance from the store
       // The socket was already initialized in LoginView
       this.socket = this.getSocket;
@@ -236,7 +244,9 @@ export default {
 
         // If user is logged in but socket is null (page refresh scenario)
         if (username) {
-          this.reconnectSocket(username, blockParser);
+          // for one v1 and v2 versions of block parser file with multiple headers
+          // this.reconnectSocket(username, blockParser);
+          this.reconnectSocket(username);
         } else {
           // No user logged in, redirect to login
           console.error(
@@ -290,7 +300,8 @@ export default {
       this.$store
     );
     const segmentparser = new SegmentParser();
-    const blockParser = new BlockParser(["DRONE", "PACKAGE", "PACKAGE2"]);
+    // for one v1 and v2 versions of block parser file with multiple headers
+    // const blockParser = new BlockParser(["DRONE", "PACKAGE", "PACKAGE2"]);
     let ifr_window = document.getElementById("iframe-id");
     this.api = new window.EmbeddedNetsBloxAPI(ifr_window);
 
@@ -306,7 +317,9 @@ export default {
           this.sendActions({ type: "action", data: action });
           astController.actionListener(action, segmentparser);
           this.sendActionGroup(action);
-          let state = blockParser.generate(this.$store);
+          // for one v1 and v2 versions of block parser file with multiple headers
+          // let state = blockParser.generate(this.$store);
+          let state = BlockParser.generate(this.$store);
           actionScorer.updateScore(state);
           this.sendState({ type: "state", data: state });
           this.sendScore({ type: "score", data: this.getScore });
@@ -328,7 +341,9 @@ export default {
 
     // };
     // let username = document.cookie.split("=")[1];
-    this.setupSocket(blockParser);
+    // for one v1 and v2 versions of block parser file with multiple headers
+    // this.setupSocket(blockParser);
+    this.setupSocket();
 
     // Set up auto-save every 2 minutes
     this.autoSaveInterval = setInterval(() => {
