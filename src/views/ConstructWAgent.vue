@@ -107,11 +107,32 @@ export default {
       const username = this.$store.state.user;
       if (!username) return;
 
+      // getProjectXML() can fail if the NetsBlox world isn't fully initialized yet
+      // even though openProject already fired. Retry up to 3 times with a 2-second
+      // gap, using a 5-second per-attempt timeout to avoid hanging indefinitely.
+      let xmlString;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          console.log(`[Replay] Fetching project XML (attempt ${attempt}/3)...`);
+          xmlString = await Promise.race([
+            api.getProjectXML(),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("getProjectXML timeout")), 5000)
+            ),
+          ]);
+          break; // success
+        } catch (err) {
+          console.warn(`[Replay] getProjectXML attempt ${attempt} failed: ${err.message}`);
+          if (attempt < 3) {
+            await new Promise((r) => setTimeout(r, 2000));
+          } else {
+            console.error("[Replay] Could not fetch project XML after 3 attempts — starting fresh");
+            return;
+          }
+        }
+      }
+
       try {
-        // Use the EmbeddedNetsBloxAPI to get the full project XML (includes <replay> events).
-        // Must be called after the iframe is loaded — only invoke from inside the setTimeout.
-        console.log("[Replay] Fetching project XML via EmbeddedNetsBloxAPI...");
-        const xmlString = await api.getProjectXML();
         const historicalActions = EventXMLParser.parseXML(xmlString, username);
 
         if (historicalActions.length === 0) {
@@ -355,33 +376,8 @@ export default {
       console.log("Setting up embedded API listeners...");
 
       // Replay historical actions now that the project is fully loaded.
-      // getProjectXML() may still fail intermittently if the NetsBlox world
-      // isn't quite ready — retry up to 3 times with a 2-second gap.
-      let xmlFetched = false;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          await Promise.race([
-            this._replayHistoricalActions(
-              this.api,
-              astController,
-              segmentparser
-            ),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error("replay timeout")), 5000)
-            ),
-          ]);
-          xmlFetched = true;
-          break;
-        } catch (err) {
-          console.warn(`[Replay] Attempt ${attempt} failed: ${err.message}`);
-          if (attempt < 3) await new Promise((r) => setTimeout(r, 2000));
-        }
-      }
-      if (!xmlFetched) {
-        console.warn(
-          "[Replay] Could not fetch project XML after 3 attempts — starting fresh"
-        );
-      }
+      // _replayHistoricalActions handles retries internally if getProjectXML isn't ready.
+      await this._replayHistoricalActions(this.api, astController, segmentparser);
 
       // Send the initial model state to the agent before any live action arrives.
       let initialState = BlockParser.generate(this.$store);
