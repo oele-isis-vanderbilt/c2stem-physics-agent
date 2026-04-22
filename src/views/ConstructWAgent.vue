@@ -348,61 +348,75 @@ export default {
     const collapseElement = document.getElementById("collapseWindow");
     this.collapseInstance = new Collapse(collapseElement, { toggle: false });
 
-    // setTimeout removed — openProject is the signal that NetsBlox has fully
-    // loaded the project, so no fixed delay is needed. Wire listeners immediately.
-    // setTimeout(() => {
-    console.log("Setting up embedded API listeners...");
+    // Wait for iframe NetsBlox IDE to fully initialize before wiring listeners.
+    // openProject fires during iframe load (before this timeout), so by 8 seconds
+    // the project is already open and getProjectXML() is safe to call.
+    setTimeout(async () => {
+      console.log("Setting up embedded API listeners...");
 
-    let replayComplete = false;
-
-    this.api.addActionListener(async (action) => {
-      if (action.type === "openProject") {
-        // openProject fires when NetsBlox has fully loaded the project —
-        // this is the earliest safe moment to call getProjectXML().
-        await this._replayHistoricalActions(
-          this.api,
-          astController,
-          segmentparser
-        );
-
-        // Send the initial model state to the agent before any live action.
-        let initialState = BlockParser.generate(this.$store);
-        if (initialState.trim().length > 1) {
-          this.sendState({ type: "state", data: initialState });
-          console.log("[Replay] Initial model state sent to agent");
+      // Replay historical actions now that the project is fully loaded.
+      // getProjectXML() may still fail intermittently if the NetsBlox world
+      // isn't quite ready — retry up to 3 times with a 2-second gap.
+      let xmlFetched = false;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await Promise.race([
+            this._replayHistoricalActions(
+              this.api,
+              astController,
+              segmentparser
+            ),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("replay timeout")), 5000)
+            ),
+          ]);
+          xmlFetched = true;
+          break;
+        } catch (err) {
+          console.warn(`[Replay] Attempt ${attempt} failed: ${err.message}`);
+          if (attempt < 3) await new Promise((r) => setTimeout(r, 2000));
         }
-
-        replayComplete = true;
-        return;
+      }
+      if (!xmlFetched) {
+        console.warn(
+          "[Replay] Could not fetch project XML after 3 attempts — starting fresh"
+        );
       }
 
-      // Drop any actions that arrive before the project has loaded.
-      if (!replayComplete) return;
-
-      this.sendActions({ type: "action", data: action });
-      astController.actionListener(action, segmentparser);
-      this.sendActionGroup(action);
-      // for one v1 and v2 versions of block parser file with multiple headers
-      // let state = blockParser.generate(this.$store);
-      let state = BlockParser.generate(this.$store);
-      actionScorer.updateScore(state);
-      this.sendState({ type: "state", data: state });
-      this.sendScore({ type: "score", data: this.getScore });
-      this.sendSegment({ type: "segment", data: this.getSegment });
-    });
-
-    this.api.addEventListener("startScript", console.log);
-    this.api.addEventListener("projectSaved", () => {
-      this.saveProject();
-
-      // If navigation is pending, allow it to proceed
-      if (this.pendingNavigation) {
-        this.pendingNavigation();
-        this.pendingNavigation = null;
+      // Send the initial model state to the agent before any live action arrives.
+      let initialState = BlockParser.generate(this.$store);
+      if (initialState.trim().length > 1) {
+        this.sendState({ type: "state", data: initialState });
+        console.log("[Replay] Initial model state sent to agent");
       }
-    });
-    console.log("Embedded API listeners set up successfully");
-    // }, 8000);
+
+      this.api.addActionListener((action) => {
+        if (action.type !== "openProject") {
+          this.sendActions({ type: "action", data: action });
+          astController.actionListener(action, segmentparser);
+          this.sendActionGroup(action);
+          // for one v1 and v2 versions of block parser file with multiple headers
+          // let state = blockParser.generate(this.$store);
+          let state = BlockParser.generate(this.$store);
+          actionScorer.updateScore(state);
+          this.sendState({ type: "state", data: state });
+          this.sendScore({ type: "score", data: this.getScore });
+          this.sendSegment({ type: "segment", data: this.getSegment });
+        }
+      });
+
+      this.api.addEventListener("startScript", console.log);
+      this.api.addEventListener("projectSaved", () => {
+        this.saveProject();
+
+        // If navigation is pending, allow it to proceed
+        if (this.pendingNavigation) {
+          this.pendingNavigation();
+          this.pendingNavigation = null;
+        }
+      });
+      console.log("Embedded API listeners set up successfully");
+    }, 8000);
 
     // };
     // let username = document.cookie.split("=")[1];
