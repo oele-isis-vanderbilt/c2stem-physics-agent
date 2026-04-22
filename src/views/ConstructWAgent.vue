@@ -113,7 +113,9 @@ export default {
       let xmlString;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          console.log(`[Replay] Fetching project XML (attempt ${attempt}/3)...`);
+          console.log(
+            `[Replay] Fetching project XML (attempt ${attempt}/3)...`
+          );
           xmlString = await Promise.race([
             api.getProjectXML(),
             new Promise((_, reject) =>
@@ -122,11 +124,15 @@ export default {
           ]);
           break; // success
         } catch (err) {
-          console.warn(`[Replay] getProjectXML attempt ${attempt} failed: ${err.message}`);
+          console.warn(
+            `[Replay] getProjectXML attempt ${attempt} failed: ${err.message}`
+          );
           if (attempt < 3) {
             await new Promise((r) => setTimeout(r, 2000));
           } else {
-            console.error("[Replay] Could not fetch project XML after 3 attempts — starting fresh");
+            console.error(
+              "[Replay] Could not fetch project XML after 3 attempts — starting fresh"
+            );
             return;
           }
         }
@@ -377,7 +383,11 @@ export default {
 
       // Replay historical actions now that the project is fully loaded.
       // _replayHistoricalActions handles retries internally if getProjectXML isn't ready.
-      await this._replayHistoricalActions(this.api, astController, segmentparser);
+      await this._replayHistoricalActions(
+        this.api,
+        astController,
+        segmentparser
+      );
 
       // Send the initial model state to the agent before any live action arrives.
       let initialState = BlockParser.generate(this.$store);
