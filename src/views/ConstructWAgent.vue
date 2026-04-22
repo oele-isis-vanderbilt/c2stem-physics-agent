@@ -354,7 +354,11 @@ export default {
 
       // Replay historical actions from the loaded project XML (includes <replay> events).
       // Must run before wiring the live listener so initial state is built first.
-      await this._replayHistoricalActions(this.api, astController, segmentparser);
+      await this._replayHistoricalActions(
+        this.api,
+        astController,
+        segmentparser
+      );
 
       // Send the initial model state to the agent before any live action arrives.
       let initialState = BlockParser.generate(this.$store);
