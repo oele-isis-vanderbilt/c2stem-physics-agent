@@ -54,9 +54,29 @@ export default {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlString, "text/xml");
 
+      const parseError = xmlDoc.querySelector("parsererror");
+      if (parseError) {
+        console.error(
+          "[EventXMLParser] DOMParser failed — malformed XML:",
+          parseError.textContent.slice(0, 300)
+        );
+        console.error(
+          "[EventXMLParser] xmlString length:",
+          xmlString.length,
+          "| tail:",
+          xmlString.slice(-200)
+        );
+        return [];
+      }
+
       const replayNode = xmlDoc.querySelector("replay");
       if (!replayNode) {
-        console.warn("[EventXMLParser] No <replay> tag found in XML.");
+        console.warn(
+          "[EventXMLParser] No <replay> tag found. Root element:",
+          xmlDoc.documentElement?.tagName,
+          "| xmlString length:",
+          xmlString.length
+        );
         return [];
       }
 

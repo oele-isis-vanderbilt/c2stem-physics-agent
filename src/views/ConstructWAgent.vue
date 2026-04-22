@@ -94,7 +94,7 @@ export default {
     },
   },
   methods: {
-    async _replayHistoricalActions(api, astController, segmentparser) {
+    async _replayHistoricalActions(astController, segmentparser) {
       // Skip if the store already has blocks (page refresh — VuexPersistence restored state).
       const existingBlocks = this.$store.getters.getBlocks;
       if (existingBlocks && Object.keys(existingBlocks).length > 0) {
@@ -107,35 +107,51 @@ export default {
       const username = this.$store.state.user;
       if (!username) return;
 
-      // getProjectXML() can fail if the NetsBlox world isn't fully initialized yet
-      // even though openProject already fired. Retry up to 3 times with a 2-second
-      // gap, using a 5-second per-attempt timeout to avoid hanging indefinitely.
+      const projectName = this.projectName;
+
       let xmlString;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          console.log(
-            `[Replay] Fetching project XML (attempt ${attempt}/3)...`
-          );
-          xmlString = await Promise.race([
-            api.getProjectXML(),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error("getProjectXML timeout")), 5000)
-            ),
-          ]);
-          break; // success
-        } catch (err) {
+      try {
+        console.log(`[Replay] Fetching project XML for "${projectName}"...`);
+        const res = await fetch(
+          "https://physics.c2stem.org/api/getProjectByName",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ owner: username, projectName }),
+          }
+        );
+
+        if (!res.ok) {
           console.warn(
-            `[Replay] getProjectXML attempt ${attempt} failed: ${err.message}`
+            `[Replay] Server returned ${res.status} for project "${projectName}" — starting fresh`
           );
-          if (attempt < 3) {
-            await new Promise((r) => setTimeout(r, 2000));
-          } else {
-            console.error(
-              "[Replay] Could not fetch project XML after 3 attempts — starting fresh"
+          return;
+        }
+
+        const raw = await res.text();
+        // getProjectByName returns URL-encoded form data; extract the field whose
+        // value starts with '<' — that is the NetsBlox project XML.
+        if (raw.trimStart().startsWith("<")) {
+          xmlString = raw;
+        } else {
+          const params = new URLSearchParams(raw);
+          for (const value of params.values()) {
+            if (value.trimStart().startsWith("<")) {
+              xmlString = value;
+              break;
+            }
+          }
+          if (!xmlString) {
+            console.warn(
+              "[Replay] Response was URL-encoded but no XML field found — starting fresh"
             );
             return;
           }
         }
+      } catch (err) {
+        console.error("[Replay] Failed to fetch project XML:", err);
+        return;
       }
 
       try {
@@ -381,13 +397,8 @@ export default {
     setTimeout(async () => {
       console.log("Setting up embedded API listeners...");
 
-      // Replay historical actions now that the project is fully loaded.
-      // _replayHistoricalActions handles retries internally if getProjectXML isn't ready.
-      await this._replayHistoricalActions(
-        this.api,
-        astController,
-        segmentparser
-      );
+      // Replay historical actions from the REST API project XML.
+      await this._replayHistoricalActions(astController, segmentparser);
 
       // Send the initial model state to the agent before any live action arrives.
       let initialState = BlockParser.generate(this.$store);
