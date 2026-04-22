@@ -348,60 +348,61 @@ export default {
     const collapseElement = document.getElementById("collapseWindow");
     this.collapseInstance = new Collapse(collapseElement, { toggle: false });
 
-    // Wait for iframe NetsBlox IDE to be ready before wiring listeners.
-    setTimeout(() => {
-      console.log("Setting up embedded API listeners...");
+    // setTimeout removed — openProject is the signal that NetsBlox has fully
+    // loaded the project, so no fixed delay is needed. Wire listeners immediately.
+    // setTimeout(() => {
+    console.log("Setting up embedded API listeners...");
 
-      let replayComplete = false;
+    let replayComplete = false;
 
-      this.api.addActionListener(async (action) => {
-        if (action.type === "openProject") {
-          // openProject fires when NetsBlox has fully loaded the project —
-          // this is the earliest safe moment to call getProjectXML().
-          await this._replayHistoricalActions(
-            this.api,
-            astController,
-            segmentparser
-          );
+    this.api.addActionListener(async (action) => {
+      if (action.type === "openProject") {
+        // openProject fires when NetsBlox has fully loaded the project —
+        // this is the earliest safe moment to call getProjectXML().
+        await this._replayHistoricalActions(
+          this.api,
+          astController,
+          segmentparser
+        );
 
-          // Send the initial model state to the agent before any live action.
-          let initialState = BlockParser.generate(this.$store);
-          if (initialState.trim().length > 1) {
-            this.sendState({ type: "state", data: initialState });
-            console.log("[Replay] Initial model state sent to agent");
-          }
-
-          replayComplete = true;
-          return;
+        // Send the initial model state to the agent before any live action.
+        let initialState = BlockParser.generate(this.$store);
+        if (initialState.trim().length > 1) {
+          this.sendState({ type: "state", data: initialState });
+          console.log("[Replay] Initial model state sent to agent");
         }
 
-        // Drop any actions that arrive before the project has loaded.
-        if (!replayComplete) return;
+        replayComplete = true;
+        return;
+      }
 
-        this.sendActions({ type: "action", data: action });
-        astController.actionListener(action, segmentparser);
-        this.sendActionGroup(action);
-        // for one v1 and v2 versions of block parser file with multiple headers
-        // let state = blockParser.generate(this.$store);
-        let state = BlockParser.generate(this.$store);
-        actionScorer.updateScore(state);
-        this.sendState({ type: "state", data: state });
-        this.sendScore({ type: "score", data: this.getScore });
-        this.sendSegment({ type: "segment", data: this.getSegment });
-      });
+      // Drop any actions that arrive before the project has loaded.
+      if (!replayComplete) return;
 
-      this.api.addEventListener("startScript", console.log);
-      this.api.addEventListener("projectSaved", () => {
-        this.saveProject();
+      this.sendActions({ type: "action", data: action });
+      astController.actionListener(action, segmentparser);
+      this.sendActionGroup(action);
+      // for one v1 and v2 versions of block parser file with multiple headers
+      // let state = blockParser.generate(this.$store);
+      let state = BlockParser.generate(this.$store);
+      actionScorer.updateScore(state);
+      this.sendState({ type: "state", data: state });
+      this.sendScore({ type: "score", data: this.getScore });
+      this.sendSegment({ type: "segment", data: this.getSegment });
+    });
 
-        // If navigation is pending, allow it to proceed
-        if (this.pendingNavigation) {
-          this.pendingNavigation();
-          this.pendingNavigation = null;
-        }
-      });
-      console.log("Embedded API listeners set up successfully");
-    }, 8000);
+    this.api.addEventListener("startScript", console.log);
+    this.api.addEventListener("projectSaved", () => {
+      this.saveProject();
+
+      // If navigation is pending, allow it to proceed
+      if (this.pendingNavigation) {
+        this.pendingNavigation();
+        this.pendingNavigation = null;
+      }
+    });
+    console.log("Embedded API listeners set up successfully");
+    // }, 8000);
 
     // };
     // let username = document.cookie.split("=")[1];
