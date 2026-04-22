@@ -94,7 +94,7 @@ export default {
     },
   },
   methods: {
-    async _replayHistoricalActions(astController, segmentparser) {
+    async _replayHistoricalActions(api, astController, segmentparser) {
       // Skip if the store already has blocks (page refresh — VuexPersistence restored state).
       const existingBlocks = this.$store.getters.getBlocks;
       if (existingBlocks && Object.keys(existingBlocks).length > 0) {
@@ -107,33 +107,11 @@ export default {
       const username = this.$store.state.user;
       if (!username) return;
 
-      const projectName = this.projectName;
-
-      let resolve;
-      this.replayReady = new Promise((r) => (resolve = r));
-
       try {
-        const res = await fetch(
-          "https://physics.c2stem.org/api/getProjectByName",
-          {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              owner: username,
-              projectName: projectName,
-            }),
-          }
-        );
-
-        if (!res.ok) {
-          console.warn(
-            `[Replay] Server returned ${res.status} for project "${projectName}" — starting fresh`
-          );
-          return;
-        }
-
-        const xmlString = await res.text();
+        // Use the EmbeddedNetsBloxAPI to get the full project XML (includes <replay> events).
+        // Must be called after the iframe is loaded — only invoke from inside the setTimeout.
+        console.log("[Replay] Fetching project XML via EmbeddedNetsBloxAPI...");
+        const xmlString = await api.getProjectXML();
         const historicalActions = EventXMLParser.parseXML(xmlString, username);
 
         if (historicalActions.length === 0) {
@@ -152,8 +130,6 @@ export default {
         console.log("[Replay] Historical replay complete");
       } catch (err) {
         console.error("[Replay] Error during historical replay:", err);
-      } finally {
-        resolve();
       }
     },
     toggleCollapse() {
@@ -347,8 +323,6 @@ export default {
   },
   mounted() {
     this.username = this.getUser();
-    // Plain instance property — not reactive, Promises don't belong in data().
-    this.replayReady = Promise.resolve();
     let blocks = this.$store.getters.getBlocks;
     let treeRoots = this.$store.getters.getTreeRoots;
     let actions = [];
@@ -378,9 +352,11 @@ export default {
     setTimeout(async () => {
       console.log("Setting up embedded API listeners...");
 
-      // Wait for historical replay to finish, then send the initial state to
-      // the agent so it has context before the first live action arrives.
-      await this.replayReady;
+      // Replay historical actions from the loaded project XML (includes <replay> events).
+      // Must run before wiring the live listener so initial state is built first.
+      await this._replayHistoricalActions(this.api, astController, segmentparser);
+
+      // Send the initial model state to the agent before any live action arrives.
       let initialState = BlockParser.generate(this.$store);
       if (initialState.trim().length > 1) {
         this.sendState({ type: "state", data: initialState });
@@ -419,10 +395,6 @@ export default {
     // for one v1 and v2 versions of block parser file with multiple headers
     // this.setupSocket(blockParser);
     this.setupSocket();
-
-    // Fetch project XML and replay historical actions for the logged-in user.
-    // Runs in parallel with the iframe load — no EmbeddedAPI needed.
-    this._replayHistoricalActions(astController, segmentparser);
 
     // Set up auto-save every 2 minutes
     this.autoSaveInterval = setInterval(() => {
