@@ -348,39 +348,48 @@ export default {
     const collapseElement = document.getElementById("collapseWindow");
     this.collapseInstance = new Collapse(collapseElement, { toggle: false });
 
-    // Wait longer for iframe NetsBlox IDE to fully initialize
-    setTimeout(async () => {
+    // Wait for iframe NetsBlox IDE to be ready before wiring listeners.
+    setTimeout(() => {
       console.log("Setting up embedded API listeners...");
 
-      // Replay historical actions from the loaded project XML (includes <replay> events).
-      // Must run before wiring the live listener so initial state is built first.
-      await this._replayHistoricalActions(
-        this.api,
-        astController,
-        segmentparser
-      );
+      let replayComplete = false;
 
-      // Send the initial model state to the agent before any live action arrives.
-      let initialState = BlockParser.generate(this.$store);
-      if (initialState.trim().length > 1) {
-        this.sendState({ type: "state", data: initialState });
-        console.log("[Replay] Initial model state sent to agent");
-      }
+      this.api.addActionListener(async (action) => {
+        if (action.type === "openProject") {
+          // openProject fires when NetsBlox has fully loaded the project —
+          // this is the earliest safe moment to call getProjectXML().
+          await this._replayHistoricalActions(
+            this.api,
+            astController,
+            segmentparser
+          );
 
-      this.api.addActionListener((action) => {
-        if (action.type !== "openProject") {
-          this.sendActions({ type: "action", data: action });
-          astController.actionListener(action, segmentparser);
-          this.sendActionGroup(action);
-          // for one v1 and v2 versions of block parser file with multiple headers
-          // let state = blockParser.generate(this.$store);
-          let state = BlockParser.generate(this.$store);
-          actionScorer.updateScore(state);
-          this.sendState({ type: "state", data: state });
-          this.sendScore({ type: "score", data: this.getScore });
-          this.sendSegment({ type: "segment", data: this.getSegment });
+          // Send the initial model state to the agent before any live action.
+          let initialState = BlockParser.generate(this.$store);
+          if (initialState.trim().length > 1) {
+            this.sendState({ type: "state", data: initialState });
+            console.log("[Replay] Initial model state sent to agent");
+          }
+
+          replayComplete = true;
+          return;
         }
+
+        // Drop any actions that arrive before the project has loaded.
+        if (!replayComplete) return;
+
+        this.sendActions({ type: "action", data: action });
+        astController.actionListener(action, segmentparser);
+        this.sendActionGroup(action);
+        // for one v1 and v2 versions of block parser file with multiple headers
+        // let state = blockParser.generate(this.$store);
+        let state = BlockParser.generate(this.$store);
+        actionScorer.updateScore(state);
+        this.sendState({ type: "state", data: state });
+        this.sendScore({ type: "score", data: this.getScore });
+        this.sendSegment({ type: "segment", data: this.getSegment });
       });
+
       this.api.addEventListener("startScript", console.log);
       this.api.addEventListener("projectSaved", () => {
         this.saveProject();
