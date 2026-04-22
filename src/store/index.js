@@ -18,6 +18,7 @@ const vuexLocal = new VuexPersistence({
     projectName: state.projectName,
     role: state.role,
     agentURL: state.agentURL,
+    ssoContext: state.ssoContext,
     // Explicitly exclude socket - it will be null after page reload
   }),
 });
@@ -166,6 +167,7 @@ const store = createStore({
     role: "",
     agentURL: "",
     socket: null, // Will store the Websockets service instance
+    ssoContext: null, // Set when app is launched via GENIUS SSO; null in standalone mode
   },
   getters: {
     // getLiveKitRoom(state) {
@@ -206,6 +208,9 @@ const store = createStore({
     },
     getSprites(state) {
       return state.sprites;
+    },
+    getSSOContext(state) {
+      return state.ssoContext;
     },
   },
   mutations: {
@@ -295,6 +300,7 @@ const store = createStore({
       state.role = "";
       state.socket = null; // Clear WebSocket reference
       state.agentURL = ""; // Clear agent URL
+      state.ssoContext = null;
     },
     setProjectName(state, name) {
       state.projectName = name;
@@ -304,6 +310,9 @@ const store = createStore({
     },
     setSocketInstance(state, socket) {
       state.socket = socket;
+    },
+    setSSOContext(state, context) {
+      state.ssoContext = context;
     },
   },
   actions: {
@@ -348,6 +357,9 @@ const store = createStore({
     },
     setSocketInstance(context, socket) {
       context.commit("setSocketInstance", socket);
+    },
+    setSSOContext(context, payload) {
+      context.commit("setSSOContext", payload);
     },
   },
   modules: {},

@@ -1,6 +1,14 @@
 <template>
-  <!-- LoginView -->
-  <div class="login-card">
+  <!-- SSO mode: show only a loading spinner, no form -->
+  <div v-if="isSSOMode" class="login-card">
+    <div class="sso-loading">
+      <span class="spinner-border text-light mb-3" role="status"></span>
+      <p>{{ alertMessage || "Signing in..." }}</p>
+    </div>
+  </div>
+
+  <!-- Standalone mode: normal login form -->
+  <div v-else class="login-card">
     <div class="card">
       <div class="card-body">
         <form @submit.prevent="login">
@@ -64,7 +72,7 @@
       </div>
     </div>
   </div>
-  <AlertBox :message="alertMessage" v-if="isActive"></AlertBox>
+  <AlertBox :message="alertMessage" v-if="isActive && !isSSOMode"></AlertBox>
 </template>
 
 <script>
@@ -77,6 +85,7 @@ import Token from "../services/Token.js";
 import AlertBox from "../components/AlertBox.vue";
 import Websockets from "@/services/Websockets";
 import BlockParser from "@/services/BlockParser_v1";
+import SSOService from "@/services/SSOService";
 // import LiveKit from "../services/LiveKit.js";
 export default {
   components: { AlertBox },
@@ -89,6 +98,7 @@ export default {
       alertMessage: "",
       showPassword: false,
       isLoading: false,
+      isSSOMode: false,
     };
   },
   computed: {
@@ -170,6 +180,82 @@ export default {
         });
     },
 
+    async ssoLogin(ssoToken) {
+      this.isLoading = true;
+      this.cardActive = true;
+      this.alertMessage = "Signing in via GENIUS...";
+
+      const secret = process.env.VUE_APP_SSO_SECRET;
+      if (!secret) {
+        this.isLoading = false;
+        this.alertMessage =
+          "SSO secret not configured (VUE_APP_SSO_SECRET missing).";
+        console.error("[SSO] VUE_APP_SSO_SECRET is not set");
+        return;
+      }
+
+      let payload;
+      try {
+        payload = await SSOService.validateToken(ssoToken, secret);
+      } catch (err) {
+        this.isLoading = false;
+        this.alertMessage = "SSO login failed: " + err.message;
+        console.error("[SSO] Token validation failed:", err);
+        return;
+      }
+
+      const username = SSOService.netsBloxUsername(payload);
+      const password = process.env.VUE_APP_NETSBLOX_SSO_PASSWORD;
+      if (!password) {
+        this.isLoading = false;
+        this.alertMessage =
+          "SSO login failed: VUE_APP_NETSBLOX_SSO_PASSWORD is not set.";
+        console.error("[SSO] VUE_APP_NETSBLOX_SSO_PASSWORD is not set");
+        return;
+      }
+
+      try {
+        await auth.netsbloxLogin({
+          username,
+          password,
+          ServerURL: this.ServerURL,
+        });
+      } catch (err) {
+        this.isLoading = false;
+        this.alertMessage =
+          'NetsBlox login failed. Ensure a NetsBlox account exists for "' +
+          username +
+          '".';
+        console.error("[SSO] NetsBlox login failed for", username, err);
+        return;
+      }
+
+      // Persist identity and SSO context in the store.
+      this.$store.dispatch("saveCredentials", { username, role: payload.role });
+      this.$store.dispatch("setSSOContext", {
+        assignmentId: payload.assignmentId || null,
+        classId: payload.classId || null,
+        taskId: payload.taskId || null,
+        teacherEmail: payload.teacherEmail || null,
+      });
+
+      try {
+        await this.setupSocket(username);
+        this.$router.push({
+          name: "ConstructAgent",
+          params: {
+            userID: username,
+            projectName: payload.taskId || "default",
+            source: this.ServerURL,
+          },
+        });
+      } catch (err) {
+        this.isLoading = false;
+        this.alertMessage = "WebSocket connection failed. Please try again.";
+        console.error("[SSO] WebSocket error:", err);
+      }
+    },
+
     toggleShow() {
       this.showPassword = !this.showPassword;
     },
@@ -235,11 +321,18 @@ export default {
       });
     },
   },
-  mounted() {
+  async mounted() {
     this.emitter.on("close-alert", () => {
       this.cardActive = false;
       this.alertMessage = "";
     });
+
+    // GENIUS SSO mode: token present in URL → hide the form and auto-login.
+    const ssoToken = SSOService.getSSOToken();
+    if (ssoToken) {
+      this.isSSOMode = true;
+      await this.ssoLogin(ssoToken);
+    }
   },
 };
 </script>
@@ -257,5 +350,12 @@ div {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.sso-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #d4d4d4;
+  font-size: 1rem;
 }
 </style>
