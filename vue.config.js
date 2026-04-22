@@ -5,7 +5,8 @@ module.exports = defineConfig({
     client: {
       webSocketURL: {
         protocol: process.env.VUE_APP_DEV_WS_PROTOCOL || "wss",
-        hostname: process.env.VUE_APP_DEV_WS_HOSTNAME || "collaboration.c2stem.org",
+        hostname:
+          process.env.VUE_APP_DEV_WS_HOSTNAME || "collaboration.c2stem.org",
         port: process.env.VUE_APP_DEV_WS_PORT || 443,
         pathname: "/ws",
       },

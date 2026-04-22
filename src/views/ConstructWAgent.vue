@@ -56,6 +56,7 @@ import BlockParser from "@/services/BlockParser_v1_truck";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";
 import Simulation from "../services/Simulation.js";
+import EventXMLParser from "@/services/EventXMLParser";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -93,6 +94,68 @@ export default {
     },
   },
   methods: {
+    async _replayHistoricalActions(astController, segmentparser) {
+      // Skip if the store already has blocks (page refresh — VuexPersistence restored state).
+      const existingBlocks = this.$store.getters.getBlocks;
+      if (existingBlocks && Object.keys(existingBlocks).length > 0) {
+        console.log(
+          "[Replay] Store already has blocks — skipping historical replay"
+        );
+        return;
+      }
+
+      const username = this.$store.state.user;
+      if (!username) return;
+
+      const projectName = this.projectName;
+
+      let resolve;
+      this.replayReady = new Promise((r) => (resolve = r));
+
+      try {
+        const res = await fetch(
+          "https://physics.c2stem.org/api/getProjectByName",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              owner: username,
+              projectName: projectName,
+            }),
+          }
+        );
+
+        if (!res.ok) {
+          console.warn(
+            `[Replay] Server returned ${res.status} for project "${projectName}" — starting fresh`
+          );
+          return;
+        }
+
+        const xmlString = await res.text();
+        const historicalActions = EventXMLParser.parseXML(xmlString, username);
+
+        if (historicalActions.length === 0) {
+          console.log(
+            `[Replay] No historical actions for "${username}" — starting fresh`
+          );
+          return;
+        }
+
+        console.log(
+          `[Replay] Replaying ${historicalActions.length} actions for "${username}"`
+        );
+        for (const action of historicalActions) {
+          astController.actionListener(action, segmentparser);
+        }
+        console.log("[Replay] Historical replay complete");
+      } catch (err) {
+        console.error("[Replay] Error during historical replay:", err);
+      } finally {
+        resolve();
+      }
+    },
     toggleCollapse() {
       if (this.collapseInstance) {
         this.collapseInstance.toggle();
@@ -284,6 +347,8 @@ export default {
   },
   mounted() {
     this.username = this.getUser();
+    // Plain instance property — not reactive, Promises don't belong in data().
+    this.replayReady = Promise.resolve();
     let blocks = this.$store.getters.getBlocks;
     let treeRoots = this.$store.getters.getTreeRoots;
     let actions = [];
@@ -310,8 +375,18 @@ export default {
     this.collapseInstance = new Collapse(collapseElement, { toggle: false });
 
     // Wait longer for iframe NetsBlox IDE to fully initialize
-    setTimeout(() => {
+    setTimeout(async () => {
       console.log("Setting up embedded API listeners...");
+
+      // Wait for historical replay to finish, then send the initial state to
+      // the agent so it has context before the first live action arrives.
+      await this.replayReady;
+      let initialState = BlockParser.generate(this.$store);
+      if (initialState.trim().length > 1) {
+        this.sendState({ type: "state", data: initialState });
+        console.log("[Replay] Initial model state sent to agent");
+      }
+
       this.api.addActionListener((action) => {
         if (action.type !== "openProject") {
           this.sendActions({ type: "action", data: action });
@@ -344,6 +419,10 @@ export default {
     // for one v1 and v2 versions of block parser file with multiple headers
     // this.setupSocket(blockParser);
     this.setupSocket();
+
+    // Fetch project XML and replay historical actions for the logged-in user.
+    // Runs in parallel with the iframe load — no EmbeddedAPI needed.
+    this._replayHistoricalActions(astController, segmentparser);
 
     // Set up auto-save every 2 minutes
     this.autoSaveInterval = setInterval(() => {
