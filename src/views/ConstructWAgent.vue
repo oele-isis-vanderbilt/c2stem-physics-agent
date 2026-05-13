@@ -107,7 +107,7 @@ export default {
       const username = this.$store.state.user;
       if (!username) return;
 
-      const projectName = this.projectName;
+      const projectName = this.projectLessonName;
 
       let xmlString;
       try {
