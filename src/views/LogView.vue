@@ -3,42 +3,50 @@
     <div class="log-view-container">
       <div class="card nav-card">
         <div class="card-body">
-          <div
-            class="nav flex-column nav-pills"
-            id="v-pills-tab"
-            role="tablist"
-            aria-orientation="vertical"
-          >
+          <label class="form-label fw-semibold mb-1">Enter Username</label>
+          <div class="input-group mb-2">
+            <input
+              v-model="usernameInput"
+              type="text"
+              class="form-control"
+              placeholder="Enter username"
+              @keyup.enter="fetchLogs"
+            />
             <button
-              v-for="(value, key) in users"
-              :key="key"
-              class="nav-link"
-              id="v-pills-home-tab"
-              data-bs-toggle="pill"
-              data-bs-target="#v-pills-home"
-              type="button"
-              role="tab"
-              aria-controls="v-pills-home"
-              aria-selected="true"
-              @click="getUserLogs(value)"
+              class="btn btn-primary"
+              @click="fetchLogs"
+              :disabled="loading"
             >
-              {{ value }}
+              {{ loading ? "Loading..." : "Fetch" }}
             </button>
           </div>
         </div>
       </div>
       <div class="card content-card">
         <div class="card-body">
-          <div class="tab-content" id="v-pills-tabContent">
-            <div
-              v-if="isDataVisible"
-              class="tab-pane fade show active"
-              id="v-pills-home"
-              role="tabpanel"
-              aria-labelledby="v-pills-home-tab"
-              tabindex="0"
-            >
-              <pre>{{ JSON.stringify(getLogs, null, 2) }}</pre>
+          <div class="tab-content">
+            <div v-if="visibleLogs.length">
+              <p class="hint text-muted mb-2">Click any row to expand.</p>
+              <details
+                v-for="(log, index) in visibleLogs"
+                :key="index"
+                class="log-entry"
+              >
+                <summary class="log-summary">
+                  {{ index + 1 }}. {{ previewLog(log) }}
+                </summary>
+                <pre>{{ JSON.stringify(log, null, 2) }}</pre>
+              </details>
+              <button
+                v-if="visibleCount < allLogs.length"
+                class="btn btn-outline-secondary btn-sm mt-2"
+                @click="loadMore"
+              >
+                Load 30 more ({{ allLogs.length - visibleCount }} remaining)
+              </button>
+            </div>
+            <div v-else class="text-muted">
+              Enter a username and click Fetch to view logs.
             </div>
           </div>
         </div>
@@ -62,39 +70,64 @@ export default {
   name: "LogView",
   data() {
     return {
-      userList: [],
-      logs: {},
-      dataVisible: false,
+      usernameInput: "",
+      allLogs: [],
+      visibleCount: 30,
+      loading: false,
     };
   },
   computed: {
-    users() {
-      return this.userList;
-    },
-    getLogs() {
-      return this.logs;
-    },
-    isDataVisible() {
-      return this.dataVisible;
+    visibleLogs() {
+      return this.allLogs.slice(0, this.visibleCount);
     },
     isAdmin() {
       return this.$store.state.role === "admin";
     },
   },
-  methods: {
-    async getUserLogs(username) {
-      let response = await Logs.getUserLogById(username);
-      if (response) {
-        this.logs = response.data.logs;
-        this.dataVisible = true;
-      }
-    },
+  mounted() {
+    this.usernameInput = this.$store.state.user || "";
   },
-  async mounted() {
-    let response = await Logs.getUsers();
-    if (response) {
-      this.userList = response.data.users;
-    }
+  methods: {
+    async fetchLogs() {
+      const username = this.usernameInput.trim();
+      if (!username) return;
+      this.loading = true;
+      this.allLogs = [];
+      this.visibleCount = 30;
+      const response = await Logs.getUserLogById(username);
+      if (response && response.data && response.data.logs) {
+        this.allLogs = response.data.logs.slice().reverse();
+      }
+      this.loading = false;
+    },
+    loadMore() {
+      this.visibleCount = Math.min(this.visibleCount + 30, this.allLogs.length);
+    },
+    previewLog(log) {
+      const parts = [];
+      if (log.timestamp) {
+        parts.push(new Date(log.timestamp).toLocaleString());
+      }
+      if (log.event_type) {
+        parts.push(`event: ${log.event_type}`);
+      }
+      if (
+        log.event_type === "action" &&
+        log.raw_action &&
+        log.raw_action.action_type
+      ) {
+        parts.push(`action: ${log.raw_action.action_type}`);
+      }
+      if (!parts.length) {
+        parts.push(
+          Object.entries(log)
+            .slice(0, 2)
+            .map(([k, v]) => `${k}: ${typeof v === "object" ? "{...}" : v}`)
+            .join(" | ")
+        );
+      }
+      return parts.join(" | ");
+    },
   },
 };
 </script>
@@ -120,24 +153,14 @@ export default {
 
 .nav-card {
   flex-shrink: 0;
-  width: 250px;
-  height: 100%;
+  width: 280px;
+  height: fit-content;
   border: 1px solid #dee2e6;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
 
 .nav-card .card-body {
-  padding: 0.5rem;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
-.nav.flex-column {
-  flex-wrap: nowrap;
+  padding: 0.75rem;
 }
 
 .content-card {
@@ -158,37 +181,50 @@ export default {
   min-height: 0;
 }
 
-.nav-pills .nav-link {
-  border: 1px solid #dee2e6;
-  margin-bottom: 0.5rem;
-  border-radius: 0.375rem;
-  transition: all 0.2s;
-}
-
-.nav-pills .nav-link:hover {
-  background-color: #f8f9fa;
-  border-color: #adb5bd;
-}
-
-.nav-pills .nav-link.active {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
-}
-
 .tab-content {
-  height: 100%;
-  overflow: hidden;
-}
-
-.tab-pane {
   height: 100%;
   overflow-y: auto;
 }
 
+.hint {
+  font-size: 0.8rem;
+}
+
+.log-entry {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  margin-bottom: 0.4rem;
+}
+
+.log-summary {
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  user-select: none;
+  list-style: none;
+}
+
+.log-summary::-webkit-details-marker {
+  display: none;
+}
+
+.log-summary::before {
+  content: "▶ ";
+  font-size: 0.7rem;
+}
+
+details[open] .log-summary::before {
+  content: "▼ ";
+}
+
 pre {
   margin: 0;
+  padding: 0.75rem;
   white-space: pre-wrap;
   word-wrap: break-word;
+  border-top: 1px solid #dee2e6;
+  font-size: 0.8rem;
+  background: #f8f9fa;
 }
 
 .unauthorized-wrapper {

@@ -155,7 +155,10 @@ export default {
       }
 
       try {
-        const historicalActions = EventXMLParser.parseXML(xmlString, username);
+        const historicalActions = EventXMLParser.parseXMLPeerContext(
+          xmlString,
+          username
+        );
 
         if (historicalActions.length === 0) {
           console.log(

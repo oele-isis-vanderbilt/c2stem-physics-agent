@@ -10,7 +10,50 @@ export default {
    * @param {string} username   Logged-in username whose events to extract
    * @returns {Array<Object>}   Action objects for ASTController.actionListener()
    */
-  parseXML(xmlString, username) {
+  parseXMLPeerContext(xmlString, username) {
+    const allEvents = this._extractAllEvents(xmlString);
+    if (!allEvents.length) return [];
+
+    // Find the last username in the event list
+    let lastUsername = null;
+    for (let i = allEvents.length - 1; i >= 0; i--) {
+      if (allEvents[i].username) {
+        lastUsername = allEvents[i].username;
+        break;
+      }
+    }
+
+    let allowedUsernames;
+    if (lastUsername && lastUsername.includes(username)) {
+      // Logged-in user is the last contributor — also include the user before them
+      let prevUsername = null;
+      for (let i = allEvents.length - 1; i >= 0; i--) {
+        const u = allEvents[i].username;
+        if (u && !u.includes(username)) {
+          prevUsername = u;
+          break;
+        }
+      }
+      allowedUsernames = new Set([username]);
+      if (prevUsername) allowedUsernames.add(prevUsername);
+    } else {
+      // Logged-in user has no recent events — use whoever is last
+      allowedUsernames = new Set([lastUsername]);
+    }
+
+    const filtered = allEvents.filter((e) =>
+      Array.from(allowedUsernames).some((u) => e.username.includes(u))
+    );
+
+    console.log(
+      `[EventXMLParser] parseXMLPeerContext: ${
+        filtered.length
+      } events for usernames [${Array.from(allowedUsernames).join(", ")}]`
+    );
+    return filtered;
+  },
+
+  _extractAllEvents(xmlString) {
     function parseArgs(argNodes, eventType) {
       return Array.from(argNodes).map((argNode) => {
         if (argNode.children.length > 0) {
@@ -50,6 +93,25 @@ export default {
       return value;
     }
 
+    const SKIP_TYPES = new Set([
+      "renameSprite",
+      "addSprite",
+      "removeSprite",
+      "selectSprite",
+      "selectTab",
+      "addCostume",
+      "duplicateSprite",
+      "setCommentText",
+      "setConceptLevel",
+      "openProject",
+      "setStageSize",
+      "updateCostume",
+      "setSpritePosition",
+      "stopAllScripts",
+      "pressStart",
+      "startScript",
+    ]);
+
     try {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlString, "text/xml");
@@ -86,26 +148,6 @@ export default {
         return [];
       }
 
-      // Types that ASTController does not handle — skip them.
-      const SKIP_TYPES = new Set([
-        "renameSprite",
-        "addSprite",
-        "removeSprite",
-        "selectSprite",
-        "selectTab",
-        "addCostume",
-        "duplicateSprite",
-        "setCommentText",
-        "setConceptLevel",
-        "openProject",
-        "setStageSize",
-        "updateCostume",
-        "setSpritePosition",
-        "stopAllScripts",
-        "pressStart",
-        "startScript",
-      ]);
-
       const events = [];
       for (let i = 0; i < eventNodes.length; i++) {
         const eventNode = eventNodes[i];
@@ -113,7 +155,6 @@ export default {
         const eventUsername = eventNode.getAttribute("username") || "";
 
         if (SKIP_TYPES.has(type)) continue;
-        if (!eventUsername.includes(username)) continue;
 
         const args = parseArgs(eventNode.getElementsByTagName("arg"), type);
 
@@ -138,13 +179,19 @@ export default {
         });
       }
 
-      console.log(
-        `[EventXMLParser] ${events.length} replayable events found for "${username}"`
-      );
       return events;
     } catch (e) {
       console.error("[EventXMLParser] Error parsing XML:", e);
       return [];
     }
+  },
+
+  parseXML(xmlString, username) {
+    const allEvents = this._extractAllEvents(xmlString);
+    const events = allEvents.filter((e) => e.username.includes(username));
+    console.log(
+      `[EventXMLParser] ${events.length} replayable events found for "${username}"`
+    );
+    return events;
   },
 };

@@ -29,7 +29,7 @@ export default {
     return {
       names: ["Truck: Problem Solving", "Truck: Debug"],
       description: ["Complete your computational model lessons", ""],
-      route: ["ConstructAgent", "Construct"],
+      route: ["ConstructAgent", "ConstructAgent"],
       logo: [c2stemTruckLogo, c2stemTruckLogo],
       routeParams: [
         {
