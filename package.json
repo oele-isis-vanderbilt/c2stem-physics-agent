@@ -7,7 +7,8 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "start:server": "cd ../server && python main.py",
-    "app": "concurrently \"npm run serve\" \"npm run start:server\""
+    "app": "concurrently \"npm run serve\" \"npm run start:server\"",
+    "test:ast": "node tests/test-ast-parser.js"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
@@ -17,7 +18,6 @@
     "core-js": "^3.8.3",
     "crypto-js": "^4.2.0",
     "edit-distance": "^1.0.5",
-    "livekit-client": "^2.11.2",
     "mitt": "^3.0.1",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
@@ -32,6 +32,7 @@
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "@xmldom/xmldom": "^0.9.10",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",

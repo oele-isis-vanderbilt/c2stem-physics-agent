@@ -194,4 +194,12 @@ export default {
     );
     return events;
   },
+
+  parseXMLAllUsers(xmlString) {
+    const allEvents = this._extractAllEvents(xmlString);
+    console.log(
+      `[EventXMLParser] parseXMLAllUsers: ${allEvents.length} total events across all users`
+    );
+    return allEvents;
+  },
 };
