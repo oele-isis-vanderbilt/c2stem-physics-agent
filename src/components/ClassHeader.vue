@@ -21,6 +21,13 @@
       >
         Save Project
       </button>
+      <reset-project
+        v-if="
+          loggedIn &&
+          (currentRouteName === 'Construct' ||
+            currentRouteName === 'ConstructAgent')
+        "
+      ></reset-project>
       <div class="bttn-auth ms-2 me-2">
         <button
           v-if="loggedIn && isAdmin && currentRouteName !== 'dashboard'"
@@ -55,11 +62,13 @@
 <script>
 import Logout from "./Logout.vue";
 import Simulation from "../services/Simulation";
+import ResetProject from "./ResetProject.vue";
 
 export default {
   name: "ClassHeader",
   components: {
     Logout,
+    ResetProject,
   },
   computed: {
     loggedIn() {

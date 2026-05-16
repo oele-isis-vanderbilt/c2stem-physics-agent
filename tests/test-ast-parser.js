@@ -257,7 +257,7 @@ function makeMockStore(blocks, treeRoots) {
     console.log('EventXMLParser.parseXMLAllUsers  (all users)');
     console.log('─'.repeat(60));
 
-    const events = EventXMLParser.parseXMLPeerContext(xmlString, username);
+    const events = EventXMLParser.parseXMLAllUsers(xmlString, username);
     console.log(`Result: ${events.length} event(s)`);
 
     if (events.length === 0) {
