@@ -19,9 +19,7 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="ResetModalLabel">
-            Reset Project
-          </h5>
+          <h5 class="modal-title" id="ResetModalLabel">Reset Project</h5>
           <button
             type="button"
             class="btn-close"
@@ -65,6 +63,7 @@
 <script>
 import { Modal } from "bootstrap";
 import Simulation from "../services/Simulation.js";
+import Auth from "../services/Auth.js";
 import AlertBox from "../components/AlertBox.vue";
 
 export default {
@@ -99,9 +98,8 @@ export default {
       this.alertActive = true;
     },
     async verifyPassphrase(passphrase) {
-      // TODO: wire up to backend verification endpoint
-      void passphrase;
-      return true;
+      const response = await Auth.verifyPassphrase(passphrase);
+      return response.data.verified === true;
     },
     async resetProject() {
       this.loading = true;

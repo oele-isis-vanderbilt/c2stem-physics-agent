@@ -29,6 +29,20 @@ export default {
     return this._requestPromise(request, loginData);
   },
 
+  verifyPassphrase(passphrase) {
+    try {
+      return axiosInstance.post(
+        "app/api/verify-passphrase",
+        { passphrase },
+        {
+          withCredentials: true,
+        }
+      );
+    } catch (error) {
+      return error;
+    }
+  },
+
   logout(credentials) {
     try {
       return axiosInstance.post("app/api/logout", credentials, {
