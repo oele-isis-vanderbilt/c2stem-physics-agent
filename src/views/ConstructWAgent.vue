@@ -53,6 +53,7 @@ import ASTController from "../services/ASTController";
 // import Websockets from "@/services/Websockets";
 // import BlockParser from "@/services/BlockParser_v2";
 import BlockParser from "@/services/BlockParser_v1_truck";
+// import BlockParser from "@/services/BlockParser";
 import ActionScorer from "@/services/ActionScorer";
 import SegmentParser from "@/services/SegmentParser";
 import Simulation from "../services/Simulation.js";
@@ -415,13 +416,15 @@ export default {
           this.sendActions({ type: "action", data: action });
           astController.actionListener(action, segmentparser);
           this.sendActionGroup(action);
-          // for one v1 and v2 versions of block parser file with multiple headers
-          // let state = blockParser.generate(this.$store);
-          let state = BlockParser.generate(this.$store);
-          actionScorer.updateScore(state);
-          this.sendState({ type: "state", data: state });
-          this.sendScore({ type: "score", data: this.getScore });
-          this.sendSegment({ type: "segment", data: this.getSegment });
+          this.$nextTick(() => {
+            // for one v1 and v2 versions of block parser file with multiple headers
+            // let state = blockParser.generate(this.$store);
+            let state = BlockParser.generate(this.$store);
+            actionScorer.updateScore(state);
+            this.sendState({ type: "state", data: state });
+            this.sendScore({ type: "score", data: this.getScore });
+            this.sendSegment({ type: "segment", data: this.getSegment });
+          });
         }
       });
 
