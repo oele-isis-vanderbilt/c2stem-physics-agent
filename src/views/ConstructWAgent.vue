@@ -362,6 +362,11 @@ export default {
   },
   mounted() {
     this.username = this.getUser();
+
+    // Clear all task-specific state from the previous task so the store
+    // starts fresh (empty blocks, treeRoots, scores, segment, agentURL).
+    this.$store.dispatch("resetTaskState");
+
     let blocks = this.$store.getters.getBlocks;
     let treeRoots = this.$store.getters.getTreeRoots;
     let actions = [];
