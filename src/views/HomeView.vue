@@ -16,7 +16,7 @@ import LessonCard from "../components/LessonCard.vue";
 // import BuildEnv from "@/components/BuildEnv.vue";
 // import slothLogo from "@/assets/sloth.png";
 import c2stemTruckLogo from "@/assets/c2stem_truck.png";
-// import droneLogo from "@/assets/drone.png";
+import droneLogo from "@/assets/drone.png";
 // import farmTruckLogo from "@/assets/farm.png";
 
 export default {
@@ -27,10 +27,18 @@ export default {
   },
   data() {
     return {
-      names: ["Truck: Problem Solving", "Truck: Debug"],
-      description: ["Complete your computational model lessons", ""],
-      route: ["ConstructAgent", "ConstructAgent"],
-      logo: [c2stemTruckLogo, c2stemTruckLogo],
+      names: [
+        "Truck: Problem Solving",
+        "Drone Task: Problem Solving",
+        "Drone 2 Package: Problem Solving",
+      ],
+      description: [
+        "Complete your computational model lessons",
+        "Complete your computational model lessons",
+        "Complete your computational model lessons",
+      ],
+      route: ["ConstructAgent", "ConstructAgent", "ConstructAgent"],
+      logo: [c2stemTruckLogo, droneLogo, droneLogo],
       routeParams: [
         {
           userID: "oele",
@@ -39,7 +47,12 @@ export default {
         },
         {
           userID: "oele",
-          projectName: "Truck_Model_debug_HIDDEN_BLOCKS",
+          projectName: "Drone_Model_one_package_empty_HIDDEN_BLOCKS",
+          source: "https://physics.c2stem.org",
+        },
+        {
+          userID: "oele",
+          projectName: "Drone_Model_two_packages_empty_HIDDEN_BLOCKS",
           source: "https://physics.c2stem.org",
         },
       ],
