@@ -273,7 +273,6 @@ const store = createStore({
         overall_mastery: 0,
       };
       state.two_drone_score = undefined;
-      state.agentURL = "";
     },
     resetStore(state) {
       // state.livekitRoom = Room;
