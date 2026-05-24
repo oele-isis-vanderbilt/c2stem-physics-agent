@@ -305,8 +305,7 @@ export default {
 
       const onReconnect = () => {
         console.log("WebSocket reconnected successfully");
-        // for one v1 and v2 versions of block parser file with multiple headers
-        // let state = blockParser.generate(this.$store);
+        Websockets.send({ type: "task", data: this.projectLessonName });
         let state = BlockParser.generate(this.$store);
         if (state.trim().length > 1) {
           Websockets.send({ type: "state", data: state });
@@ -317,24 +316,14 @@ export default {
       this.$store.dispatch("setSocketInstance", Websockets);
       this.socket = Websockets;
     },
-    // for one v1 and v2 versions of block parser file with multiple headers
-    // setupSocket(blockParser) {
     setupSocket() {
-      // Get the WebSocket service instance from the store
-      // The socket was already initialized in LoginView
       this.socket = this.getSocket;
 
-      // Handle case where socket might be null (e.g., after page reload)
       if (!this.socket) {
         const username = this.$store.state.user;
-
-        // If user is logged in but socket is null (page refresh scenario)
         if (username) {
-          // for one v1 and v2 versions of block parser file with multiple headers
-          // this.reconnectSocket(username, blockParser);
           this.reconnectSocket(username);
         } else {
-          // No user logged in, redirect to login
           console.error(
             "WebSocket service not initialized. Please log in again."
           );
@@ -343,10 +332,13 @@ export default {
         }
       }
 
-      // Verify connection
       if (!this.socket.isConnected()) {
         console.warn("WebSocket not connected yet, messages will be queued");
       }
+
+      // Tell the server which project is loaded so it can reset to the right task config
+      this.socket.send({ type: "task", data: this.projectLessonName });
+      console.log(`[Task] Sent task message: ${this.projectLessonName}`);
     },
   },
   beforeRouteLeave(to, from, next) {
