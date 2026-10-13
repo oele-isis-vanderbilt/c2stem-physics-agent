@@ -22,12 +22,7 @@ export function isAnswerable(block) {
 
 /** Blocks the player can't show yet. They never hold up Next. */
 export function isNotBuilt(block) {
-  return (
-    block.type === "fillInBlanks" ||
-    block.type === "simulation" ||
-    (block.type === "designTable" && !!block.editable) ||
-    (block.type === "select" && !!block.optionsFrom)
-  );
+  return block.type === "simulation";
 }
 
 // --- position -----------------------------------------------------------------
@@ -139,11 +134,119 @@ export function isShown(block, ctx) {
   return true;
 }
 
+function filled(value) {
+  if (typeof value === "string") return value.trim() !== "";
+  return value !== undefined && value !== null;
+}
+
 export function isAnswered(block, value) {
-  if (block.type === "freeText") {
-    return typeof value === "string" && value.trim() !== "";
+  switch (block.type) {
+    case "freeText":
+      return typeof value === "string" && value.trim() !== "";
+    case "fillInBlanks":
+      return !!value && block.blanks.every((b) => filled(value[b.id]));
+    case "designTable":
+      return (
+        !!value &&
+        Array.isArray(value.rows) &&
+        value.rows.length === rowCountOf(block) &&
+        value.rows.every(
+          (row) =>
+            filled(row.variable) &&
+            trialsOf(block).every((t) => row.values && filled(row.values[t]))
+        )
+      );
+    default:
+      return filled(value);
   }
-  return value !== undefined && value !== null && value !== "";
+}
+
+// --- fill in the blanks and design tables ---------------------------------------
+
+const BLANK = /\[\[([A-Za-z0-9_-]{1,64})\]\]/g;
+
+/** A template as paragraphs, each a list of { text } and { blank: id } pieces. */
+export function parseTemplate(template) {
+  return template.split(/\n\s*\n/).map((paragraph) => {
+    const pieces = [];
+    let last = 0;
+    for (const match of paragraph.matchAll(BLANK)) {
+      if (match.index > last) {
+        pieces.push({ text: paragraph.slice(last, match.index) });
+      }
+      pieces.push({ blank: match[1] });
+      last = match.index + match[0].length;
+    }
+    if (last < paragraph.length) pieces.push({ text: paragraph.slice(last) });
+    return pieces;
+  });
+}
+
+export function trialsOf(block) {
+  return block.trials || ["A", "B"];
+}
+
+export function rowCountOf(block) {
+  return block.rowCount || 2;
+}
+
+/**
+ * Dropdown options made from the student's earlier answers, in ref order.
+ * The option's id is its text, since that is what gets saved.
+ */
+export function optionsFrom(refs, ctx) {
+  const seen = new Set();
+  const options = [];
+  for (const ref of refs) {
+    const text = refText(ref, ctx);
+    const label = text === undefined ? "" : text.trim();
+    if (!label || seen.has(label)) continue;
+    seen.add(label);
+    options.push({ id: label, label });
+  }
+  return options;
+}
+
+/**
+ * Answers on this step picked from earlier answers that are no longer among
+ * the options, e.g. after the student went back and changed their hypothesis.
+ * Returns [{ blockId, value }] with the corrected value (null = cleared).
+ */
+export function staleAnswers(step, ctx) {
+  const fixes = [];
+  const ids = (refs) => new Set(optionsFrom(refs, ctx).map((o) => o.id));
+
+  for (const block of step.blocks) {
+    const value = ctx.answers[block.id];
+    if (value === undefined || value === null) continue;
+
+    if (block.type === "select" && block.optionsFrom) {
+      if (!ids(block.optionsFrom).has(value)) {
+        fixes.push({ blockId: block.id, value: null });
+      }
+    } else if (block.type === "fillInBlanks") {
+      const next = { ...value };
+      for (const blank of block.blanks) {
+        if (blank.optionsFrom && filled(next[blank.id])) {
+          if (!ids(blank.optionsFrom).has(next[blank.id]))
+            delete next[blank.id];
+        }
+      }
+      if (Object.keys(next).length !== Object.keys(value).length) {
+        fixes.push({ blockId: block.id, value: next });
+      }
+    } else if (block.type === "designTable" && block.variableOptionsFrom) {
+      const valid = ids(block.variableOptionsFrom);
+      let changed = false;
+      const rows = (value.rows || []).map((row) => {
+        if (!filled(row.variable) || valid.has(row.variable)) return row;
+        changed = true;
+        return { ...row, variable: "" };
+      });
+      if (changed) fixes.push({ blockId: block.id, value: { rows } });
+    }
+  }
+  return fixes;
 }
 
 /** Whether every visible, required answer on the step is filled in. */

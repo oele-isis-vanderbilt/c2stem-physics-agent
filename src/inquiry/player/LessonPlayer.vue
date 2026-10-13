@@ -128,6 +128,7 @@ import {
   phaseOf,
   phasesOf,
   positionOf,
+  staleAnswers,
   stepIndex,
 } from "./lesson";
 
@@ -205,6 +206,9 @@ export default {
         : {};
     },
   },
+  watch: {
+    index: { handler: "clearStale", immediate: true },
+  },
   mounted() {
     this.fit();
     window.addEventListener("resize", this.fit);
@@ -218,6 +222,17 @@ export default {
     fit() {
       const top = this.$el.getBoundingClientRect().top + window.scrollY;
       this.fitHeight = Math.max(window.innerHeight - top, MIN_HEIGHT);
+    },
+    // A dropdown of earlier answers keeps its pick only while that answer is
+    // still one of the options; otherwise the student picks again.
+    clearStale() {
+      if (this.readOnly) return;
+      for (const { blockId, value } of staleAnswers(
+        this.current.step,
+        this.ctx
+      )) {
+        this.$store.dispatch("inquiry/setAnswer", { blockId, value });
+      }
     },
     move(delta) {
       const target = this.steps[this.index + delta];

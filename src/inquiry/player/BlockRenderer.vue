@@ -17,6 +17,7 @@ import ChoiceBlock from "./blocks/ChoiceBlock.vue";
 import ComingSoonBlock from "./blocks/ComingSoonBlock.vue";
 import DesignTableBlock from "./blocks/DesignTableBlock.vue";
 import FeedbackBlock from "./blocks/FeedbackBlock.vue";
+import FillInBlanksBlock from "./blocks/FillInBlanksBlock.vue";
 import FreeTextBlock from "./blocks/FreeTextBlock.vue";
 import MediaBlock from "./blocks/MediaBlock.vue";
 import SelectBlock from "./blocks/SelectBlock.vue";
@@ -29,6 +30,7 @@ const COMPONENTS = {
   freeText: FreeTextBlock,
   choice: ChoiceBlock,
   select: SelectBlock,
+  fillInBlanks: FillInBlanksBlock,
   designTable: DesignTableBlock,
   feedback: FeedbackBlock,
 };
