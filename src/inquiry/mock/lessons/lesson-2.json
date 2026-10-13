@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "title": "Lesson 2: Ball drop",
-  "description": "A ball falling towards the ground: speed, kinetic energy and potential energy as it falls. Built from Ver2_Images_for_inquiry.pptx slides 26-32. Simulation and media values marked REPLACE_ME are placeholders until the physics project details are known.",
+  "description": "A ball falling towards the ground: speed, kinetic energy and potential energy as it falls. Built from Ver2_Images_for_inquiry.pptx slides 26-32. Media values marked REPLACE_ME are placeholders.",
   "variables": [
-    { "key": "ballMass", "label": "Ball mass", "unit": "kg", "role": "input", "min": 0, "max": 50, "step": 1, "default": 5 },
-    { "key": "dropHeight", "label": "Drop height", "unit": "m", "role": "input", "min": 0, "max": 100, "step": 1, "default": 20 },
+    { "key": "ballMass", "label": "Ball mass", "unit": "kg", "role": "input", "min": 1, "max": 50, "step": 1, "default": 5 },
+    { "key": "dropHeight", "label": "Drop height", "unit": "m", "role": "input", "min": 1, "max": 100, "step": 1, "default": 20 },
     { "key": "speed", "label": "Ball speed/velocity", "unit": "m/s", "role": "output" },
     { "key": "kineticEnergy", "label": "Kinetic energy", "unit": "J", "role": "output" },
     { "key": "potentialEnergy", "label": "Potential energy", "unit": "J", "role": "output" },
@@ -14,24 +14,24 @@
     "key": "ballDrop",
     "adapter": "netsblox",
     "source": "https://physics.c2stem.org",
-    "owner": "REPLACE_ME",
-    "project": "REPLACE_ME",
+    "owner": "NaveedMohd",
+    "project": "ssmv_26_inquiry2",
     "inputs": {
-      "ballMass": "REPLACE_ME ball mass global",
-      "dropHeight": "REPLACE_ME drop height global"
+      "ballMass": "ball mass",
+      "dropHeight": "drop height"
     },
     "outputs": {
-      "speed": "REPLACE_ME speed global",
-      "kineticEnergy": "REPLACE_ME kinetic energy global",
-      "potentialEnergy": "REPLACE_ME potential energy global",
-      "elapsedTime": "REPLACE_ME time global"
+      "speed": "speed",
+      "kineticEnergy": "kinetic energy",
+      "potentialEnergy": "potential energy",
+      "elapsedTime": "time"
     },
     "timeSeries": {
-      "variable": "REPLACE_ME time series list global",
-      "columns": ["time", "speed", "kineticEnergy", "potentialEnergy"]
+      "variable": "run log",
+      "columns": ["time", "speed"]
     },
     "run": { "mode": "greenFlag" },
-    "done": { "mode": "poll", "timeoutMs": 30000 }
+    "done": { "mode": "poll", "variable": "time", "timeoutMs": 120000 }
   },
   "pages": [
     {

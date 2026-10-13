@@ -8,20 +8,13 @@
 <script>
 import blockProps from "./blockProps";
 
-const LABELS = {
-  fillInBlanks: "A fill-in-the-blanks question",
-  designTable: "An experiment design table",
-  select: "A dropdown of your earlier answers",
-  simulation: "The simulation",
-};
-
 /** Stands in for block types the player doesn't show yet. */
 export default {
   name: "ComingSoonBlock",
   props: blockProps,
   computed: {
     label() {
-      return LABELS[this.block.type] || `A ${this.block.type} block`;
+      return `A ${this.block.type} block`;
     },
   },
 };

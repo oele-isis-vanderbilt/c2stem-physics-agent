@@ -2,8 +2,8 @@
  * Plain helpers for reading a lesson and the student's answers. No Vue, so
  * they can be reused by the authoring preview.
  *
- * `ctx` is { answers, blocksByKey }: answers by block id, and the lesson's
- * answerable blocks by key (from keyIndex).
+ * `ctx` is { answers, blocksByKey, lesson }: answers by block id, the
+ * lesson's answerable blocks by key (from keyIndex), and the lesson itself.
  */
 
 const ANSWERABLE = new Set([
@@ -18,11 +18,6 @@ const ANSWERABLE = new Set([
 export function isAnswerable(block) {
   if (block.type === "designTable") return !!block.editable;
   return ANSWERABLE.has(block.type);
-}
-
-/** Blocks the player can't show yet. They never hold up Next. */
-export function isNotBuilt(block) {
-  return block.type === "simulation";
 }
 
 // --- position -----------------------------------------------------------------
@@ -156,9 +151,22 @@ export function isAnswered(block, value) {
             trialsOf(block).every((t) => row.values && filled(row.values[t]))
         )
       );
+    case "simulation":
+      return runsOf(value).length >= minRunsOf(block);
     default:
       return filled(value);
   }
+}
+
+// --- simulations ----------------------------------------------------------------
+
+/** Saved runs of a simulation block: [{ inputs, outputs, series, at }]. */
+export function runsOf(value) {
+  return (value && Array.isArray(value.runs) && value.runs) || [];
+}
+
+export function minRunsOf(block) {
+  return block.minRuns || 1;
 }
 
 // --- fill in the blanks and design tables ---------------------------------------
@@ -255,7 +263,6 @@ export function canContinue(step, ctx) {
     (block) =>
       !isAnswerable(block) ||
       block.optional ||
-      isNotBuilt(block) ||
       !isShown(block, ctx) ||
       isAnswered(block, ctx.answers[block.id])
   );

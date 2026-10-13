@@ -22,7 +22,8 @@ import FreeTextBlock from "./blocks/FreeTextBlock.vue";
 import MediaBlock from "./blocks/MediaBlock.vue";
 import SelectBlock from "./blocks/SelectBlock.vue";
 import TextBlock from "./blocks/TextBlock.vue";
-import { isNotBuilt, isShown } from "./lesson";
+import { isShown } from "./lesson";
+import SimulationBlock from "./blocks/SimulationBlock.vue";
 
 const COMPONENTS = {
   text: TextBlock,
@@ -33,6 +34,7 @@ const COMPONENTS = {
   fillInBlanks: FillInBlanksBlock,
   designTable: DesignTableBlock,
   feedback: FeedbackBlock,
+  simulation: SimulationBlock,
 };
 
 /**
@@ -52,7 +54,6 @@ export default {
       return isShown(this.block, this.ctx);
     },
     component() {
-      if (isNotBuilt(this.block)) return ComingSoonBlock;
       return COMPONENTS[this.block.type] || ComingSoonBlock;
     },
   },

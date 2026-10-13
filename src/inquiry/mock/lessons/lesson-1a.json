@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "title": "Lesson 1 Part a: Pushing a cart",
-  "description": "Pushing a cart: claims, Control of Variables, designing and running an experiment, and claim-evidence-reasoning. Built from Ver2_Images_for_inquiry.pptx slides 2-16. Simulation and media values marked REPLACE_ME are placeholders until the physics project details are known.",
+  "description": "Pushing a cart: claims, Control of Variables, designing and running an experiment, and claim-evidence-reasoning. Built from Ver2_Images_for_inquiry.pptx slides 2-16. Media values marked REPLACE_ME are placeholders.",
   "variables": [
-    { "key": "cartMass", "label": "Cart mass", "unit": "kg", "role": "input", "min": 0, "max": 50, "step": 1, "default": 10 },
+    { "key": "cartMass", "label": "Cart mass", "unit": "kg", "role": "input", "min": 1, "max": 50, "step": 1, "default": 10 },
     { "key": "pushForce", "label": "Push force", "unit": "N", "role": "input", "min": 0, "max": 50, "step": 1, "default": 10 },
     { "key": "speed", "label": "Speed", "unit": "m/s", "role": "output" },
     { "key": "distance", "label": "Distance", "unit": "m", "role": "output" },
@@ -13,23 +13,23 @@
     "key": "cartPush",
     "adapter": "netsblox",
     "source": "https://physics.c2stem.org",
-    "owner": "REPLACE_ME",
-    "project": "REPLACE_ME",
+    "owner": "NaveedMohd",
+    "project": "ssmv_26_lesson1a_inquiry",
     "inputs": {
-      "cartMass": "REPLACE_ME cart mass global",
-      "pushForce": "REPLACE_ME push force global"
+      "cartMass": "cart mass",
+      "pushForce": "push force"
     },
     "outputs": {
-      "speed": "REPLACE_ME speed global",
-      "distance": "REPLACE_ME distance global",
-      "stopTime": "REPLACE_ME time until stop global"
+      "speed": "max speed",
+      "distance": "distance",
+      "stopTime": "time to stop"
     },
     "timeSeries": {
-      "variable": "REPLACE_ME time series list global",
+      "variable": "run log",
       "columns": ["time", "speed"]
     },
     "run": { "mode": "greenFlag" },
-    "done": { "mode": "poll", "timeoutMs": 30000 }
+    "done": { "mode": "poll", "variable": "time", "timeoutMs": 120000 }
   },
   "pages": [
     {

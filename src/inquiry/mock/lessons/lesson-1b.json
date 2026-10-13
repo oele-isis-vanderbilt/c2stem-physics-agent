@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "title": "Lesson 1 Part b: Friction",
-  "description": "How friction affects a pushed cart: designing a hypothesis from scratch, running the experiment, and claim-evidence-reasoning. Built from Ver2_Images_for_inquiry.pptx slides 18-24. Simulation and media values marked REPLACE_ME are placeholders until the physics project details are known.",
+  "description": "How friction affects a pushed cart: designing a hypothesis from scratch, running the experiment, and claim-evidence-reasoning. Built from Ver2_Images_for_inquiry.pptx slides 18-24. Media values marked REPLACE_ME are placeholders.",
   "variables": [
-    { "key": "cartMass", "label": "Cart mass", "unit": "kg", "role": "input", "min": 0, "max": 50, "step": 1, "default": 10 },
+    { "key": "cartMass", "label": "Cart mass", "unit": "kg", "role": "input", "min": 1, "max": 50, "step": 1, "default": 10 },
     { "key": "pushForce", "label": "Push force", "unit": "N", "role": "input", "min": 0, "max": 50, "step": 1, "default": 10 },
     { "key": "surfaceRoughness", "label": "Surface roughness", "role": "input", "min": 0, "max": 1, "step": 0.1, "default": 0.5 },
     { "key": "pushDuration", "label": "Push duration", "unit": "s", "role": "input", "min": 0, "max": 5, "step": 0.5, "default": 1 },
@@ -15,25 +15,25 @@
     "key": "cartFriction",
     "adapter": "netsblox",
     "source": "https://physics.c2stem.org",
-    "owner": "REPLACE_ME",
-    "project": "REPLACE_ME",
+    "owner": "NaveedMohd",
+    "project": "ssmv_26_lesson1b_inquiry",
     "inputs": {
-      "cartMass": "REPLACE_ME cart mass global",
-      "pushForce": "REPLACE_ME push force global",
-      "surfaceRoughness": "REPLACE_ME surface roughness global",
-      "pushDuration": "REPLACE_ME push duration global"
+      "cartMass": "cart mass",
+      "pushForce": "push force",
+      "surfaceRoughness": "surface roughness",
+      "pushDuration": "push duration"
     },
     "outputs": {
-      "speed": "REPLACE_ME speed global",
-      "distance": "REPLACE_ME distance global",
-      "stopTime": "REPLACE_ME time until stop global"
+      "speed": "max speed",
+      "distance": "distance",
+      "stopTime": "time to stop"
     },
     "timeSeries": {
-      "variable": "REPLACE_ME time series list global",
+      "variable": "run log",
       "columns": ["time", "speed"]
     },
     "run": { "mode": "greenFlag" },
-    "done": { "mode": "poll", "timeoutMs": 30000 }
+    "done": { "mode": "poll", "variable": "time", "timeoutMs": 120000 }
   },
   "pages": [
     {

@@ -166,7 +166,11 @@ export default {
       return keyIndex(this.session.content);
     },
     ctx() {
-      return { answers: this.answers, blocksByKey: this.blocksByKey };
+      return {
+        answers: this.answers,
+        blocksByKey: this.blocksByKey,
+        lesson: this.session.content,
+      };
     },
     index() {
       return stepIndex(this.steps, this.session.position);
