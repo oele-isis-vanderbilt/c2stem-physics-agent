@@ -123,29 +123,19 @@
               />
             </template>
 
-            <div
-              v-else-if="
-                current.kind === 'variables' || current.kind === 'simulation'
-              "
-              class="form-later"
-            >
-              <p v-if="current.kind === 'variables'" class="mb-2">
-                {{ variablesSummary }}
-              </p>
-              <p v-else class="mb-2">{{ simulationSummary }}</p>
-              <p class="mb-2">
-                The {{ current.kind }} form comes in the next update. Edit
-                {{ current.kind === "variables" ? "them" : "it" }} in the JSON
-                view for now.
-              </p>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-purple"
-                @click="$emit('json', current.kind)"
-              >
-                Edit in JSON
-              </button>
-            </div>
+            <variables-form
+              v-else-if="current.kind === 'variables'"
+              :draft="draft"
+              :invalid="lessonInvalid"
+              @edit="editLesson"
+            />
+            <simulation-form
+              v-else-if="current.kind === 'simulation'"
+              :draft="draft"
+              :invalid="lessonInvalid"
+              @edit="editLesson"
+              @select="select"
+            />
 
             <template v-else-if="current.kind === 'page'">
               <div class="field">
@@ -221,6 +211,7 @@
               :issue-paths="blockIssuePaths"
               @edit="editItem"
               @json="$emit('json', pathOf(draft, current))"
+              @select="select"
             />
           </fieldset>
         </div>
@@ -232,6 +223,8 @@
 <script>
 import BlockForm from "./BlockForm.vue";
 import LessonOutline from "./LessonOutline.vue";
+import SimulationForm from "./SimulationForm.vue";
+import VariablesForm from "./VariablesForm.vue";
 import TextField from "./fields/TextField.vue";
 import {
   addBlock,
@@ -279,7 +272,13 @@ function where(rel) {
  */
 export default {
   name: "LessonForm",
-  components: { BlockForm, LessonOutline, TextField },
+  components: {
+    BlockForm,
+    LessonOutline,
+    SimulationForm,
+    TextField,
+    VariablesForm,
+  },
   props: {
     draft: { type: Object, default: null },
     issues: { type: Array, default: null },
@@ -385,20 +384,6 @@ export default {
     blockIssuePaths() {
       return this.currentIssues.map((issue) => issue.rel);
     },
-    variablesSummary() {
-      const variables = Array.isArray(this.draft.variables)
-        ? this.draft.variables
-        : [];
-      if (!variables.length) return "No variables yet.";
-      return `${variables.length} variable${
-        variables.length === 1 ? "" : "s"
-      }: ${variables.map((v) => v.label || v.key).join(", ")}.`;
-    },
-    simulationSummary() {
-      const sim = this.draft.simulation;
-      if (!sim) return "No simulation yet.";
-      return `Runs ${sim.owner || "?"}'s project “${sim.project || "?"}”.`;
-    },
   },
   methods: {
     pathOf,
@@ -493,10 +478,16 @@ export default {
         fn(itemAt(d, sel), d);
       }, boundary);
     },
-    editLesson(fn) {
+    editLesson(fn, boundary = false) {
       this.apply((d) => {
         fn(d);
-      }, false);
+      }, boundary);
+    },
+    /** For lesson-level forms: whether an issue path is this or inside it. */
+    lessonInvalid(path) {
+      return this.currentIssues.some(
+        (issue) => issue.path === path || issue.path.startsWith(`${path}/`)
+      );
     },
     setDescription(value) {
       this.editLesson((d) => {
@@ -752,6 +743,50 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+}
+.lesson-form .reads-as {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.lesson-form .reads-as-label {
+  margin-right: 6px;
+  font-weight: 600;
+}
+.lesson-form .gap-chip {
+  display: inline-block;
+  padding: 0 6px;
+  margin: 0 2px;
+  border: 1px dashed var(--inq-purple, #615195);
+  border-radius: 4px;
+  background: var(--inq-tint, #f4f2f9);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.lesson-form .blank-item {
+  margin-bottom: 12px;
+  padding: 10px 12px 2px;
+  border: 1px solid var(--inq-line, #ddd8ea);
+  border-radius: 6px;
+}
+.lesson-form .blank-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.lesson-form details > summary {
+  cursor: pointer;
+}
+.lesson-form .summary-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--inq-ink, #2e2645);
+}
+@media (max-width: 575.98px) {
+  .lesson-form .map-arrow {
+    display: none;
+  }
 }
 .lesson-form .step-blocks li {
   margin-bottom: 4px;

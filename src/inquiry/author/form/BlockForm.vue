@@ -28,12 +28,14 @@
       :block="block"
       :answers="answers"
       :invalid="invalid"
+      :lesson="draft"
       @edit="(fn, boundary) => $emit('edit', fn, boundary)"
+      @select="(sel) => $emit('select', sel)"
     />
     <div v-else class="form-later">
       <p class="mb-2">
-        The form for {{ label }} blocks comes in the next update. Edit this
-        block in the JSON view for now.
+        “{{ block.type }}” isn't a block type the form knows. Fix it in the JSON
+        view.
       </p>
       <button
         type="button"
@@ -55,20 +57,17 @@
 
 <script>
 import ChoiceForm from "./blocks/ChoiceForm.vue";
+import DesignTableForm from "./blocks/DesignTableForm.vue";
+import FillInBlanksForm from "./blocks/FillInBlanksForm.vue";
 import FreeTextForm from "./blocks/FreeTextForm.vue";
 import MediaForm from "./blocks/MediaForm.vue";
 import SelectForm from "./blocks/SelectForm.vue";
+import SimulationBlockForm from "./blocks/SimulationBlockForm.vue";
 import TextForm from "./blocks/TextForm.vue";
 import KeyField from "./fields/KeyField.vue";
 import ShowIfEditor from "./fields/ShowIfEditor.vue";
 import { isAnswerable } from "../../player/lesson";
-import {
-  earlierAnswers,
-  keyUses,
-  keysOf,
-  renameKey,
-  typeLabel,
-} from "../draft";
+import { earlierAnswers, keyUses, keysOf, renameKey } from "../draft";
 
 const FORMS = {
   text: TextForm,
@@ -77,6 +76,9 @@ const FORMS = {
   freeText: FreeTextForm,
   choice: ChoiceForm,
   select: SelectForm,
+  fillInBlanks: FillInBlanksForm,
+  designTable: DesignTableForm,
+  simulation: SimulationBlockForm,
 };
 
 /**
@@ -91,11 +93,8 @@ export default {
     draft: { type: Object, required: true },
     issuePaths: { type: Array, default: () => [] }, // paths inside the block
   },
-  emits: ["edit", "json"],
+  emits: ["edit", "json", "select"],
   computed: {
-    label() {
-      return typeLabel(this.block.type);
-    },
     formOf() {
       return FORMS[this.block.type] || null;
     },

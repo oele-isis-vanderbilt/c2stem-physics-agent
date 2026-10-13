@@ -8,6 +8,7 @@ export default {
     block: { type: Object, required: true },
     answers: { type: Array, default: () => [] },
     invalid: { type: Function, default: () => false },
+    lesson: { type: Object, default: null }, // the whole draft, read-only
   },
   emits: ["edit"],
   methods: {

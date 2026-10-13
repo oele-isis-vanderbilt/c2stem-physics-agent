@@ -1,7 +1,7 @@
 <template>
   <div class="field">
     <div class="field-label">
-      <label :for="id">Answer name</label>
+      <label :for="id">{{ label }}</label>
     </div>
     <input
       :id="id"
@@ -16,7 +16,10 @@
     />
     <p v-if="problem" class="field-error">{{ problem }}</p>
     <p class="field-hint">
-      Shows this answer later as {{ example }} and names it in data exports.
+      <template v-if="hint">{{ hint }}</template>
+      <template v-else>
+        Shows this answer later as {{ example }} and names it in data exports.
+      </template>
       <template v-if="uses">
         Used in {{ uses }} place{{ uses === 1 ? "" : "s" }}.
       </template>
@@ -39,6 +42,9 @@ export default {
     uses: { type: Number, default: 0 },
     taken: { type: Object, default: () => new Set() }, // other blocks' names
     invalid: { type: Boolean, default: false },
+    label: { type: String, default: "Answer name" },
+    hint: { type: String, default: "" }, // replaces the answer-name hint
+    takenMessage: { type: String, default: "" },
   },
   emits: ["commit"],
   data() {
@@ -54,7 +60,7 @@ export default {
         return "Start with a letter, then letters, digits or _ (no spaces).";
       }
       if (this.taken.has(this.text))
-        return "Another block already uses this name.";
+        return this.takenMessage || "Another block already uses this name.";
       return null;
     },
     example() {

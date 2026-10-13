@@ -298,6 +298,206 @@ export function renameKey(draft, from, to) {
   }
 }
 
+/** How many places use one exact ref, e.g. hypothesis.iv for one blank. */
+export function refUses(draft, ref) {
+  const [key, blank] = ref.split(".");
+  const exact = new RegExp(
+    `\\{\\{\\s*${key}${blank ? `\\.${blank}` : ""}\\s*\\}\\}`,
+    "g"
+  );
+  let uses = 0;
+  for (const { block } of blocksOf(draft)) {
+    eachRefField(block, (holder, field) => {
+      const value = holder[field];
+      if (Array.isArray(value)) uses += value.filter((r) => r === ref).length;
+      else if (field === "ref") uses += value === ref ? 1 : 0;
+      else uses += (value.match(exact) || []).length;
+    });
+  }
+  return uses;
+}
+
+// --- fill in the blanks ------------------------------------------------------------
+
+const BLANK = /\[\[([A-Za-z0-9_-]{1,64})\]\]/g;
+
+/** Gap ids in a template, in order, each once. */
+export function templateBlanks(template) {
+  const ids = [];
+  for (const match of String(template || "").matchAll(BLANK)) {
+    if (!ids.includes(match[1])) ids.push(match[1]);
+  }
+  return ids;
+}
+
+/**
+ * Makes a block's blanks follow its template: one per gap, in gap order.
+ * A gap without settings gets those in `kept` (by id), else a typed blank.
+ * Returns the blanks that were dropped, so they can be kept.
+ */
+export function syncBlanks(block, kept = {}) {
+  const old = Array.isArray(block.blanks) ? block.blanks : [];
+  const byId = Object.fromEntries(
+    old.filter(isObject).map((blank) => [blank.id, blank])
+  );
+  const ids = templateBlanks(block.template);
+  block.blanks = ids.map((id) => byId[id] || kept[id] || { id, input: "text" });
+  return old.filter((blank) => isObject(blank) && !ids.includes(blank.id));
+}
+
+/** A gap id not used in the template or the blanks yet: b1, b2, … */
+export function newBlankId(block) {
+  const used = new Set([
+    ...templateBlanks(block.template),
+    ...(Array.isArray(block.blanks) ? block.blanks.map((b) => b && b.id) : []),
+  ]);
+  for (let n = 1; ; n++) if (!used.has(`b${n}`)) return `b${n}`;
+}
+
+// --- variables ------------------------------------------------------------------------
+
+const variablesOf = (draft) =>
+  Array.isArray(draft.variables) ? draft.variables : [];
+const simulationBlocks = (draft) =>
+  blocksOf(draft).filter(({ block }) => block.type === "simulation");
+
+/** Where a lesson variable is used, as short descriptions. */
+export function variableUses(draft, key) {
+  const uses = [];
+  const sim = draft.simulation;
+  if (sim) {
+    if (isObject(sim.inputs) && key in sim.inputs)
+      uses.push("the simulation's inputs");
+    if (isObject(sim.outputs) && key in sim.outputs) {
+      uses.push("the simulation's outputs");
+    }
+    if (sim.timeSeries && (sim.timeSeries.columns || []).includes(key)) {
+      uses.push("the recorded-over-time columns");
+    }
+  }
+  for (const { block, p, s } of simulationBlocks(draft)) {
+    const lists = [block.inputs, block.outputs, block.graph && block.graph.y];
+    if (lists.some((list) => Array.isArray(list) && list.includes(key))) {
+      uses.push(`the Simulation block on page ${p + 1}, step ${s + 1}`);
+    }
+  }
+  return uses;
+}
+
+/** A mapping object with one property renamed, in the same place. */
+function renameProperty(object, from, to) {
+  if (!isObject(object) || !(from in object)) return object;
+  return Object.fromEntries(
+    Object.entries(object).map(([k, v]) => [k === from ? to : k, v])
+  );
+}
+
+const swap = (list, from, to) =>
+  Array.isArray(list) ? list.map((item) => (item === from ? to : item)) : list;
+
+/** Renames a lesson variable and every place that uses it. */
+export function renameVariable(draft, from, to) {
+  for (const variable of variablesOf(draft)) {
+    if (variable.key === from) variable.key = to;
+  }
+  const sim = draft.simulation;
+  if (sim) {
+    sim.inputs = renameProperty(sim.inputs, from, to);
+    sim.outputs = renameProperty(sim.outputs, from, to);
+    if (sim.timeSeries) {
+      sim.timeSeries.columns = swap(sim.timeSeries.columns, from, to);
+    }
+  }
+  for (const { block } of simulationBlocks(draft)) {
+    block.inputs = swap(block.inputs, from, to);
+    block.outputs = swap(block.outputs, from, to);
+    if (block.graph) block.graph.y = swap(block.graph.y, from, to);
+  }
+}
+
+/** Takes a variable out of simulation blocks' sliders, readouts and graphs. */
+function dropFromBlocks(draft, key) {
+  for (const { block } of simulationBlocks(draft)) {
+    for (const field of ["inputs", "outputs"]) {
+      if (Array.isArray(block[field])) {
+        block[field] = block[field].filter((k) => k !== key);
+      }
+    }
+    if (block.graph && Array.isArray(block.graph.y)) {
+      block.graph.y = block.graph.y.filter((k) => k !== key);
+      if (!block.graph.y.length) delete block.graph;
+    }
+  }
+}
+
+/**
+ * Deletes a variable, its mapping and its place in simulation blocks.
+ * A recorded-over-time column keeps its place, since columns are matched
+ * to the project's list by position; the validator points it out.
+ */
+export function removeVariable(draft, key) {
+  draft.variables = variablesOf(draft).filter((v) => v.key !== key);
+  const sim = draft.simulation;
+  if (sim) {
+    if (isObject(sim.inputs)) delete sim.inputs[key];
+    if (isObject(sim.outputs)) delete sim.outputs[key];
+  }
+  dropFromBlocks(draft, key);
+}
+
+/**
+ * Makes a variable an input or an output. Its mapping moves across, and
+ * simulation blocks stop listing it where it no longer fits.
+ */
+export function setVariableRole(draft, key, role) {
+  const variable = variablesOf(draft).find((v) => v.key === key);
+  if (!variable || variable.role === role) return;
+  variable.role = role;
+  const sim = draft.simulation;
+  const [from, to] =
+    role === "input" ? ["outputs", "inputs"] : ["inputs", "outputs"];
+  if (sim && isObject(sim[from]) && key in sim[from]) {
+    sim[to] = { ...sim[to], [key]: sim[from][key] };
+    delete sim[from][key];
+  }
+  dropFromBlocks(draft, key);
+}
+
+/** A variable name not used yet, made from text like "cart mass" (cartMass). */
+export function newVariableKey(draft, text) {
+  const words = String(text || "")
+    .replace(/[^A-Za-z0-9]+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean);
+  let stem = words
+    .map((w, i) => (i ? w[0].toUpperCase() + w.slice(1) : w.toLowerCase()))
+    .join("")
+    .slice(0, 60);
+  if (!/^[A-Za-z]/.test(stem)) stem = `v${stem}`;
+  const used = new Set(variablesOf(draft).map((v) => v.key));
+  if (!used.has(stem)) return stem;
+  for (let n = 2; ; n++) if (!used.has(`${stem}${n}`)) return `${stem}${n}`;
+}
+
+/** Settings for a new lesson simulation, to fill in with the form. */
+export function newSimulation(draft) {
+  const base = slug(draft.title || "simulation").replace(/-./g, (m) =>
+    m[1].toUpperCase()
+  );
+  return {
+    key: /^[A-Za-z]/.test(base) ? base.slice(0, 64) : "simulation",
+    adapter: "netsblox",
+    source: "https://physics.c2stem.org",
+    owner: "",
+    project: "",
+    inputs: {},
+    outputs: {},
+    run: { mode: "greenFlag" },
+    done: { mode: "poll", variable: "time", timeoutMs: 120000 },
+  };
+}
+
 // --- new things -------------------------------------------------------------------
 
 function slug(text) {
