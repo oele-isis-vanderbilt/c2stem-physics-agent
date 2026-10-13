@@ -121,6 +121,38 @@
                 hint="Shown on the lesson's card in the students' list."
                 @update:model-value="setDescription"
               />
+              <div class="field">
+                <div class="field-label"><span>Physics project</span></div>
+                <p
+                  v-if="
+                    draft.simulation &&
+                    draft.simulation.owner &&
+                    draft.simulation.project
+                  "
+                  class="mb-2"
+                >
+                  Simulation blocks run {{ draft.simulation.owner }}'s project
+                  “{{ draft.simulation.project }}”.
+                </p>
+                <p v-else-if="draft.simulation" class="field-hint mb-2">
+                  The physics project isn't chosen yet: add its owner and name.
+                </p>
+                <p v-else class="field-hint mb-2">
+                  No physics project yet. Set one up to run a physics simulation
+                  in this lesson.
+                </p>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-purple"
+                  @click="openProject"
+                >
+                  {{
+                    draft.simulation
+                      ? "Open the physics project"
+                      : "Set up the physics project"
+                  }}
+                </button>
+              </div>
             </template>
 
             <variables-form
@@ -238,6 +270,7 @@ import {
   itemAt,
   locate,
   move,
+  newSimulation,
   pathOf,
   remove,
   selectionKey,
@@ -323,7 +356,7 @@ export default {
       const sel = this.current;
       if (sel.kind === "settings") return "Lesson settings";
       if (sel.kind === "variables") return "Variables";
-      if (sel.kind === "simulation") return "Simulation";
+      if (sel.kind === "simulation") return "Physics project";
       const at = locate(this.draft, sel);
       if (sel.kind === "page") return `Page ${at.p + 1}`;
       if (sel.kind === "step") return `Page ${at.p + 1} · Step ${at.s + 1}`;
@@ -488,6 +521,15 @@ export default {
       return this.currentIssues.some(
         (issue) => issue.path === path || issue.path.startsWith(`${path}/`)
       );
+    },
+    /** Goes to the physics project, adding one first if there is none. */
+    openProject() {
+      if (!this.draft.simulation) {
+        this.editLesson((d) => {
+          d.simulation = newSimulation(d);
+        }, true);
+      }
+      this.select({ kind: "simulation" });
     },
     setDescription(value) {
       this.editLesson((d) => {

@@ -87,7 +87,11 @@
             >
               <option value="" disabled>+ Block…</option>
               <option v-for="t in BLOCK_TYPES" :key="t.type" :value="t.type">
-                {{ t.label }}
+                {{
+                  t.type === "simulation" && !draft.simulation
+                    ? "Simulation (needs a physics project)"
+                    : t.label
+                }}
               </option>
             </select>
           </li>
@@ -157,7 +161,7 @@ export default {
       return [
         { kind: "settings", label: "Lesson settings" },
         { kind: "variables", label: `Variables (${variables})` },
-        { kind: "simulation", label: "Simulation" },
+        { kind: "simulation", label: "Physics project" },
       ];
     },
   },

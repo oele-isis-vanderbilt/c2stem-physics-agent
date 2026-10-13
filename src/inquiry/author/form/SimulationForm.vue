@@ -2,15 +2,15 @@
   <div class="simulation-form">
     <div v-if="!sim" class="form-later">
       <p class="mb-2">
-        This lesson has no simulation. Add one to run a physics project in
-        Simulation blocks.
+        This lesson has no physics project. Add one to run it in Simulation
+        blocks.
       </p>
       <button
         type="button"
         class="btn btn-sm btn-purple"
         @click="addSimulation"
       >
-        Add a simulation
+        Add a physics project
       </button>
     </div>
 
@@ -332,7 +332,7 @@
         class="btn btn-sm btn-outline-danger"
         @click="removeSimulation"
       >
-        Remove the simulation
+        Remove the physics project
       </button>
     </template>
   </div>
@@ -611,7 +611,7 @@ export default {
             blocks === 1 ? "" : "s"
           } will have nothing to run until you add one again.`
         : "";
-      if (!window.confirm(`Remove the simulation settings?${note}`)) return;
+      if (!window.confirm(`Remove the physics project?${note}`)) return;
       this.edit((draft) => delete draft.simulation, true);
     },
   },

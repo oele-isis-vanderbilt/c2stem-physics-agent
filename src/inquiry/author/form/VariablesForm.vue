@@ -2,7 +2,7 @@
   <div class="variables-form">
     <p class="field-hint mb-3">
       Inputs are the sliders students set; outputs are what the simulation
-      measures. Link each one to the project under Simulation.
+      measures. Link each one to the project under Physics project.
     </p>
     <p v-if="!variables.length" class="field-hint">No variables yet.</p>
 

@@ -2,15 +2,15 @@
   <div>
     <div v-if="!sim" class="form-later">
       <p class="mb-2">
-        This lesson has no simulation yet. Set one up first; this block then
-        runs it.
+        This lesson has no physics project yet. Set one up first; this block
+        then runs it.
       </p>
       <button
         type="button"
         class="btn btn-sm btn-outline-purple"
         @click="$emit('select', { kind: 'simulation' })"
       >
-        Set up the simulation
+        Set up the physics project
       </button>
     </div>
 
@@ -65,7 +65,7 @@
       <legend class="field-label">Time graph</legend>
       <p v-if="!series" class="field-hint">
         A time graph needs the simulation to record values over time; set that
-        up under Simulation.
+        up under Physics project.
       </p>
       <template v-else>
         <div class="form-check">
