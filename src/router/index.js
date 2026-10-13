@@ -10,6 +10,8 @@ import LogView from "@/views/LogView.vue";
 import Dashboard from "@/views/Dashboard.vue";
 import InquiryHomeView from "@/views/InquiryHomeView.vue";
 import InquiryLessonView from "@/views/InquiryLessonView.vue";
+import InquiryAuthorHomeView from "@/views/InquiryAuthorHomeView.vue";
+import InquiryAuthorEditView from "@/views/InquiryAuthorEditView.vue";
 
 function islogin(to, from, next) {
   if (!store.state.user) {
@@ -69,6 +71,26 @@ const routes = [
     },
   },
   {
+    path: "/inquiry/author",
+    name: "InquiryAuthorHome",
+    component: InquiryAuthorHomeView,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: "C2STEM | Inquiry authoring",
+    },
+  },
+  {
+    path: "/inquiry/author/:lessonId",
+    name: "InquiryAuthorEdit",
+    component: InquiryAuthorEditView,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: "C2STEM | Inquiry authoring",
+    },
+  },
+  {
     path: "/inquiry/:lessonId",
     name: "InquiryLesson",
     component: InquiryLessonView,
@@ -101,6 +123,11 @@ router.beforeEach((to, from, next) => {
   }
   if (to.matched.some((record) => record.meta.requiresAuth) && !loggedIn) {
     next("/");
+  } else if (
+    to.matched.some((record) => record.meta.requiresAdmin) &&
+    store.state.role !== "admin"
+  ) {
+    next("/home");
   } else {
     next();
   }

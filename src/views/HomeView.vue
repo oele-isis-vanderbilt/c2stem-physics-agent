@@ -25,6 +25,15 @@ export default {
     // BuildEnv,
     LessonCard,
   },
+  created() {
+    if (this.$store.state.role === "admin") {
+      this.names.push("Inquiry Authoring");
+      this.description.push("Create, preview and publish inquiry lessons");
+      this.route.push("InquiryAuthorHome");
+      this.logo.push(null);
+      this.routeParams.push({});
+    }
+  },
   data() {
     return {
       names: ["Truck: Debug", "Inquiry"],

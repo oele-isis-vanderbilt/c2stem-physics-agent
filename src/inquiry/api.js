@@ -31,6 +31,21 @@ export function createInquiryApi({ baseURL, getToken }) {
     logEvents: (id, events) =>
       http.post(`/sessions/${id}/events`, { events }).then(data),
 
+    // Authoring (admins and researchers)
+    lessons: () => http.get("/lessons").then(data),
+    createLesson: (title, fromLessonId) =>
+      http
+        .post("/lessons", { title, ...(fromLessonId && { fromLessonId }) })
+        .then(data),
+    draft: (id) => http.get(`/lessons/${id}/draft`).then(data),
+    saveDraft: (id, draft, revision) =>
+      http.put(`/lessons/${id}/draft`, { draft, revision }).then(data),
+    validateDraft: (id, draft) =>
+      http.post(`/lessons/${id}/validate`, { draft }).then(data),
+    publish: (id) => http.post(`/lessons/${id}/publish`).then(data),
+    versions: (id) => http.get(`/lessons/${id}/versions`).then(data),
+    version: (id, n) => http.get(`/lessons/${id}/versions/${n}`).then(data),
+
     saveOnUnload: (id, body) => onUnload("PATCH", `/sessions/${id}`, body),
     logOnUnload: (id, events) =>
       onUnload("POST", `/sessions/${id}/events`, { events }),

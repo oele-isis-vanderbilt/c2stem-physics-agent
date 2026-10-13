@@ -19,6 +19,7 @@
     "crypto-js": "^4.2.0",
     "dompurify": "^3.4.17",
     "edit-distance": "^1.0.5",
+    "jsonc-parser": "^3.3.1",
     "marked": "^17.0.6",
     "mitt": "^3.0.1",
     "vue": "^3.2.13",

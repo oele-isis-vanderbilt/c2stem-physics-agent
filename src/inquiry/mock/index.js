@@ -1,8 +1,8 @@
 /**
  * In-memory stand-in for the inquiry service, for trying the views without
  * running it. main.js only loads it when VUE_APP_INQUIRY_MOCK=true.
- * Serves copies of the service's example lessons. Progress lasts until the
- * page reloads.
+ * Serves copies of the service's example lessons. Progress and authoring
+ * changes last until the page reloads.
  */
 import lesson1a from "./lessons/lesson-1a.json";
 import lesson1b from "./lessons/lesson-1b.json";
@@ -56,6 +56,97 @@ function byId(id) {
   const session = Object.values(sessions).find((s) => s.id === id);
   if (!session) throw httpError(404);
   return session;
+}
+
+// Authoring: each example lesson starts with its content published as version 1
+const authoring = Object.fromEntries(
+  LESSONS.map(({ id, content }) => [
+    id,
+    {
+      draft: copy(content),
+      revision: 1,
+      versions: [
+        {
+          version: 1,
+          content: copy(content),
+          draftRevision: 1,
+          publishedBy: "seed",
+          publishedAt: hoursAgo(72),
+        },
+      ],
+      createdBy: "seed",
+      createdAt: hoursAgo(72),
+      updatedBy: "seed",
+      updatedAt: hoursAgo(72),
+    },
+  ])
+);
+const BLOCK_TYPES = new Set([
+  "text",
+  "media",
+  "freeText",
+  "choice",
+  "select",
+  "fillInBlanks",
+  "designTable",
+  "feedback",
+  "simulation",
+]);
+
+// A version without its content, as the service lists them
+function summaryOf({ version, draftRevision, publishedBy, publishedAt }) {
+  return { version, draftRevision, publishedBy, publishedAt };
+}
+
+function lessonDoc(id) {
+  const doc = authoring[id];
+  if (!doc) throw httpError(404);
+  return doc;
+}
+
+function summary(id) {
+  const doc = authoring[id];
+  const latest = doc.versions[doc.versions.length - 1];
+  return {
+    id,
+    title: doc.draft.title || "Untitled lesson",
+    draftRevision: doc.revision,
+    latestVersion: latest ? latest.version : null,
+    publishedRevision: latest ? latest.draftRevision : null,
+    createdBy: doc.createdBy,
+    createdAt: doc.createdAt,
+    updatedBy: doc.updatedBy,
+    updatedAt: doc.updatedAt,
+  };
+}
+
+// A few of the service's checks, enough to try the issues list
+function mockIssues(draft) {
+  const issues = [];
+  const issue = (path, message) => issues.push({ path, code: "mock", message });
+  if (typeof draft.title !== "string" || !draft.title.trim()) {
+    issue("title", "A lesson needs a title.");
+  }
+  if (!Array.isArray(draft.pages) || !draft.pages.length) {
+    issue("pages", "A lesson needs at least one page.");
+    return issues;
+  }
+  const ids = new Set();
+  draft.pages.forEach((page, p) => {
+    (page.steps || []).forEach((step, s) => {
+      (step.blocks || []).forEach((block, b) => {
+        const path = `pages/${p}/steps/${s}/blocks/${b}`;
+        if (!BLOCK_TYPES.has(block.type)) {
+          issue(`${path}/type`, `Unknown block type '${block.type}'.`);
+        }
+        if (ids.has(block.id)) {
+          issue(`${path}/id`, `Id '${block.id}' is used more than once.`);
+        }
+        ids.add(block.id);
+      });
+    });
+  });
+  return issues;
 }
 
 export function createMockInquiryApi() {
@@ -116,6 +207,129 @@ export function createMockInquiryApi() {
       byId(id);
       console.log("[mock inquiry] events", JSON.stringify(events));
       return wait({ stored: events.length });
+    },
+
+    lessons() {
+      return wait(
+        Object.keys(authoring)
+          .map(summary)
+          .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      );
+    },
+
+    createLesson(title, fromLessonId) {
+      const draft = fromLessonId
+        ? { ...copy(lessonDoc(fromLessonId).draft), title }
+        : {
+            schemaVersion: 1,
+            title,
+            variables: [],
+            pages: [
+              {
+                id: "page-1",
+                phase: "Orientation",
+                steps: [{ id: "step-1", blocks: [] }],
+              },
+            ],
+          };
+      const id = `mock-new-${Date.now()}`;
+      const now = new Date().toISOString();
+      authoring[id] = {
+        draft,
+        revision: 1,
+        versions: [],
+        createdBy: "you",
+        createdAt: now,
+        updatedBy: "you",
+        updatedAt: now,
+      };
+      return wait(summary(id));
+    },
+
+    draft(id) {
+      const doc = lessonDoc(id);
+      return wait({
+        id,
+        draft: doc.draft,
+        revision: doc.revision,
+        updatedBy: doc.updatedBy,
+        updatedAt: doc.updatedAt,
+      });
+    },
+
+    saveDraft(id, draft, revision) {
+      const doc = lessonDoc(id);
+      if (revision !== doc.revision) {
+        const error = httpError(409);
+        error.response.data = {
+          detail: {
+            message: `${doc.updatedBy} saved this lesson after you opened it. Reload before saving.`,
+          },
+        };
+        return Promise.reject(error);
+      }
+      doc.draft = copy(draft);
+      doc.revision += 1;
+      doc.updatedBy = "you";
+      doc.updatedAt = new Date().toISOString();
+      return this.draft(id);
+    },
+
+    validateDraft(id, draft) {
+      lessonDoc(id);
+      const issues = mockIssues(draft);
+      return wait({ valid: !issues.length, issues });
+    },
+
+    publish(id) {
+      const doc = lessonDoc(id);
+      const latest = doc.versions[doc.versions.length - 1];
+      const fail = (status, detail) => {
+        const error = httpError(status);
+        error.response.data = { detail };
+        return Promise.reject(error);
+      };
+      if (
+        latest &&
+        JSON.stringify(latest.content) === JSON.stringify(doc.draft)
+      ) {
+        return fail(
+          409,
+          `No changes since version ${latest.version}; there is nothing new to publish.`
+        );
+      }
+      const issues = mockIssues(doc.draft);
+      if (issues.length) {
+        return fail(422, {
+          message: "Fix these problems before publishing.",
+          issues,
+        });
+      }
+      const version = {
+        version: latest ? latest.version + 1 : 1,
+        content: copy(doc.draft),
+        draftRevision: doc.revision,
+        publishedBy: "you",
+        publishedAt: new Date().toISOString(),
+      };
+      doc.versions.push(version);
+      // Students who start now get the new version
+      const listed = LESSONS.find((l) => l.id === id);
+      if (listed) listed.content = version.content;
+      else LESSONS.push({ id, content: version.content });
+      return wait({ lessonId: id, ...summaryOf(version) });
+    },
+
+    versions(id) {
+      return wait(
+        lessonDoc(id).versions.map((v) => ({ lessonId: id, ...summaryOf(v) }))
+      );
+    },
+
+    version(id, n) {
+      const version = lessonDoc(id).versions.find((v) => v.version === n);
+      if (!version) return Promise.reject(httpError(404));
+      return wait({ lessonId: id, ...version });
     },
 
     saveOnUnload() {},

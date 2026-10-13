@@ -1,4 +1,5 @@
 import { createInquiryApi } from "./api";
+import { setInquiryApi } from "./connection";
 import { createInquiryStore, eventBatches } from "./store";
 
 /**
@@ -8,6 +9,7 @@ import { createInquiryStore, eventBatches } from "./store";
  */
 export function installInquiry({ store, baseURL, getToken, api }) {
   api = api || createInquiryApi({ baseURL, getToken });
+  setInquiryApi(api);
   store.registerModule("inquiry", createInquiryStore(api));
 
   window.addEventListener("pagehide", () => {
