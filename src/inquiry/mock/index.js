@@ -93,6 +93,24 @@ const BLOCK_TYPES = new Set([
   "simulation",
 ]);
 
+/** The service's list order: ordered lessons first, then by title (2 before 10). */
+function naturalKey(title) {
+  return title
+    .split(/(\d+)/)
+    .map((part) => (/^\d+$/.test(part) ? Number(part) : part.toLowerCase()));
+}
+
+function compareLessons(a, b) {
+  const place = (x) =>
+    x.order === null || x.order === undefined ? Infinity : x.order;
+  if (place(a) !== place(b)) return place(a) - place(b);
+  const [ka, kb] = [naturalKey(a.title), naturalKey(b.title)];
+  for (let i = 0; i < Math.min(ka.length, kb.length); i++) {
+    if (ka[i] !== kb[i]) return ka[i] < kb[i] ? -1 : 1;
+  }
+  return ka.length - kb.length;
+}
+
 // A version without its content, as the service lists them
 function summaryOf({ version, draftRevision, publishedBy, publishedAt }) {
   return { version, draftRevision, publishedBy, publishedAt };
@@ -113,6 +131,8 @@ function summary(id) {
     draftRevision: doc.revision,
     latestVersion: latest ? latest.version : null,
     publishedRevision: latest ? latest.draftRevision : null,
+    hidden: !!doc.hidden,
+    order: doc.order === undefined ? null : doc.order,
     createdBy: doc.createdBy,
     createdAt: doc.createdAt,
     updatedBy: doc.updatedBy,
@@ -152,8 +172,15 @@ function mockIssues(draft) {
 export function createMockInquiryApi() {
   return {
     catalog() {
+      const listed = LESSONS.filter(({ id }) => !authoring[id].hidden).sort(
+        (a, b) =>
+          compareLessons(
+            { order: authoring[a.id].order, title: a.content.title },
+            { order: authoring[b.id].order, title: b.content.title }
+          )
+      );
       return wait(
-        LESSONS.map(({ id, content }) => {
+        listed.map(({ id, content }) => {
           const s = sessions[id];
           return {
             id,
@@ -176,6 +203,10 @@ export function createMockInquiryApi() {
     startSession(lessonId) {
       const lesson = LESSONS.find((l) => l.id === lessonId);
       if (!lesson) return Promise.reject(httpError(404));
+      // A hidden lesson can't be started; saved work in one resumes
+      if (authoring[lessonId].hidden && !sessions[lessonId]) {
+        return Promise.reject(httpError(404));
+      }
       sessions[lessonId] =
         sessions[lessonId] || newSession(lesson, 0, "in_progress", 0);
       return wait(sessions[lessonId]);
@@ -210,11 +241,23 @@ export function createMockInquiryApi() {
     },
 
     lessons() {
-      return wait(
-        Object.keys(authoring)
-          .map(summary)
-          .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-      );
+      return wait(Object.keys(authoring).map(summary).sort(compareLessons));
+    },
+
+    orderLessons(ids) {
+      const all = Object.keys(authoring);
+      const same =
+        ids.length === all.length &&
+        new Set(ids).size === ids.length &&
+        ids.every((id) => authoring[id]);
+      if (!same) return Promise.reject(httpError(409));
+      ids.forEach((id, index) => (authoring[id].order = index));
+      return this.lessons();
+    },
+
+    setLessonHidden(id, hidden) {
+      lessonDoc(id).hidden = hidden;
+      return wait(summary(id));
     },
 
     createLesson(title, fromLessonId) {

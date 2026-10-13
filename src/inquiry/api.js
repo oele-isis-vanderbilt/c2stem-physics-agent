@@ -33,6 +33,9 @@ export function createInquiryApi({ baseURL, getToken }) {
 
     // Authoring (admins and researchers)
     lessons: () => http.get("/lessons").then(data),
+    orderLessons: (ids) => http.put("/lessons/order", { ids }).then(data),
+    setLessonHidden: (id, hidden) =>
+      http.patch(`/lessons/${id}`, { hidden }).then(data),
     createLesson: (title, fromLessonId) =>
       http
         .post("/lessons", { title, ...(fromLessonId && { fromLessonId }) })

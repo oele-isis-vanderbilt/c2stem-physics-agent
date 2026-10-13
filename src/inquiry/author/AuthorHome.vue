@@ -30,19 +30,65 @@
     <p v-else-if="!lessons.length" class="text-muted">
       No lessons yet. Start one with New lesson.
     </p>
+    <p v-else class="list-hint">
+      Students see published lessons in this order. Hidden lessons stay
+      published but are off their list.
+    </p>
+    <div v-if="message" class="alert alert-warning py-2" role="alert">
+      {{ message }}
+    </div>
 
     <ul v-else class="lessons list-unstyled">
-      <li v-for="lesson in lessons" :key="lesson.id" class="lesson">
+      <li
+        v-for="(lesson, i) in lessons"
+        :key="lesson.id"
+        class="lesson"
+        :class="{ 'lesson-hidden': lesson.hidden }"
+      >
+        <div class="lesson-order">
+          <button
+            type="button"
+            class="order-btn"
+            :disabled="busy || i === 0"
+            :aria-label="`Move ${lesson.title} up`"
+            title="Move up"
+            @click="move(i, -1)"
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            class="order-btn"
+            :disabled="busy || i === lessons.length - 1"
+            :aria-label="`Move ${lesson.title} down`"
+            title="Move down"
+            @click="move(i, 1)"
+          >
+            ↓
+          </button>
+        </div>
         <div class="lesson-main">
           <div class="lesson-title">{{ lesson.title }}</div>
           <div class="lesson-meta">
             <span class="badge" :class="badgeOf(lesson).cls">
               {{ badgeOf(lesson).text }}
             </span>
+            <span v-if="lesson.hidden" class="badge badge-hidden">
+              Hidden from students
+            </span>
             Updated by {{ lesson.updatedBy }} · {{ when(lesson.updatedAt) }}
           </div>
         </div>
         <div class="lesson-actions">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            :disabled="busy"
+            :aria-pressed="lesson.hidden ? 'true' : 'false'"
+            @click="toggleHidden(lesson)"
+          >
+            {{ lesson.hidden ? "Show" : "Hide" }}
+          </button>
           <button
             type="button"
             class="btn btn-sm btn-purple"
@@ -67,12 +113,15 @@
 <script>
 import { inquiryApi } from "../connection";
 
-/** Every lesson with its publish state; New and Copy. Emits open(lessonId). */
+/**
+ * Every lesson with its publish state, in the order students see them:
+ * reorder, hide or show, New and Copy. Emits open(lessonId).
+ */
 export default {
   name: "AuthorHome",
   emits: ["open"],
   data() {
-    return { lessons: [], status: "loading", busy: false };
+    return { lessons: [], status: "loading", busy: false, message: null };
   },
   mounted() {
     this.load();
@@ -85,6 +134,57 @@ export default {
         this.status = "ready";
       } catch (e) {
         this.status = "error";
+      }
+    },
+    /** Moves a lesson one place and saves the whole order. */
+    async move(i, dir) {
+      const lessons = [...this.lessons];
+      const [lesson] = lessons.splice(i, 1);
+      lessons.splice(i + dir, 0, lesson);
+      const before = this.lessons;
+      this.lessons = lessons; // show it straight away
+      this.busy = true;
+      this.message = null;
+      try {
+        this.lessons = await inquiryApi().orderLessons(
+          lessons.map((l) => l.id)
+        );
+      } catch (e) {
+        this.lessons = before;
+        const code = e.response && e.response.status;
+        this.message =
+          code === 409
+            ? "Someone added or removed a lesson since this list loaded. It has been reloaded; try again."
+            : "Couldn't save the new order. Try again.";
+        if (code === 409) this.load();
+      } finally {
+        this.busy = false;
+      }
+    },
+    async toggleHidden(lesson) {
+      const hidden = !lesson.hidden;
+      if (
+        hidden &&
+        lesson.latestVersion &&
+        !window.confirm(
+          `Hide “${lesson.title}” from students? It stays published; students who started it keep their work, and it comes back when you show it.`
+        )
+      ) {
+        return;
+      }
+      this.busy = true;
+      this.message = null;
+      try {
+        const updated = await inquiryApi().setLessonHidden(lesson.id, hidden);
+        this.lessons = this.lessons.map((l) =>
+          l.id === updated.id ? updated : l
+        );
+      } catch (e) {
+        this.message = `Couldn't ${
+          hidden ? "hide" : "show"
+        } the lesson. Try again.`;
+      } finally {
+        this.busy = false;
       }
     },
     badgeOf(lesson) {
@@ -163,7 +263,36 @@ export default {
 }
 .lesson-main {
   min-width: 0;
-  flex: 1 1 320px;
+  flex: 1 1 200px;
+}
+.lesson-order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.order-btn {
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #ddd8ea;
+  border-radius: 4px;
+  background: #fff;
+  color: #2e2645;
+  line-height: 1;
+}
+.order-btn:hover:not(:disabled) {
+  background: #f4f2f9;
+}
+.order-btn:disabled {
+  opacity: 0.35;
+}
+.lesson-hidden {
+  border-left-color: #9a94ad;
+  background: #faf9fc;
+}
+.list-hint {
+  font-size: 14px;
+  color: #5c5670;
 }
 .lesson-title {
   font-weight: 600;
@@ -188,6 +317,10 @@ export default {
 .badge-live {
   background: #e7f4ec;
   color: #1e6b3a;
+}
+.badge-hidden {
+  background: #ececf0;
+  color: #4a4658;
 }
 .badge-changed {
   background: #fdf1e3;
