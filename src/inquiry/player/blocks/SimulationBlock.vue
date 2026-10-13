@@ -263,7 +263,7 @@ export default {
         this.missing = await adapter.ready();
         if (this.adapter === adapter) this.status = "ready";
       } catch (e) {
-        if (this.adapter === adapter) this.fail(e);
+        if (this.adapter === adapter) this.fail(e, "load");
       }
     },
     reload() {
@@ -271,8 +271,9 @@ export default {
       this.frameKey += 1;
       this.$nextTick(this.connect);
     },
-    fail(e) {
+    fail(e, during) {
       if (e.message === "closed") return;
+      this.log("sim_error", { message: e.message, during });
       this.error = e.message;
       this.status = null;
     },
@@ -287,12 +288,21 @@ export default {
         // Build on the live answer, as two runs may be saved before a render
         const saved = runsOf(this.ctx.answers[this.block.id]);
         this.$emit("answer", { runs: [...saved, run] });
+        this.log("sim_run", { inputs, outputs });
         this.status = "ready";
       } catch (e) {
-        if (this.adapter === adapter) this.fail(e);
+        if (this.adapter === adapter) this.fail(e, "run");
       }
     },
+    log(type, data) {
+      this.$store.dispatch("inquiry/log", {
+        type,
+        blockId: this.block.id,
+        data,
+      });
+    },
     open(which) {
+      this.log("dialog_open", { dialog: which });
       this.dialog = which;
       this.$refs.dialog.showModal();
     },

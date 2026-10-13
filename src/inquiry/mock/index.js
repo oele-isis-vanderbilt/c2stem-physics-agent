@@ -112,6 +112,13 @@ export function createMockInquiryApi() {
       return wait(session);
     },
 
+    logEvents(id, events) {
+      byId(id);
+      console.log("[mock inquiry] events", JSON.stringify(events));
+      return wait({ stored: events.length });
+    },
+
     saveOnUnload() {},
+    logOnUnload() {},
   };
 }

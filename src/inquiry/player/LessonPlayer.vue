@@ -235,7 +235,11 @@ export default {
         this.current.step,
         this.ctx
       )) {
-        this.$store.dispatch("inquiry/setAnswer", { blockId, value });
+        this.$store.dispatch("inquiry/setAnswer", {
+          blockId,
+          value,
+          log: false, // cleared by the player, not the student
+        });
       }
     },
     move(delta) {

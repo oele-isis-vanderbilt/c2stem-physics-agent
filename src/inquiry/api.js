@@ -10,23 +10,29 @@ export function createInquiryApi({ baseURL, getToken }) {
   });
   const data = (response) => response.data;
 
+  // A request sent while the tab closes; keepalive lets it finish after the page is gone
+  function onUnload(method, path, body) {
+    fetch(`${baseURL}${path}`, {
+      method,
+      keepalive: true,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
+      },
+      body: JSON.stringify(body),
+    });
+  }
+
   return {
     catalog: () => http.get("/catalog").then(data),
     startSession: (lessonId) => http.post("/sessions", { lessonId }).then(data),
     saveSession: (id, body) => http.patch(`/sessions/${id}`, body).then(data),
     completeSession: (id) => http.post(`/sessions/${id}/complete`).then(data),
+    logEvents: (id, events) =>
+      http.post(`/sessions/${id}/events`, { events }).then(data),
 
-    /** Last save while the tab closes; keepalive lets it finish after the page is gone. */
-    saveOnUnload(id, body) {
-      fetch(`${baseURL}/sessions/${id}`, {
-        method: "PATCH",
-        keepalive: true,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify(body),
-      });
-    },
+    saveOnUnload: (id, body) => onUnload("PATCH", `/sessions/${id}`, body),
+    logOnUnload: (id, events) =>
+      onUnload("POST", `/sessions/${id}/events`, { events }),
   };
 }

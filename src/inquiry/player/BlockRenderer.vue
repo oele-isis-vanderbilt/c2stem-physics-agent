@@ -63,10 +63,11 @@ export default {
         blockId: this.block.id,
         value,
         typing,
+        log: this.block.type !== "simulation", // runs log as sim_run
       });
     },
     leave() {
-      this.$store.dispatch("inquiry/flush");
+      this.$store.dispatch("inquiry/leave");
     },
   },
 };

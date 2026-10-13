@@ -1,5 +1,5 @@
 import { createInquiryApi } from "./api";
-import { createInquiryStore } from "./store";
+import { createInquiryStore, eventBatches } from "./store";
 
 /**
  * Adds the inquiry module to a host app. Nothing in src/inquiry imports the
@@ -11,7 +11,22 @@ export function installInquiry({ store, baseURL, getToken, api }) {
   store.registerModule("inquiry", createInquiryStore(api));
 
   window.addEventListener("pagehide", () => {
-    const { session, unsaved, unsavedPosition } = store.state.inquiry;
+    const inquiry = store.state.inquiry;
+    const { session, unsaved, unsavedPosition } = inquiry;
+
+    if (session) {
+      store.commit("inquiry/logTyped");
+      store.commit("inquiry/logStepView");
+      store.commit("inquiry/logEvent", { type: "lesson_exit" });
+    }
+    const queued = inquiry.events;
+    if (queued.length) {
+      store.commit("inquiry/takeEvents");
+      for (const [sessionId, events] of eventBatches(queued)) {
+        api.logOnUnload(sessionId, events);
+      }
+    }
+
     if (!session || session.status === "completed") return;
     if (!Object.keys(unsaved).length && !unsavedPosition) return;
     api.saveOnUnload(session.id, {

@@ -64,8 +64,8 @@ export default {
       let username = this.$store.state.user;
 
       try {
-        // Send inquiry answers that haven't been saved yet
-        await this.$store.dispatch("inquiry/flush");
+        // Close any open inquiry lesson: saves its answers and sends its events
+        await this.$store.dispatch("inquiry/closeLesson");
 
         // If on Construct or ConstructAgent page and there's a project, save it first
         if (
