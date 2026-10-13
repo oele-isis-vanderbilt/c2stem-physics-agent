@@ -1,5 +1,5 @@
 <template>
-  <div class="lesson-editor" :style="fitStyle">
+  <div class="lesson-editor" :style="fitStyle" @keydown="onKey">
     <header class="editor-bar">
       <nav aria-label="Breadcrumb" class="crumbs">
         <button type="button" class="crumb-link" @click="$emit('list')">
@@ -10,6 +10,39 @@
       </nav>
       <span class="status" role="status">{{ statusLabel }}</span>
       <div class="actions">
+        <div class="mode-switch" role="group" aria-label="Edit with">
+          <button
+            v-for="m in modes"
+            :key="m.id"
+            type="button"
+            class="btn btn-sm"
+            :class="mode === m.id ? 'btn-purple' : 'btn-outline-purple'"
+            :aria-pressed="mode === m.id ? 'true' : 'false'"
+            @click="setMode(m.id)"
+          >
+            {{ m.label }}
+          </button>
+        </div>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-purple"
+          :disabled="!ready || !!viewing || !past.length"
+          aria-label="Undo"
+          title="Undo (Ctrl+Z)"
+          @click="undo"
+        >
+          ↶
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-purple"
+          :disabled="!ready || !!viewing || !future.length"
+          aria-label="Redo"
+          title="Redo (Ctrl+Y)"
+          @click="redo"
+        >
+          ↷
+        </button>
         <button
           type="button"
           class="btn btn-sm btn-outline-purple"
@@ -139,8 +172,26 @@
         </button>
       </div>
       <div class="panes">
-        <section v-show="wide || tab === 'json'" class="pane pane-json">
-          <div class="json-area">
+        <section
+          v-show="wide || tab === 'edit'"
+          class="pane pane-edit"
+          :class="mode === 'form' ? 'pane-form' : 'pane-json'"
+        >
+          <lesson-form
+            v-if="mode === 'form'"
+            ref="form"
+            class="form-area"
+            :draft="viewing ? viewing.content : parsed.value || null"
+            :issues="viewing ? [] : issues"
+            :read-only="!!viewing"
+            :wide="wide"
+            :apply="apply"
+            :published-ids="publishedIds"
+            v-model:selection="formSelection"
+            @json="openJson"
+            @show-step="showStep"
+          />
+          <div v-else class="json-area">
             <json-editor
               ref="json"
               :model-value="viewing ? viewing.text : text"
@@ -159,7 +210,7 @@
           />
         </section>
         <section v-show="wide || tab === 'preview'" class="pane pane-preview">
-          <lesson-preview :content="previewContent" />
+          <lesson-preview ref="preview" :content="previewContent" />
         </section>
         <section v-if="!wide" v-show="tab === 'issues'" class="pane">
           <issues-panel
@@ -179,12 +230,25 @@ import { inquiryApi } from "../connection";
 import IssuesPanel from "./IssuesPanel.vue";
 import JsonEditor from "./JsonEditor.vue";
 import LessonPreview from "./LessonPreview.vue";
+import { idsOf, unformable } from "./draft";
+import LessonForm from "./form/LessonForm.vue";
 import { parseJson, rangeOf } from "./jsonLocation";
 
 const CHECK_DELAY = 1500; // validate this long after typing stops
 const PREVIEW_DELAY = 600;
 const MIN_HEIGHT = 480;
 const WIDE = 992; // side by side from Bootstrap's lg
+const HISTORY = 50; // undo steps kept
+const MERGE_MS = 1000; // typing with shorter pauses undoes as one step
+const MODE_KEY = "inquiry-author-mode";
+
+function savedMode() {
+  try {
+    return window.localStorage.getItem(MODE_KEY) === "json" ? "json" : "form";
+  } catch (e) {
+    return "form";
+  }
+}
 
 const show = (draft) => JSON.stringify(draft, null, 2);
 
@@ -195,12 +259,14 @@ function detailOf(error) {
 }
 
 /**
- * Edits one lesson's draft as JSON beside a live preview. Save keeps the
- * draft; Publish freezes it as the next version. Emits list to go back.
+ * Edits one lesson's draft with a form or as JSON, beside a live preview.
+ * Both edit the same JSON text, so undo, save and validation cover both.
+ * Save keeps the draft; Publish freezes it as the next version. Emits list
+ * to go back.
  */
 export default {
   name: "LessonEditor",
-  components: { IssuesPanel, JsonEditor, LessonPreview },
+  components: { IssuesPanel, JsonEditor, LessonForm, LessonPreview },
   props: {
     lessonId: { type: String, required: true },
   },
@@ -225,7 +291,16 @@ export default {
       lastTitle: "",
       fitHeight: null,
       wide: window.innerWidth >= WIDE,
-      tab: "json",
+      tab: "edit",
+      mode: savedMode(),
+      modes: [
+        { id: "form", label: "Form" },
+        { id: "json", label: "JSON" },
+      ],
+      past: [], // earlier texts, newest last
+      future: [], // undone texts, newest last
+      publishedIds: null, // ids in the latest published version
+      formSelection: { kind: "settings" },
     };
   },
   computed: {
@@ -261,7 +336,7 @@ export default {
     tabs() {
       const count = this.syntaxError ? 1 : (this.issues || []).length;
       return [
-        { id: "json", label: "JSON" },
+        { id: "edit", label: this.mode === "form" ? "Form" : "JSON" },
         { id: "preview", label: "Preview" },
         { id: "issues", label: count ? `Issues (${count})` : "Issues" },
       ];
@@ -274,7 +349,8 @@ export default {
     title(title) {
       if (this.parsed.value) this.lastTitle = title;
     },
-    text() {
+    text(now, before) {
+      this.record(before);
       if (this.viewing) return;
       clearTimeout(this.checkTimer);
       clearTimeout(this.previewTimer);
@@ -316,13 +392,18 @@ export default {
         this.useDraft(draft);
         this.versions = versions;
         this.ready = true;
+        this.loadPublishedIds();
         this.$nextTick(this.fit);
       } catch (e) {
         this.loadError = true;
       }
     },
     useDraft(draft) {
-      this.text = this.savedText = show(draft.draft);
+      const text = show(draft.draft);
+      this.historyPaused = text !== this.text; // a fresh start, not an edit
+      this.text = this.savedText = text;
+      this.past = [];
+      this.future = [];
       this.revision = draft.revision;
       this.previewContent = draft.draft;
       this.conflict = null;
@@ -331,6 +412,100 @@ export default {
       this.wide = window.innerWidth >= WIDE;
       const top = this.$el.getBoundingClientRect().top + window.scrollY;
       this.fitHeight = Math.max(window.innerHeight - top, MIN_HEIGHT);
+    },
+    async loadPublishedIds() {
+      const latest = this.latestVersion;
+      if (!latest) return;
+      try {
+        const version = await this.api.version(this.lessonId, latest);
+        if (!unformable(version.content)) {
+          this.publishedIds = idsOf(version.content);
+        }
+      } catch (e) {
+        // Only used to warn before deleting; fine without
+      }
+    },
+    setMode(mode) {
+      this.mode = mode;
+      if (!this.wide) this.tab = "edit";
+      try {
+        window.localStorage.setItem(MODE_KEY, mode);
+      } catch (e) {
+        // Remembering the choice is a convenience
+      }
+    },
+    /**
+     * Applies a form change: fn edits a copy of the draft, which becomes the
+     * new JSON text. Returns what fn returned. boundary starts a new undo step.
+     */
+    apply(fn, boundary = false) {
+      if (this.viewing || !this.parsed.value) return undefined;
+      const draft = JSON.parse(JSON.stringify(this.parsed.value));
+      const result = fn(draft);
+      if (boundary) this.boundary = true;
+      this.text = show(draft);
+      return result;
+    },
+    /** Called with the text before each change; keeps the undo history. */
+    record(before) {
+      if (this.historyPaused) {
+        this.historyPaused = false;
+        return;
+      }
+      const now = Date.now();
+      const boundary = !!this.boundary;
+      if (boundary || now - (this.lastEditAt || 0) > MERGE_MS) {
+        this.past.push(before);
+        if (this.past.length > HISTORY) this.past.shift();
+      }
+      this.boundary = false;
+      // Whatever comes after a boundary change is a step of its own
+      this.lastEditAt = boundary ? 0 : now;
+      this.future = [];
+    },
+    travel(from, to) {
+      if (!from.length || this.viewing) return;
+      const text = from.pop();
+      to.push(this.text);
+      this.historyPaused = text !== this.text;
+      this.text = text;
+      this.lastEditAt = 0;
+    },
+    undo() {
+      this.travel(this.past, this.future);
+    },
+    redo() {
+      this.travel(this.future, this.past);
+    },
+    onKey(event) {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+      // The JSON box has its own undo and Ctrl+S
+      if (event.target.closest && event.target.closest(".json-editor")) return;
+      const key = event.key.toLowerCase();
+      if (key === "s") {
+        event.preventDefault();
+        this.save();
+      } else if (key === "z" && !event.shiftKey) {
+        event.preventDefault();
+        this.undo();
+      } else if (key === "y" || (key === "z" && event.shiftKey)) {
+        event.preventDefault();
+        this.redo();
+      }
+    },
+    showStep(position) {
+      if (this.$refs.preview) this.$refs.preview.show(position);
+    },
+    /** Shows a part of the lesson, by its JSON path, in the JSON view. */
+    openJson(path) {
+      this.setMode("json");
+      this.$nextTick(() => {
+        const range = rangeOf(
+          this.viewing ? this.viewing.text : this.text,
+          path
+        );
+        if (range) this.$refs.json.select(range.offset, range.length);
+      });
     },
     pickTab(id) {
       this.tab = id;
@@ -412,6 +587,7 @@ export default {
       try {
         const version = await this.api.publish(this.lessonId);
         this.versions = [...this.versions, version];
+        this.publishedIds = idsOf(this.parsed.value);
         this.issues = [];
         this.message = {
           ok: true,
@@ -445,12 +621,13 @@ export default {
           text: show(version.content),
           content: version.content,
         };
-        if (!this.wide) this.tab = "json";
+        if (!this.wide) this.tab = "edit";
       } catch (e) {
         this.message = { text: `Couldn't open version ${n}.` };
       }
     },
     restoreVersion() {
+      this.boundary = true;
       this.text = this.viewing.text;
       this.message = {
         ok: true,
@@ -459,9 +636,16 @@ export default {
       this.viewing = null;
     },
     pick(issue) {
-      if (!this.wide) this.tab = "json";
-      const range =
-        issue.offset !== undefined ? issue : rangeOf(this.text, issue.path);
+      if (!this.wide) this.tab = "edit";
+      const syntax = issue.offset !== undefined;
+      if (this.mode === "form" && !syntax) {
+        this.$nextTick(
+          () => this.$refs.form && this.$refs.form.reveal(issue.path)
+        );
+        return;
+      }
+      if (syntax && this.mode === "form") this.setMode("json");
+      const range = syntax ? issue : rangeOf(this.text, issue.path);
       if (range) {
         this.$nextTick(() =>
           this.$refs.json.select(range.offset, range.length)
@@ -656,9 +840,37 @@ export default {
   display: flex;
   flex-direction: column;
 }
-.pane-json {
+.pane-json,
+.pane-form {
   padding: 8px;
   gap: 8px;
+}
+.pane-form {
+  flex-grow: 3;
+}
+.pane-form + .pane-preview {
+  flex-grow: 2;
+}
+.pane-form .issues-area {
+  height: 96px !important; /* the form also shows each issue in place */
+}
+.form-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid var(--inq-line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.mode-switch {
+  display: inline-flex;
+}
+.mode-switch .btn:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.mode-switch .btn:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 .json-area {
   flex: 1 1 auto;

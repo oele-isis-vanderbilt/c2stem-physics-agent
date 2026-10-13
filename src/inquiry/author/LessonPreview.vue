@@ -104,15 +104,16 @@ export default {
       if (this.problem) return;
       if (!this.app || this.broken) {
         this.mount();
-        return;
+      } else {
+        // Keep the author's place and answers while the lesson changes
+        const { session, answers } = this.store.state.inquiry;
+        this.store.commit("inquiry/setSession", {
+          ...session,
+          content: this.content,
+          answers,
+        });
       }
-      // Keep the author's place and answers while the lesson changes
-      const { session, answers } = this.store.state.inquiry;
-      this.store.commit("inquiry/setSession", {
-        ...session,
-        content: this.content,
-        answers,
-      });
+      this.showWanted();
     },
     mount() {
       const old = this.store && this.store.state.inquiry;
@@ -168,6 +169,21 @@ export default {
     showStep(index) {
       // Straight to the step: authors aren't held up by unanswered questions
       this.store.commit("inquiry/showPosition", positionOf(this.steps[index]));
+    },
+    /** Shows a step by { pageId, stepId }, once the preview has it. */
+    show(position) {
+      this.wanted = position;
+      this.showWanted();
+    },
+    showWanted() {
+      if (!this.wanted || !this.store || this.problem) return;
+      const { pageId, stepId } = this.wanted;
+      const index = this.steps.findIndex(
+        (s) => s.page.id === pageId && s.step.id === stepId
+      );
+      if (index < 0) return; // a new step; tried again after the next update
+      this.wanted = null;
+      if (index !== this.stepAt) this.showStep(index);
     },
     resetAnswers() {
       const { session } = this.store.state.inquiry;
