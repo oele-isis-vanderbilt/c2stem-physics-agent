@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "title": "Lesson 3: Wall collision",
+  "description": "A ball moving horizontally and hitting a wall: speed, energy and the coefficient of restitution. Built from Ver2_Images_for_inquiry.pptx slides 34-40. Simulation and media values marked REPLACE_ME are placeholders until the physics project details are known.",
+  "variables": [
+    { "key": "ballMass", "label": "Ball mass", "unit": "kg", "role": "input", "min": 0, "max": 50, "step": 1, "default": 5 },
+    { "key": "launchSpeed", "label": "Speed", "unit": "m/s", "role": "input", "min": 0, "max": 50, "step": 1, "default": 10 },
+    { "key": "restitution", "label": "Coefficient of Restitution", "role": "input", "min": 0, "max": 1, "step": 0.05, "default": 0.5 },
+    { "key": "speed", "label": "Ball speed", "unit": "m/s", "role": "output" },
+    { "key": "kineticEnergy", "label": "Kinetic energy", "unit": "J", "role": "output" },
+    { "key": "potentialEnergy", "label": "Potential energy", "unit": "J", "role": "output" },
+    { "key": "elapsedTime", "label": "Time", "unit": "s", "role": "output" }
+  ],
+  "simulation": {
+    "key": "wallCollision",
+    "adapter": "netsblox",
+    "source": "https://physics.c2stem.org",
+    "owner": "REPLACE_ME",
+    "project": "REPLACE_ME",
+    "inputs": {
+      "ballMass": "REPLACE_ME ball mass global",
+      "launchSpeed": "REPLACE_ME speed global",
+      "restitution": "REPLACE_ME coefficient of restitution global"
+    },
+    "outputs": {
+      "speed": "REPLACE_ME ball speed global",
+      "kineticEnergy": "REPLACE_ME kinetic energy global",
+      "potentialEnergy": "REPLACE_ME potential energy global",
+      "elapsedTime": "REPLACE_ME time global"
+    },
+    "timeSeries": {
+      "variable": "REPLACE_ME time series list global",
+      "columns": ["time", "speed", "kineticEnergy", "potentialEnergy"]
+    },
+    "run": { "mode": "greenFlag" },
+    "done": { "mode": "poll", "timeoutMs": 30000 }
+  },
+  "pages": [
+    {
+      "id": "orientation",
+      "phase": "Orientation & Conceptualization",
+      "steps": [
+        {
+          "id": "orientation-s1",
+          "blocks": [
+            {
+              "id": "orientation-media",
+              "type": "media",
+              "items": [
+                { "url": "REPLACE_ME/ball-wall-1.gif", "kind": "gif", "alt": "A ball moves horizontally and hits a wall." },
+                { "url": "REPLACE_ME/ball-wall-2.gif", "kind": "gif", "alt": "A ball moves horizontally and hits a wall, bouncing back differently." }
+              ]
+            },
+            {
+              "id": "orientation-prompt",
+              "type": "text",
+              "md": "Observe the animations above. In the animations, a ball moves horizontally and hits a wall. What do you observe? What is causing the differences?"
+            },
+            {
+              "id": "orientation-observe",
+              "type": "freeText",
+              "key": "observation",
+              "placeholder": "I observe... I think this is happening because..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hypothesis",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "hypothesis-s1",
+          "blocks": [
+            {
+              "id": "hypothesis-intro",
+              "type": "text",
+              "md": "Let's design another experiment examining a ball colliding with a wall.\n\nFill in the blanks and tables below:"
+            },
+            {
+              "id": "hypothesis-blanks",
+              "type": "fillInBlanks",
+              "key": "hypothesis",
+              "template": "My hypothesis is: [[statement]]\n\nMy independent variable is: [[iv]]\n\nMy dependent variable is: [[dv]]\n\nMy controlled variable(s) is/are: [[cv]]",
+              "blanks": [
+                { "id": "statement", "input": "text" },
+                { "id": "iv", "input": "text" },
+                { "id": "dv", "input": "text" },
+                { "id": "cv", "input": "text" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "design-s1",
+          "blocks": [
+            {
+              "id": "design-intro",
+              "type": "text",
+              "md": "Let's design another experiment examining a ball colliding with a wall.\n\nFill in the blanks and tables below:"
+            },
+            {
+              "id": "design-table",
+              "type": "designTable",
+              "key": "experimentDesign",
+              "title": "Experiment:",
+              "editable": true,
+              "rowCount": 3,
+              "variableOptionsFrom": ["hypothesis.iv", "hypothesis.dv", "hypothesis.cv"]
+            },
+            {
+              "id": "design-compare",
+              "type": "select",
+              "key": "compareValues",
+              "prompt": "We compare the resulting values of:",
+              "optionsFrom": ["hypothesis.iv", "hypothesis.dv", "hypothesis.cv"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "run-s1",
+          "blocks": [
+            {
+              "id": "run-intro",
+              "type": "text",
+              "md": "Let's run your experiment with the simulation below! You can return to the previous step as needed to review your experiment design.\n\nThe data from each trial will be recorded. You can access them by clicking on the Results button. (Your experiment results from the previous activities can also be accessed.)"
+            },
+            {
+              "id": "run-simulation",
+              "type": "simulation",
+              "key": "collisionRuns",
+              "inputs": ["ballMass", "launchSpeed", "restitution"],
+              "outputs": ["speed", "kineticEnergy", "potentialEnergy", "elapsedTime"],
+              "graph": { "x": "time", "y": ["speed"] },
+              "includeTrialsFrom": ["cartPush", "cartFriction", "ballDrop"],
+              "minRuns": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "phase": "Conclusion",
+      "steps": [
+        {
+          "id": "conclusion-s1",
+          "blocks": [
+            {
+              "id": "conclusion-intro",
+              "type": "text",
+              "md": "Let's reflect on the results. You can go back to the simulation as needed by clicking on the Back button."
+            },
+            { "id": "conclusion-why", "type": "freeText", "key": "whyResults", "prompt": "Why did the results happen? What theory or concept explains this phenomenon?" },
+            {
+              "id": "conclusion-data",
+              "type": "freeText",
+              "key": "resultsData",
+              "prompt": "What was the result of your experiment? Explain the data from your results. Does the data support your hypothesis? Why?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "discussion",
+      "phase": "Discussion",
+      "steps": [
+        {
+          "id": "discussion-s1",
+          "blocks": [
+            {
+              "id": "discussion-intro",
+              "type": "text",
+              "md": "To conclude, write a statement with a claim, evidence, and reasoning.\n\n- The **claim** should be about the collision of the ball and the ground: what was your hypothesis?\n- The **evidence** should include your experiment results. Be specific about the experiments you ran!\n- The **reasoning** should mention the physics concepts that explain your results."
+            },
+            { "id": "discussion-cer", "type": "freeText", "key": "cer", "placeholder": "Enter here...", "rows": 8 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "formative",
+      "phase": "Formative Assessment",
+      "steps": [
+        {
+          "id": "formative-s1",
+          "blocks": [
+            { "id": "formative-intro", "type": "text", "md": "Let's end with a quick test of your understanding." },
+            {
+              "id": "formative-more-restitution",
+              "type": "freeText",
+              "key": "moreRestitution",
+              "prompt": "Suppose a ball is colliding with a wall. If we increase the coefficient of restitution, how would the ball's post-collision movement be affected? Point out the variables that would be affected or unaffected, and explain how and why that would be the case.",
+              "placeholder": "Enter here...",
+              "rows": 6
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

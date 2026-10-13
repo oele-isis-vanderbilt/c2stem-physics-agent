@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "title": "Lesson 1 Part b: Friction",
+  "description": "How friction affects a pushed cart: designing a hypothesis from scratch, running the experiment, and claim-evidence-reasoning. Built from Ver2_Images_for_inquiry.pptx slides 18-24. Simulation and media values marked REPLACE_ME are placeholders until the physics project details are known.",
+  "variables": [
+    { "key": "cartMass", "label": "Cart mass", "unit": "kg", "role": "input", "min": 0, "max": 50, "step": 1, "default": 10 },
+    { "key": "pushForce", "label": "Push force", "unit": "N", "role": "input", "min": 0, "max": 50, "step": 1, "default": 10 },
+    { "key": "surfaceRoughness", "label": "Surface roughness", "role": "input", "min": 0, "max": 1, "step": 0.1, "default": 0.5 },
+    { "key": "pushDuration", "label": "Push duration", "unit": "s", "role": "input", "min": 0, "max": 5, "step": 0.5, "default": 1 },
+    { "key": "speed", "label": "Speed", "unit": "m/s", "role": "output" },
+    { "key": "distance", "label": "Distance", "unit": "m", "role": "output" },
+    { "key": "stopTime", "label": "Time until stop", "unit": "s", "role": "output" }
+  ],
+  "simulation": {
+    "key": "cartFriction",
+    "adapter": "netsblox",
+    "source": "https://physics.c2stem.org",
+    "owner": "REPLACE_ME",
+    "project": "REPLACE_ME",
+    "inputs": {
+      "cartMass": "REPLACE_ME cart mass global",
+      "pushForce": "REPLACE_ME push force global",
+      "surfaceRoughness": "REPLACE_ME surface roughness global",
+      "pushDuration": "REPLACE_ME push duration global"
+    },
+    "outputs": {
+      "speed": "REPLACE_ME speed global",
+      "distance": "REPLACE_ME distance global",
+      "stopTime": "REPLACE_ME time until stop global"
+    },
+    "timeSeries": {
+      "variable": "REPLACE_ME time series list global",
+      "columns": ["time", "speed"]
+    },
+    "run": { "mode": "greenFlag" },
+    "done": { "mode": "poll", "timeoutMs": 30000 }
+  },
+  "pages": [
+    {
+      "id": "orientation",
+      "phase": "Orientation & Conceptualization",
+      "steps": [
+        {
+          "id": "orientation-s1",
+          "blocks": [
+            {
+              "id": "orientation-media",
+              "type": "media",
+              "items": [
+                { "url": "REPLACE_ME/cart-smooth-floor.gif", "kind": "gif", "alt": "A person pushes a cart on a smooth floor and it rolls a long way." },
+                { "url": "REPLACE_ME/cart-rough-floor.gif", "kind": "gif", "alt": "The same person pushes the same cart on a rough floor and it stops quickly." }
+              ]
+            },
+            {
+              "id": "orientation-prompt",
+              "type": "text",
+              "md": "In the animations, the same person pushes the same cart for the same amount of time. On the smooth floor, the cart travels farther. On the rough floor, it stops quickly. What might explain the difference?"
+            },
+            {
+              "id": "orientation-explain",
+              "type": "freeText",
+              "key": "smoothFloorWhy",
+              "placeholder": "I think the cart travels farther on the smooth surface because..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hypothesis",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "hypothesis-s1",
+          "blocks": [
+            {
+              "id": "hypothesis-intro",
+              "type": "text",
+              "md": "Let's design another experiment examining how friction is related to motion.\n\nThis time around, let's make your own hypothesis from scratch! Fill in the blanks and tables below:"
+            },
+            {
+              "id": "hypothesis-blanks",
+              "type": "fillInBlanks",
+              "key": "hypothesis",
+              "template": "My hypothesis is: [[statement]]\n\nMy independent variable is: [[iv]]\n\nMy dependent variable is: [[dv]]\n\nMy controlled variable(s) is/are: [[cv]]",
+              "blanks": [
+                { "id": "statement", "input": "text" },
+                { "id": "iv", "input": "text" },
+                { "id": "dv", "input": "text" },
+                { "id": "cv", "input": "text" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "design-s1",
+          "blocks": [
+            {
+              "id": "design-intro",
+              "type": "text",
+              "md": "Let's try to design another experiment, examining how friction is related to motion.\n\nThis time around, let's make your own hypothesis from scratch! Fill in the blanks and tables below:"
+            },
+            {
+              "id": "design-table",
+              "type": "designTable",
+              "key": "experimentDesign",
+              "title": "Experiment:",
+              "editable": true,
+              "rowCount": 3,
+              "variableOptionsFrom": ["hypothesis.iv", "hypothesis.dv", "hypothesis.cv"]
+            },
+            {
+              "id": "design-compare",
+              "type": "select",
+              "key": "compareValues",
+              "prompt": "We compare the resulting values of:",
+              "optionsFrom": ["hypothesis.iv", "hypothesis.dv", "hypothesis.cv"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "run-s1",
+          "blocks": [
+            {
+              "id": "run-intro",
+              "type": "text",
+              "md": "Let's run your experiment with the simulation below! You can return to the previous step as needed to review your experiment design.\n\nThe data from each trial will be recorded. You can access them by clicking on the Results button. (Your experiment results from the previous activity can also be accessed.)"
+            },
+            {
+              "id": "run-simulation",
+              "type": "simulation",
+              "key": "frictionRuns",
+              "inputs": ["cartMass", "pushForce", "surfaceRoughness", "pushDuration"],
+              "outputs": ["speed", "distance", "stopTime"],
+              "graph": { "x": "time", "y": ["speed"] },
+              "includeTrialsFrom": ["cartPush"],
+              "minRuns": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "phase": "Conclusion",
+      "steps": [
+        {
+          "id": "conclusion-s1",
+          "blocks": [
+            {
+              "id": "conclusion-intro",
+              "type": "text",
+              "md": "Let's reflect on the results. You can go back to the simulation as needed by clicking on the Back button."
+            },
+            { "id": "conclusion-why", "type": "freeText", "key": "whyResults", "prompt": "Why did the results happen? What theory or concept explains this phenomenon?" },
+            {
+              "id": "conclusion-data",
+              "type": "freeText",
+              "key": "resultsData",
+              "prompt": "What was the result of your experiment? Explain the data from your results. Does the data support your hypothesis? Why?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "discussion",
+      "phase": "Discussion",
+      "steps": [
+        {
+          "id": "discussion-s1",
+          "blocks": [
+            {
+              "id": "discussion-intro",
+              "type": "text",
+              "md": "To conclude, write a statement with a claim, evidence, and reasoning.\n\n- The **claim** should be about the motion of the cart: what was your hypothesis?\n- The **evidence** should include your experiment results. Be specific about the experiments you ran!\n- The **reasoning** should mention the physics concepts that explain your results."
+            },
+            { "id": "discussion-cer", "type": "freeText", "key": "cer", "placeholder": "Enter here...", "rows": 8 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "formative",
+      "phase": "Formative Assessment",
+      "steps": [
+        {
+          "id": "formative-s1",
+          "blocks": [
+            { "id": "formative-intro", "type": "text", "md": "Let's end with a quick test of your understanding." },
+            {
+              "id": "formative-more-friction",
+              "type": "freeText",
+              "key": "moreFriction",
+              "prompt": "Suppose there is a cart moving on the floor. If we increase the friction of the floor by a set amount, how would the cart's movement be affected? Point out the variables that would be affected or unaffected, and explain how and why that would be the case.",
+              "placeholder": "Enter here...",
+              "rows": 6
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,14 @@
           <h5 class="card-title">{{ name }}</h5>
           <!--          <p class="card-text">{{ description[index] }}</p>-->
           <p class="card-text">
-            <img :src="logo[index]" alt="" width="100" height="60" />
+            <img
+              v-if="logo && logo[index]"
+              :src="logo[index]"
+              alt=""
+              width="100"
+              height="60"
+            />
+            <span v-else class="logo-space"></span>
           </p>
           <router-link
             v-if="routeParams"
@@ -67,8 +74,14 @@ export default {
 .card {
   margin: 20px;
   width: fit-content;
+  min-width: 180px;
   min-height: fit-content;
   border: 3px inset #615195;
+}
+.logo-space {
+  display: inline-block;
+  width: 100px;
+  height: 60px;
 }
 .card-text {
   display: flex;

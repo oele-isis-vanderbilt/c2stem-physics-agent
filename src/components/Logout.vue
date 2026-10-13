@@ -64,6 +64,9 @@ export default {
       let username = this.$store.state.user;
 
       try {
+        // Send inquiry answers that haven't been saved yet
+        await this.$store.dispatch("inquiry/flush");
+
         // If on Construct or ConstructAgent page and there's a project, save it first
         if (
           (currentRoute === "Construct" || currentRoute === "ConstructAgent") &&
@@ -90,6 +93,7 @@ export default {
         await authService.logout({ username: username });
         await authService.netsbloxLogout();
         this.$store.dispatch("resetStore");
+        this.$store.commit("inquiry/reset");
         sessionStorage.clear();
         localStorage.clear();
 

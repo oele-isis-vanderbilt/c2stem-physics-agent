@@ -27,11 +27,14 @@ export default {
   },
   data() {
     return {
-      names: ["Truck: Debug"],
-      description: ["Complete your computational model lessons"],
-      route: ["ConstructAgent"],
+      names: ["Truck: Debug", "Inquiry"],
+      description: [
+        "Complete your computational model lessons",
+        "Scientific inquiry lessons",
+      ],
+      route: ["ConstructAgent", "InquiryHome"],
       // route: ["ConstructAgent", "ConstructAgent", "ConstructAgent"],
-      logo: [c2stemTruckLogo],
+      logo: [c2stemTruckLogo, null],
       // logo: [c2stemTruckLogo, droneLogo, droneLogo],
       routeParams: [
         {
@@ -39,6 +42,7 @@ export default {
           projectName: "Truck_Model_debug_HIDDEN_BLOCKS",
           source: "https://physics.c2stem.org",
         },
+        {},
         // {
         //   userID: "oele",
         //   projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",

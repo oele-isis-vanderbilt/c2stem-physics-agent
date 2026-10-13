@@ -1,0 +1,422 @@
+{
+  "schemaVersion": 1,
+  "title": "Lesson 1 Part a: Pushing a cart",
+  "description": "Pushing a cart: claims, Control of Variables, designing and running an experiment, and claim-evidence-reasoning. Built from Ver2_Images_for_inquiry.pptx slides 2-16. Simulation and media values marked REPLACE_ME are placeholders until the physics project details are known.",
+  "variables": [
+    { "key": "cartMass", "label": "Cart mass", "unit": "kg", "role": "input", "min": 0, "max": 50, "step": 1, "default": 10 },
+    { "key": "pushForce", "label": "Push force", "unit": "N", "role": "input", "min": 0, "max": 50, "step": 1, "default": 10 },
+    { "key": "speed", "label": "Speed", "unit": "m/s", "role": "output" },
+    { "key": "distance", "label": "Distance", "unit": "m", "role": "output" },
+    { "key": "stopTime", "label": "Time until stop", "unit": "s", "role": "output" }
+  ],
+  "simulation": {
+    "key": "cartPush",
+    "adapter": "netsblox",
+    "source": "https://physics.c2stem.org",
+    "owner": "REPLACE_ME",
+    "project": "REPLACE_ME",
+    "inputs": {
+      "cartMass": "REPLACE_ME cart mass global",
+      "pushForce": "REPLACE_ME push force global"
+    },
+    "outputs": {
+      "speed": "REPLACE_ME speed global",
+      "distance": "REPLACE_ME distance global",
+      "stopTime": "REPLACE_ME time until stop global"
+    },
+    "timeSeries": {
+      "variable": "REPLACE_ME time series list global",
+      "columns": ["time", "speed"]
+    },
+    "run": { "mode": "greenFlag" },
+    "done": { "mode": "poll", "timeoutMs": 30000 }
+  },
+  "pages": [
+    {
+      "id": "orientation",
+      "phase": "Orientation",
+      "steps": [
+        {
+          "id": "orientation-s1",
+          "blocks": [
+            {
+              "id": "orientation-media",
+              "type": "media",
+              "items": [
+                { "url": "REPLACE_ME/cart-push.gif", "kind": "gif", "alt": "A person pushes a shopping cart, which rolls forward." }
+              ]
+            },
+            { "id": "orientation-intro", "type": "text", "md": "Write your thoughts below:" },
+            { "id": "orientation-think", "type": "freeText", "key": "think", "placeholder": "I think the cart moved because..." },
+            { "id": "orientation-wonder", "type": "freeText", "key": "wonder", "placeholder": "I wonder..." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conceptualization",
+      "phase": "Conceptualization",
+      "steps": [
+        {
+          "id": "conceptualization-s1",
+          "blocks": [
+            {
+              "id": "conceptualization-claim",
+              "type": "select",
+              "key": "claim",
+              "prompt": "Select a claim about the movement of the cart:",
+              "options": [
+                { "id": "strongerPush", "label": "The cart travels further when it receives a stronger push" },
+                { "id": "moreMass", "label": "The cart travels further when the cart has more mass" }
+              ]
+            },
+            { "id": "conceptualization-intro", "type": "text", "md": "Fill in the open-ended questions below:" },
+            { "id": "conceptualization-truefalse", "type": "freeText", "key": "claimTrueFalse", "prompt": "Do you think this claim is true or false? Why?" },
+            { "id": "conceptualization-prove", "type": "freeText", "key": "claimProof", "prompt": "How would you prove that this claim is true or false?" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cvs",
+      "phase": "Control of Variables",
+      "steps": [
+        {
+          "id": "cvs-s1",
+          "blocks": [
+            {
+              "id": "cvs-intro",
+              "type": "text",
+              "md": "Let's learn about a concept called **Control of Variables**.\n\nSuppose we have the hypothesis: **A cart with higher mass moves faster.**\n\n**Which experiment design is better?**"
+            },
+            {
+              "id": "cvs-better-design",
+              "type": "choice",
+              "key": "betterDesign",
+              "options": [
+                {
+                  "id": "experiment1",
+                  "label": "Experiment 1",
+                  "prompt": "Compare the cart's acceleration in trials A and B:",
+                  "table": {
+                    "rows": [
+                      { "label": "Push Strength", "values": { "A": "Strong", "B": "Weak" } },
+                      { "label": "Cart Mass", "values": { "A": "High", "B": "Low" } }
+                    ]
+                  }
+                },
+                {
+                  "id": "experiment2",
+                  "label": "Experiment 2",
+                  "prompt": "Compare the cart's acceleration in trials A and B:",
+                  "table": {
+                    "rows": [
+                      { "label": "Push Strength", "values": { "A": "Strong", "B": "Strong" } },
+                      { "label": "Cart Mass", "values": { "A": "High", "B": "Low" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cvs-s2",
+          "blocks": [
+            {
+              "id": "cvs-why-better",
+              "type": "freeText",
+              "key": "betterWhy",
+              "prompt": "You selected {{betterDesign}}. Why is {{betterDesign}} better than the other experiment?",
+              "placeholder": "My selected experiment is better because..."
+            }
+          ]
+        },
+        {
+          "id": "cvs-s3",
+          "blocks": [
+            {
+              "id": "cvs-explain-better",
+              "type": "feedback",
+              "md": "Experiment 2 is a better-designed experiment because cart mass was the only variable that was changed between trials A and B. Push strength is kept constant, so we can be certain that differences between the results of trials A and B are caused by changes in cart mass."
+            },
+            {
+              "id": "cvs-s3-exp1",
+              "type": "designTable",
+              "title": "Experiment 1",
+              "prompt": "Compare the cart's acceleration in trials A and B:",
+              "rows": [
+                { "label": "Push Strength", "values": { "A": "Strong", "B": "Weak" } },
+                { "label": "Cart Mass", "values": { "A": "High", "B": "Low" } }
+              ]
+            },
+            {
+              "id": "cvs-s3-exp2",
+              "type": "designTable",
+              "title": "Experiment 2",
+              "prompt": "Compare the cart's acceleration in trials A and B:",
+              "rows": [
+                { "label": "Push Strength", "values": { "A": "Strong", "B": "Strong" } },
+                { "label": "Cart Mass", "values": { "A": "High", "B": "Low" } }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cvs-s4",
+          "blocks": [
+            {
+              "id": "cvs-explain-strategy",
+              "type": "feedback",
+              "md": "This is an example of the **Control of Variables Strategy (CVS)**.\n\nTo find out whether one variable causes a change, we need a fair comparison. A fair comparison changes the variable we are testing and keeps the other variables the same. If not, experiments cannot prove the effect of one independent variable on the dependent variable. It would be an experiment with confounding design."
+            },
+            {
+              "id": "cvs-s4-exp1",
+              "type": "designTable",
+              "title": "Experiment 1",
+              "prompt": "Compare the cart's acceleration in trials A and B:",
+              "rows": [
+                { "label": "Push Strength", "values": { "A": "Strong", "B": "Weak" } },
+                { "label": "Cart Mass", "values": { "A": "High", "B": "Low" } }
+              ]
+            },
+            {
+              "id": "cvs-s4-exp2",
+              "type": "designTable",
+              "title": "Experiment 2",
+              "prompt": "Compare the cart's acceleration in trials A and B:",
+              "rows": [
+                { "label": "Push Strength", "values": { "A": "Strong", "B": "Strong" } },
+                { "label": "Cart Mass", "values": { "A": "High", "B": "Low" } }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cvs-s5",
+          "blocks": [
+            {
+              "id": "cvs-explain-steps",
+              "type": "feedback",
+              "md": "To implement this, one must:\n\n1. Identify the variable being tested, or the independent variable.\n2. Change the independent variable.\n3. Keep all other variables constant."
+            },
+            {
+              "id": "cvs-s5-exp1",
+              "type": "designTable",
+              "title": "Experiment 1",
+              "prompt": "Compare the cart's acceleration in trials A and B:",
+              "rows": [
+                { "label": "Push Strength", "values": { "A": "Strong", "B": "Weak" } },
+                { "label": "Cart Mass", "values": { "A": "High", "B": "Low" } }
+              ]
+            },
+            {
+              "id": "cvs-s5-exp2",
+              "type": "designTable",
+              "title": "Experiment 2",
+              "prompt": "Compare the cart's acceleration in trials A and B:",
+              "rows": [
+                { "label": "Push Strength", "values": { "A": "Strong", "B": "Strong" } },
+                { "label": "Cart Mass", "values": { "A": "High", "B": "Low" } }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cvs-s6",
+          "blocks": [
+            {
+              "id": "cvs-check-intro",
+              "type": "text",
+              "md": "Let's test your understanding of the Control of Variables Strategy.\n\nLook at the experiment below:"
+            },
+            {
+              "id": "cvs-s6-experiment",
+              "type": "designTable",
+              "title": "Hypothesis: A cart that receives a stronger push moves faster.",
+              "prompt": "Experiment: Compare the cart's acceleration in trials A and B:",
+              "rows": [
+                { "label": "Push Strength", "values": { "A": "Strong", "B": "Weak" } },
+                { "label": "Cart Mass", "values": { "A": "Low", "B": "Low" } }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cvs-s7",
+          "blocks": [
+            {
+              "id": "cvs-check",
+              "type": "fillInBlanks",
+              "key": "cvsCheck",
+              "prompt": "In this experiment...",
+              "template": "The independent variable is [[iv]], the dependent variable is [[dv]], and the controlled variable(s) is/are [[cv]]. Control of Variables is implemented [[implemented]].",
+              "blanks": [
+                { "id": "iv", "input": "text" },
+                { "id": "dv", "input": "text" },
+                { "id": "cv", "input": "text" },
+                {
+                  "id": "implemented",
+                  "input": "select",
+                  "options": [
+                    { "id": "correctly", "label": "correctly" },
+                    { "id": "incorrectly", "label": "incorrectly" }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "cvs-s7-experiment",
+              "type": "designTable",
+              "title": "Hypothesis: A cart that receives a stronger push moves faster.",
+              "prompt": "Experiment: Compare the cart's acceleration in trials A and B:",
+              "rows": [
+                { "label": "Push Strength", "values": { "A": "Strong", "B": "Weak" } },
+                { "label": "Cart Mass", "values": { "A": "Low", "B": "Low" } }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "design-s1",
+          "blocks": [
+            {
+              "id": "design-intro",
+              "type": "text",
+              "md": "Now that you know Control of Variables, let's try to design your own experiments.\n\nIn the Initial Predictions section, you selected the claim: **{{claim}}**\n\nYou want to prove whether the claim is true or false. Fill in the blanks and tables below:"
+            },
+            {
+              "id": "design-hypothesis",
+              "type": "fillInBlanks",
+              "key": "hypothesis",
+              "template": "My hypothesis is: [[statement]]\n\nMy independent variable is: [[iv]]\n\nMy dependent variable is: [[dv]]\n\nMy controlled variable(s) is/are: [[cv]]",
+              "blanks": [
+                { "id": "statement", "input": "text" },
+                { "id": "iv", "input": "text" },
+                { "id": "dv", "input": "text" },
+                { "id": "cv", "input": "text" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "design-s2",
+          "blocks": [
+            {
+              "id": "design-table-intro",
+              "type": "text",
+              "md": "In the Initial Predictions section, you selected the claim: **{{claim}}**\n\nYou want to prove whether the claim is true or false. Fill in the table below:"
+            },
+            {
+              "id": "design-table",
+              "type": "designTable",
+              "key": "experimentDesign",
+              "title": "Experiment:",
+              "editable": true,
+              "rowCount": 2,
+              "variableOptionsFrom": ["hypothesis.iv", "hypothesis.dv", "hypothesis.cv"]
+            },
+            {
+              "id": "design-compare",
+              "type": "select",
+              "key": "compareValues",
+              "prompt": "We compare the resulting values of:",
+              "optionsFrom": ["hypothesis.iv", "hypothesis.dv", "hypothesis.cv"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "run-s1",
+          "blocks": [
+            {
+              "id": "run-intro",
+              "type": "text",
+              "md": "Let's run your experiment with the simulation below! You can return to the previous step as needed to review your experiment design.\n\nThe data from each trial will be recorded. You can access them by clicking on the Results button."
+            },
+            {
+              "id": "run-simulation",
+              "type": "simulation",
+              "key": "cartRuns",
+              "inputs": ["cartMass", "pushForce"],
+              "outputs": ["speed", "distance", "stopTime"],
+              "graph": { "x": "time", "y": ["speed"] },
+              "minRuns": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "phase": "Conclusion",
+      "steps": [
+        {
+          "id": "conclusion-s1",
+          "blocks": [
+            {
+              "id": "conclusion-intro",
+              "type": "text",
+              "md": "Now that you've run your experiment, let's reflect on the results. You can go back to the simulation as needed by clicking on the Back button."
+            },
+            { "id": "conclusion-why", "type": "freeText", "key": "whyResults", "prompt": "Why did the results happen? What theory or concept explains this phenomenon?" },
+            {
+              "id": "conclusion-data",
+              "type": "freeText",
+              "key": "resultsData",
+              "prompt": "What was the result of your experiment? Explain the data from your results. Does the data support your hypothesis? Why?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "discussion",
+      "phase": "Discussion",
+      "steps": [
+        {
+          "id": "discussion-s1",
+          "blocks": [
+            {
+              "id": "discussion-intro",
+              "type": "text",
+              "md": "To conclude, write a statement with a claim, evidence, and reasoning.\n\n- The **claim** should be about the motion of the cart: what was your hypothesis?\n- The **evidence** should include your experiment results. Be specific about the experiments you ran!\n- The **reasoning** should mention the physics concepts that explain your results."
+            },
+            { "id": "discussion-cer", "type": "freeText", "key": "cer", "placeholder": "Enter here...", "rows": 8 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "formative",
+      "phase": "Formative Assessment",
+      "steps": [
+        {
+          "id": "formative-s1",
+          "blocks": [
+            { "id": "formative-intro", "type": "text", "md": "Let's end with a quick test of your understanding." },
+            {
+              "id": "formative-double-mass",
+              "type": "freeText",
+              "key": "doubleMass",
+              "prompt": "If we double the mass of a cart, how would its movement be affected? Point out the variables that would be affected or unaffected, and explain how and why that would be the case.",
+              "placeholder": "Enter here...",
+              "rows": 6
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

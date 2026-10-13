@@ -8,6 +8,8 @@ import ConstructWAgent from "@/views/ConstructWAgent.vue";
 import store from "@/store";
 import LogView from "@/views/LogView.vue";
 import Dashboard from "@/views/Dashboard.vue";
+import InquiryHomeView from "@/views/InquiryHomeView.vue";
+import InquiryLessonView from "@/views/InquiryLessonView.vue";
 
 function islogin(to, from, next) {
   if (!store.state.user) {
@@ -55,6 +57,24 @@ const routes = [
     meta: {
       requiresAuth: true,
       title: "C2STEM | Construct",
+    },
+  },
+  {
+    path: "/inquiry",
+    name: "InquiryHome",
+    component: InquiryHomeView,
+    meta: {
+      requiresAuth: true,
+      title: "C2STEM | Inquiry",
+    },
+  },
+  {
+    path: "/inquiry/:lessonId",
+    name: "InquiryLesson",
+    component: InquiryLessonView,
+    meta: {
+      requiresAuth: true,
+      title: "C2STEM | Inquiry",
     },
   },
   {
