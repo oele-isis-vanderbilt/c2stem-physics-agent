@@ -13,6 +13,12 @@
             @remove="removeItem(i)"
           />
         </div>
+        <media-source
+          :item="item"
+          :invalid="invalid(`items/${i}/url`) || invalid(`items/${i}`)"
+          @pick="(file) => pickFile(i, file)"
+          @url="(text) => setUrl(i, text)"
+        />
         <div class="field field-narrow">
           <div class="field-label">
             <label :for="`kind-${block.id}-${i}`">Kind</label>
@@ -29,18 +35,6 @@
             <option value="video">Video</option>
           </select>
         </div>
-        <p v-if="item.mediaId" class="field-hint">
-          Uploaded file {{ item.mediaId }}.
-        </p>
-        <text-field
-          v-else
-          label="Web address (URL)"
-          :model-value="item.url || ''"
-          :invalid="invalid(`items/${i}/url`) || invalid(`items/${i}`)"
-          placeholder="https://…"
-          hint="Uploading files comes in a later update."
-          @update:model-value="(v) => setItem(i, 'url', v)"
-        />
         <text-field
           label="Description for screen readers (alt text)"
           :model-value="item.alt || ''"
@@ -69,14 +63,18 @@
 </template>
 
 <script>
+import MediaSource from "../fields/MediaSource.vue";
 import RowTools from "../fields/RowTools.vue";
 import TextField from "../fields/TextField.vue";
 import blockForm from "../blockForm";
 
-/** Media: up to 4 pictures, GIFs or videos, each with alt text and a caption. */
+/**
+ * Media: up to 4 pictures, GIFs or videos, each uploaded, chosen from
+ * earlier uploads or given by web address, with alt text and a caption.
+ */
 export default {
   name: "MediaForm",
-  components: { RowTools, TextField },
+  components: { MediaSource, RowTools, TextField },
   mixins: [blockForm],
   computed: {
     items() {
@@ -94,6 +92,22 @@ export default {
         if (value === "" && !required) delete items[i][field];
         else items[i][field] = value;
       }, boundary);
+    },
+    /** An uploaded file replaces any web address, and sets the kind. */
+    pickFile(i, file) {
+      this.editItems((items) => {
+        const item = items[i];
+        delete item.url;
+        item.mediaId = file.mediaId;
+        item.kind = file.kind;
+      });
+    },
+    setUrl(i, text) {
+      const switching = !!this.items[i].mediaId;
+      this.editItems((items) => {
+        delete items[i].mediaId;
+        items[i].url = text;
+      }, switching);
     },
     moveItem(i, dir) {
       this.editItems((items) => {

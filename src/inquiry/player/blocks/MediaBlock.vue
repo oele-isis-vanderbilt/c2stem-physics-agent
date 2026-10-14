@@ -1,15 +1,20 @@
 <template>
   <div class="media-row">
     <figure v-for="(item, i) in block.items" :key="i" class="media-item">
-      <template v-if="item.url && !failed[i]">
+      <template v-if="srcOf(item) && !failed[srcOf(item)]">
         <video
           v-if="item.kind === 'video'"
-          :src="item.url"
+          :src="srcOf(item)"
           :aria-label="item.alt"
           controls
-          @error="failed[i] = true"
+          @error="failed[srcOf(item)] = true"
         ></video>
-        <img v-else :src="item.url" :alt="item.alt" @error="failed[i] = true" />
+        <img
+          v-else
+          :src="srcOf(item)"
+          :alt="item.alt"
+          @error="failed[srcOf(item)] = true"
+        />
       </template>
       <!-- Missing or not yet uploaded: show what it would have shown -->
       <div v-else class="media-missing">{{ item.alt }}</div>
@@ -20,12 +25,16 @@
 
 <script>
 import blockProps from "./blockProps";
+import { mediaSrc } from "../../connection";
 
 export default {
   name: "MediaBlock",
   props: blockProps,
   data() {
-    return { failed: {} };
+    return { failed: {} }; // by address, so a changed address is tried afresh
+  },
+  methods: {
+    srcOf: mediaSrc,
   },
 };
 </script>

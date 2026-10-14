@@ -58,6 +58,22 @@ function byId(id) {
   return session;
 }
 
+// Uploaded media: id -> { meta, url }. Files stay in this tab as blob addresses.
+const media = {};
+const MB = 1024 * 1024;
+
+/** The service's kinds and limits, from the browser's idea of the type. */
+function mediaKind(file) {
+  if (file.type === "image/gif") return { kind: "gif", limit: 10 * MB };
+  if (/^image\/(png|jpeg|webp)$/.test(file.type)) {
+    return { kind: "image", limit: 10 * MB };
+  }
+  if (/^video\/(mp4|webm)$/.test(file.type)) {
+    return { kind: "video", limit: 100 * MB };
+  }
+  return null;
+}
+
 // Authoring: each example lesson starts with its content published as version 1
 const authoring = Object.fromEntries(
   LESSONS.map(({ id, content }) => [
@@ -373,6 +389,53 @@ export function createMockInquiryApi() {
       const version = lessonDoc(id).versions.find((v) => v.version === n);
       if (!version) return Promise.reject(httpError(404));
       return wait({ lessonId: id, ...version });
+    },
+
+    uploadMedia(file, onProgress) {
+      const type = mediaKind(file);
+      const fail = (status, detail) => {
+        const error = httpError(status);
+        error.response.data = { detail };
+        return Promise.reject(error);
+      };
+      if (!type) {
+        return fail(
+          415,
+          "Upload a PNG, JPEG, GIF or WebP picture, or an MP4 or WebM video."
+        );
+      }
+      if (file.size > type.limit) {
+        return fail(413, `That file is over ${type.limit / MB} MB.`);
+      }
+      const id = `mock-media-${Date.now().toString(36)}`;
+      const meta = {
+        id,
+        kind: type.kind,
+        contentType: file.type,
+        size: file.size,
+        filename: file.name,
+        uploadedBy: "you",
+        uploadedAt: new Date().toISOString(),
+      };
+      media[id] = { meta, url: URL.createObjectURL(file) };
+      // A few progress steps, as a real upload would report
+      [0.3, 0.7, 1].forEach((p, i) =>
+        setTimeout(() => onProgress && onProgress(p), 150 * (i + 1))
+      );
+      return new Promise((resolve) => setTimeout(() => resolve(meta), 600));
+    },
+
+    media(kind) {
+      return wait(
+        Object.values(media)
+          .map((m) => m.meta)
+          .filter((m) => !kind || m.kind === kind)
+          .reverse()
+      );
+    },
+
+    mediaUrl(id) {
+      return media[id] ? media[id].url : "";
     },
 
     saveOnUnload() {},

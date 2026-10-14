@@ -11,3 +11,12 @@ export function setInquiryApi(api) {
 export function inquiryApi() {
   return current;
 }
+
+/** Where a lesson media item's file is: its web address, or its upload's. */
+export function mediaSrc(item) {
+  if (item.url) return item.url;
+  if (item.mediaId && current && current.mediaUrl) {
+    return current.mediaUrl(item.mediaId);
+  }
+  return null;
+}

@@ -36,6 +36,22 @@ export function createInquiryApi({ baseURL, getToken }) {
     orderLessons: (ids) => http.put("/lessons/order", { ids }).then(data),
     setLessonHidden: (id, hidden) =>
       http.patch(`/lessons/${id}`, { hidden }).then(data),
+
+    // Media (authors upload and list; anyone can fetch a file)
+    uploadMedia(file, onProgress) {
+      const form = new FormData();
+      form.append("file", file);
+      return http
+        .post("/media", form, {
+          onUploadProgress: (e) => {
+            if (onProgress && e.total) onProgress(e.loaded / e.total);
+          },
+        })
+        .then(data);
+    },
+    media: (kind) =>
+      http.get("/media", { params: kind ? { kind } : {} }).then(data),
+    mediaUrl: (id) => `${baseURL}/media/${encodeURIComponent(id)}`,
     createLesson: (title, fromLessonId) =>
       http
         .post("/lessons", { title, ...(fromLessonId && { fromLessonId }) })
