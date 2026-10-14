@@ -58,6 +58,124 @@ function byId(id) {
   return session;
 }
 
+// Research events: a seeded history for two students in Lesson 1a, plus
+// whatever the player logs in this tab.
+const eventLog = [];
+let eventCount = 0;
+
+function storeEvent(fields) {
+  eventCount += 1;
+  eventLog.push({
+    id: `mock-event-${eventCount}`,
+    version: 1,
+    receivedAt: fields.at,
+    pageId: null,
+    stepId: null,
+    blockId: null,
+    data: {},
+    ...fields,
+  });
+}
+
+function seedAnswer(block, n) {
+  const pick = (options) => options[n % options.length].id;
+  switch (block.type) {
+    case "freeText":
+      return `Answer ${n + 1} to ${block.key || block.id}`;
+    case "choice":
+    case "select":
+      return block.options ? pick(block.options) : undefined;
+    case "fillInBlanks":
+      return Object.fromEntries(
+        block.blanks.map((b) => [
+          b.id,
+          b.options ? pick(b.options) : `word ${n}`,
+        ])
+      );
+    default:
+      return undefined;
+  }
+}
+
+(function seedEvents() {
+  const { id: lessonId, content } = LESSONS[0];
+  const inputs = content.variables.filter((v) => v.role === "input");
+  const outputs = content.variables.filter((v) => v.role === "output");
+  ["student1", "student2"].forEach((username, n) => {
+    let time = Date.now() - (3 - n) * 3600 * 1000;
+    const at = (seconds) => new Date((time += seconds * 1000)).toISOString();
+    const base = { username, lessonId, sessionId: `mock-seed-${username}` };
+    const first = content.pages[0];
+    storeEvent({
+      ...base,
+      type: "lesson_open",
+      at: at(0),
+      pageId: first.id,
+      stepId: first.steps[0].id,
+      data: { status: "in_progress", answered: 0 },
+    });
+    for (const page of content.pages.slice(0, n ? 3 : 5)) {
+      for (const step of page.steps) {
+        const place = { pageId: page.id, stepId: step.id };
+        for (const block of step.blocks) {
+          const value = seedAnswer(block, n);
+          if (value !== undefined) {
+            storeEvent({
+              ...base,
+              ...place,
+              type: "answer",
+              blockId: block.id,
+              at: at(20),
+              data: { value },
+            });
+          }
+          if (block.type === "simulation") {
+            for (let run = 1; run <= 2; run++) {
+              storeEvent({
+                ...base,
+                ...place,
+                type: "sim_run",
+                blockId: block.id,
+                at: at(40),
+                data: {
+                  inputs: Object.fromEntries(
+                    inputs.map((v) => [v.key, (v.default || 1) * run])
+                  ),
+                  outputs: Object.fromEntries(
+                    outputs.map((v, i) => [v.key, 1.5 * run + i])
+                  ),
+                },
+              });
+            }
+          }
+        }
+        storeEvent({
+          ...base,
+          ...place,
+          type: "step_view",
+          at: at(5),
+          data: { seconds: 30 + 7 * n },
+        });
+      }
+    }
+  });
+})();
+
+function matchingEvents({ username, lessonId, sessionId, type } = {}) {
+  return eventLog.filter(
+    (e) =>
+      (!username || e.username === username) &&
+      (!lessonId || e.lessonId === lessonId) &&
+      (!sessionId || e.sessionId === sessionId) &&
+      (!type || e.type === type)
+  );
+}
+
+function csvCell(value) {
+  const text = value === null || value === undefined ? "" : String(value);
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
 // Uploaded media: id -> { meta, url }. Files stay in this tab as blob addresses.
 const media = {};
 const MB = 1024 * 1024;
@@ -251,9 +369,77 @@ export function createMockInquiryApi() {
     },
 
     logEvents(id, events) {
-      byId(id);
+      const session = byId(id);
       console.log("[mock inquiry] events", JSON.stringify(events));
+      for (const event of events) {
+        storeEvent({
+          ...event,
+          username: "you",
+          sessionId: id,
+          lessonId: session.lessonId,
+          version: session.version,
+          receivedAt: new Date().toISOString(),
+        });
+      }
       return wait({ stored: events.length });
+    },
+
+    events({ after, limit = 30, ...filters } = {}) {
+      const sorted = matchingEvents(filters).sort(
+        (a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id)
+      );
+      const start = after ? sorted.findIndex((e) => e.id === after) + 1 : 0;
+      const page = sorted.slice(start, start + limit);
+      const more = start + limit < sorted.length;
+      return wait({
+        events: page,
+        total: sorted.length,
+        next: more ? page[page.length - 1].id : null,
+      });
+    },
+
+    eventStudents(lessonId) {
+      const byUser = {};
+      for (const e of matchingEvents({ lessonId })) {
+        const row = (byUser[e.username] = byUser[e.username] || {
+          username: e.username,
+          events: 0,
+          lastAt: e.at,
+        });
+        row.events += 1;
+        if (e.at > row.lastAt) row.lastAt = e.at;
+      }
+      return wait(
+        Object.values(byUser).sort((a, b) => b.lastAt.localeCompare(a.lastAt))
+      );
+    },
+
+    exportEvents(filters) {
+      const columns = [
+        "at",
+        "receivedAt",
+        "username",
+        "lessonId",
+        "version",
+        "sessionId",
+        "type",
+        "pageId",
+        "stepId",
+        "blockId",
+        "data",
+      ];
+      const rows = matchingEvents(filters)
+        .sort(
+          (a, b) =>
+            a.sessionId.localeCompare(b.sessionId) || a.at.localeCompare(b.at)
+        )
+        .map((e) =>
+          columns
+            .map((c) => csvCell(c === "data" ? JSON.stringify(e.data) : e[c]))
+            .join(",")
+        );
+      const text = [columns.join(","), ...rows].join("\r\n") + "\r\n";
+      return wait(null).then(() => new Blob([text], { type: "text/csv" }));
     },
 
     lessons() {

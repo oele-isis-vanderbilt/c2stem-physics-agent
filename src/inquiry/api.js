@@ -52,6 +52,15 @@ export function createInquiryApi({ baseURL, getToken }) {
     media: (kind) =>
       http.get("/media", { params: kind ? { kind } : {} }).then(data),
     mediaUrl: (id) => `${baseURL}/media/${encodeURIComponent(id)}`,
+
+    // Research events, for the Logs page (authors)
+    events: (params) => http.get("/events", { params }).then(data),
+    eventStudents: (lessonId) =>
+      http
+        .get("/events/students", { params: lessonId ? { lessonId } : {} })
+        .then(data),
+    exportEvents: (params) =>
+      http.get("/events/export", { params, responseType: "blob" }).then(data),
     createLesson: (title, fromLessonId) =>
       http
         .post("/lessons", { title, ...(fromLessonId && { fromLessonId }) })

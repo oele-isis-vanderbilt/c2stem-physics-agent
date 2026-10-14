@@ -1,6 +1,25 @@
 <template>
   <div v-if="isAdmin" class="log-view-wrapper">
-    <div class="log-view-container">
+    <div class="log-tabs" role="tablist" aria-label="Logs">
+      <button
+        v-for="t in tabs"
+        :key="t.id"
+        type="button"
+        role="tab"
+        class="log-tab"
+        :class="{ active: tab === t.id }"
+        :aria-selected="tab === t.id ? 'true' : 'false'"
+        @click="tab = t.id"
+      >
+        {{ t.label }}
+      </button>
+    </div>
+    <inquiry-logs
+      v-if="tab === 'inquiry'"
+      v-model:username="usernameInput"
+      class="log-view-container"
+    />
+    <div v-show="tab === 'agent'" class="log-view-container">
       <div class="card nav-card">
         <div class="card-body">
           <label class="form-label fw-semibold mb-1">Enter Username</label>
@@ -65,11 +84,18 @@
 
 <script>
 import Logs from "@/services/Logs";
+import InquiryLogs from "@/inquiry/logs/InquiryLogs.vue";
 
 export default {
   name: "LogView",
+  components: { InquiryLogs },
   data() {
     return {
+      tab: "agent",
+      tabs: [
+        { id: "agent", label: "Agent actions" },
+        { id: "inquiry", label: "Inquiry lessons" },
+      ],
       usernameInput: "",
       allLogs: [],
       visibleCount: 30,
@@ -142,12 +168,39 @@ export default {
   padding: 1rem;
   box-sizing: border-box;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.log-tabs {
+  display: flex;
+  flex-shrink: 0;
+  height: auto;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.log-tab {
+  padding: 0.4rem 0.9rem;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: #6c757d;
+}
+
+.log-tab.active {
+  border-bottom-color: #0d6efd;
+  color: #212529;
+  font-weight: 600;
 }
 
 .log-view-container {
   display: flex;
   gap: 1rem;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  height: auto;
   width: 100%;
 }
 
