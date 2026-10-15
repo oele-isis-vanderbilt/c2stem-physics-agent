@@ -36,14 +36,15 @@ export default {
   },
   data() {
     return {
-      names: ["Truck: Debug", "Inquiry"],
+      names: ["Truck: Debug", "Inquiry", "Push the Cart"],
       description: [
         "Complete your computational model lessons",
         "Scientific inquiry lessons",
+        "Build a model of a cart being pushed",
       ],
-      route: ["ConstructAgent", "InquiryHome"],
+      route: ["ConstructAgent", "InquiryHome", "Construct"],
       // route: ["ConstructAgent", "ConstructAgent", "ConstructAgent"],
-      logo: [c2stemTruckLogo, null],
+      logo: [c2stemTruckLogo, null, null],
       // logo: [c2stemTruckLogo, droneLogo, droneLogo],
       routeParams: [
         {
@@ -52,6 +53,11 @@ export default {
           source: "https://physics.c2stem.org",
         },
         {},
+        {
+          userID: "NaveedMohd",
+          projectName: "ssmv-pushcart",
+          source: "https://physics.c2stem.org",
+        },
         // {
         //   userID: "oele",
         //   projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
