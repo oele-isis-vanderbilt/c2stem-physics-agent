@@ -51,13 +51,12 @@ import IframeLoader from "../components/IframeLoader.vue";
 import { Collapse } from "bootstrap";
 import ASTController from "../services/ASTController";
 // import Websockets from "@/services/Websockets";
-// import BlockParser from "@/services/BlockParser_v2";
-import BlockParser from "@/services/BlockParser_v1_truck";
-// import BlockParser from "@/services/BlockParser";
-import ActionScorer from "@/services/ActionScorer";
+// The block parser and scorer come from the lesson (services/scoring)
+import scoring from "@/services/scoring";
 import SegmentParser from "@/services/SegmentParser";
 import Simulation from "../services/Simulation.js";
 import EventXMLParser from "@/services/EventXMLParser";
+import ProjectXMLParser from "@/services/ProjectXMLParser";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -81,6 +80,10 @@ export default {
     };
   },
   computed: {
+    // Lesson from the lesson card (?lessonId=...); truck when missing
+    lesson() {
+      return scoring.getLesson(this.$route.query.lessonId);
+    },
     getChatURL() {
       return this.$store.getters.getAgentURL;
     },
@@ -95,6 +98,31 @@ export default {
     },
   },
   methods: {
+    // AST string for the agent, from the lesson's parser and target sprites
+    generateState() {
+      return scoring.generateState(this.lesson, this.$store);
+    },
+    // Sprite collabId -> name from the public lesson project, so the lesson
+    // can keep only its target sprites (e.g. Cart). Student copies keep the
+    // same collabIds.
+    async _loadSprites() {
+      const url =
+        `${this.source}/api/RawPublic?Username=${encodeURIComponent(
+          this.userID
+        )}` + `&ProjectName=${encodeURIComponent(this.projectLessonName)}`;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.warn(`[Sprites] Server returned ${res.status} for ${url}`);
+          return;
+        }
+        const sprites = new ProjectXMLParser(await res.text()).parse();
+        this.$store.dispatch("setSprites", sprites);
+        console.log("[Sprites] Loaded", sprites);
+      } catch (err) {
+        console.error("[Sprites] Failed to load project sprites:", err);
+      }
+    },
     async _replayHistoricalActions(astController, segmentparser) {
       // Skip if the store already has blocks (page refresh — VuexPersistence restored state).
       const existingBlocks = this.$store.getters.getBlocks;
@@ -293,7 +321,7 @@ export default {
         console.log(event.data);
         // for one v1 and v2 versions of block parser file with multiple headers
         // let state = blockParser.generate(this.$store);
-        let state = BlockParser.generate(this.$store);
+        let state = this.generateState();
         if (state.trim().length > 1) {
           Websockets.send({ type: "state", data: state });
         }
@@ -305,8 +333,8 @@ export default {
 
       const onReconnect = () => {
         console.log("WebSocket reconnected successfully");
-        Websockets.send({ type: "task", data: this.projectLessonName });
-        let state = BlockParser.generate(this.$store);
+        Websockets.send(this.taskMessage());
+        let state = this.generateState();
         if (state.trim().length > 1) {
           Websockets.send({ type: "state", data: state });
         }
@@ -336,9 +364,17 @@ export default {
         console.warn("WebSocket not connected yet, messages will be queued");
       }
 
-      // Tell the server which project is loaded so it can reset to the right task config
-      this.socket.send({ type: "task", data: this.projectLessonName });
-      console.log(`[Task] Sent task message: ${this.projectLessonName}`);
+      // Tell the server which lesson is loaded so it can reset to the right task config
+      const task = this.taskMessage();
+      this.socket.send(task);
+      console.log("[Task] Sent task message:", JSON.stringify(task.data));
+    },
+    // Lesson (selects the server's prompts, scores and knowledge model) and project
+    taskMessage() {
+      return {
+        type: "task",
+        data: { lessonId: this.lesson.id, project: this.projectLessonName },
+      };
     },
   },
   beforeRouteLeave(to, from, next) {
@@ -363,9 +399,17 @@ export default {
   mounted() {
     this.username = this.getUser();
 
-    // Clear all task-specific state from the previous task so the store
-    // starts fresh (empty blocks, treeRoots, scores, segment, agentURL).
+    // Select this lesson's scoring, then clear all task-specific state from the
+    // previous task so the store starts fresh (empty blocks, treeRoots, scores,
+    // segment, agentURL).
+    this.$store.dispatch("setLesson", this.lesson.id);
     this.$store.dispatch("resetTaskState");
+    console.log(
+      `[Score] Lesson "${this.lesson.id}" (route lessonId: ${this.$route.query.lessonId})`
+    );
+    if (this.lesson.targetSprites) {
+      this._loadSprites();
+    }
 
     let blocks = this.$store.getters.getBlocks;
     let treeRoots = this.$store.getters.getTreeRoots;
@@ -376,13 +420,11 @@ export default {
       actions,
       this.$store
     );
-    const actionScorer = new ActionScorer(
-      "blocks",
-      "treeRoots",
-      "actionList",
-      this.$store
-    );
-    const segmentparser = new SegmentParser();
+    const scorer = this.lesson.createScorer(this.$store);
+    // Lessons may bring their own segmenter; truck keeps SegmentParser
+    const segmentparser = this.lesson.createSegmenter
+      ? this.lesson.createSegmenter(this.$store)
+      : new SegmentParser();
     // for one v1 and v2 versions of block parser file with multiple headers
     // const blockParser = new BlockParser(["DRONE", "PACKAGE", "PACKAGE2"]);
     let ifr_window = document.getElementById("iframe-id");
@@ -402,7 +444,7 @@ export default {
       await this._replayHistoricalActions(astController, segmentparser);
 
       // Send the initial model state to the agent before any live action arrives.
-      let initialState = BlockParser.generate(this.$store);
+      let initialState = this.generateState();
       if (initialState.trim().length > 1) {
         this.sendState({ type: "state", data: initialState });
         console.log("[Replay] Initial model state sent to agent");
@@ -416,8 +458,20 @@ export default {
           this.$nextTick(() => {
             // for one v1 and v2 versions of block parser file with multiple headers
             // let state = blockParser.generate(this.$store);
-            let state = BlockParser.generate(this.$store);
-            actionScorer.updateScore(state);
+            let state = this.generateState();
+            scorer.updateScore(
+              state,
+              scoring.visibleRoots(this.lesson, this.$store)
+            );
+            console.log(
+              `[Score] ${this.lesson.id} after ${action.type}`,
+              JSON.stringify(this.getScore, null, 2)
+            );
+            console.log(
+              `[Segment] ${action.type} ${
+                this.$store.getters.getCurrentActionName || "(no block)"
+              } -> ${this.getSegment}`
+            );
             this.sendState({ type: "state", data: state });
             this.sendScore({ type: "score", data: this.getScore });
             this.sendSegment({ type: "segment", data: this.getSegment });

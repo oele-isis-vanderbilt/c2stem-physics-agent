@@ -1,0 +1,169 @@
+:root {
+  --bg: #1e1e1e;
+  --panel: #252526;
+  --border: #3c3c3c;
+  --text: #d4d4d4;
+  --muted: #8a8a8a;
+  --accent: #4fa3ff;
+  --add-bg: rgba(46, 160, 67, 0.22);
+  --del-bg: rgba(248, 81, 73, 0.22);
+  --error: #ff7b72;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.4 system-ui, sans-serif;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 34%);
+  height: 100vh;
+}
+
+.env iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+}
+
+.toolbar,
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+}
+
+.toolbar {
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbar select {
+  flex: 1;
+  min-width: 0;
+}
+
+.actions {
+  border-top: 1px solid var(--border);
+}
+
+.actions input {
+  flex: 1;
+  min-width: 0;
+}
+
+button,
+select,
+input {
+  font: inherit;
+  color: var(--text);
+  background: #333;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+.status {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sprite-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.sprite-filter label {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 6px 10px 0;
+}
+
+.tabs button {
+  border-radius: 4px 4px 0 0;
+  border-bottom: 0;
+}
+
+.tabs button.active {
+  background: var(--bg);
+  border-color: var(--accent);
+}
+
+.output {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 10px;
+  background: var(--bg);
+  font: 12px/1.5 ui-monospace, Consolas, monospace;
+  white-space: pre;
+  tab-size: 4;
+}
+
+.output.error {
+  color: var(--error);
+}
+
+.output .add,
+.output .del {
+  display: inline-block;
+  min-width: 100%;
+}
+
+.output .add {
+  background: var(--add-bg);
+}
+
+.output .del {
+  background: var(--del-bg);
+}

@@ -21,7 +21,11 @@
           </p>
           <router-link
             v-if="routeParams"
-            :to="{ name: route[index], params: routeParams[index] }"
+            :to="{
+              name: route[index],
+              params: routeParams[index],
+              query: routeQueries && routeQueries[index],
+            }"
             ><button type="button" class="btn btn-primary">
               Continue
             </button></router-link
@@ -56,6 +60,11 @@ export default {
     },
     routeParams: {
       type: Object,
+    },
+    // Optional query per card, e.g. { lessonId: "lesson1" }
+    routeQueries: {
+      type: Array,
+      required: false,
     },
     logo: {
       type: Array,

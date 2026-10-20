@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AST Viewer</title>
+    <link rel="stylesheet" href="viewer.css" />
+
+    <!--
+      The service files in src/services import each other with the webpack "@/"
+      alias and import the "edit-distance" npm package. This import map lets the
+      browser load those exact files unmodified, with no build step.
+      Every specifier must be listed exactly as written in the source (import
+      maps cannot add the ".js" extension).
+    -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@/services/MapBlocks": "/src/services/MapBlocks.js",
+          "@/services/Helpers": "/src/services/Helpers.js",
+          "edit-distance": "https://cdn.jsdelivr.net/npm/edit-distance@1.0.5/+esm"
+        }
+      }
+    </script>
+    <script src="https://physics.c2stem.org/embedded-api.js"></script>
+  </head>
+  <body>
+    <main class="layout">
+      <section class="env">
+        <iframe
+          id="env-frame"
+          title="Physics environment"
+          sandbox="allow-scripts allow-same-origin"
+        ></iframe>
+      </section>
+
+      <aside class="panel">
+        <header class="toolbar">
+          <label>
+            Parser
+            <select id="parser-select"></select>
+          </label>
+          <button id="replay-btn" type="button" title="Rebuild the tree from the project history">
+            Replay
+          </button>
+        </header>
+
+        <div class="status">
+          <div id="status-line">Waiting for the environment…</div>
+          <div id="last-action" class="muted"></div>
+          <div class="sprite-filter">
+            Sprites
+            <span id="sprite-checkboxes"></span>
+          </div>
+          <div id="sprites-line" class="muted"></div>
+        </div>
+
+        <nav class="tabs" role="tablist">
+          <button type="button" role="tab" data-tab="ast" class="active">AST string</button>
+          <button type="button" role="tab" data-tab="tree">Tree</button>
+          <button type="button" role="tab" data-tab="diff">Diff</button>
+        </nav>
+
+        <pre id="output" class="output"></pre>
+
+        <footer class="actions">
+          <button id="copy-btn" type="button">Copy</button>
+          <input id="fixture-name" type="text" placeholder="fixture name" />
+          <button id="save-btn" type="button">Save fixture</button>
+        </footer>
+      </aside>
+    </main>
+
+    <script>
+      // ASTController.js declares a class field `ed = require("edit-distance")`.
+      // Browsers have no require(); viewer.js points this shim at the same ESM
+      // module the import map loads, before any ASTController is constructed.
+      window.require = (name) => {
+        if (window.__requireShim && name in window.__requireShim) {
+          return window.__requireShim[name];
+        }
+        throw new Error(`require("${name}") is not available in the AST viewer`);
+      };
+    </script>
+    <script type="module" src="viewer.js"></script>
+  </body>
+</html>

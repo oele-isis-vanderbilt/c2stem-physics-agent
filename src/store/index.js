@@ -1,6 +1,7 @@
 import { createStore } from "vuex";
 // import { Room } from "livekit-client";
 import VuexPersistence from "vuex-persist";
+import scoring from "@/services/scoring";
 
 const vuexLocal = new VuexPersistence({
   storage: window.sessionStorage,
@@ -31,14 +32,8 @@ const store = createStore({
     currentGroup: "",
     currentActionName: "",
     currentSegment: "",
-    sprites: {
-      "item_-1": "Tower",
-      "item_-1_4": "Target",
-      "item_-1_8": "Target2",
-      "item_-1_12": "Package",
-      "item_-1_36": "Package2",
-      "item_-1_65": "Drone",
-    },
+    // Sprite collabId -> name, loaded from the project XML (setSprites)
+    sprites: {},
     // two_drone_score: {
     //   drone_initialize_x_position: 0,
     //   drone_initialize_y_position: 0,
@@ -119,31 +114,9 @@ const store = createStore({
     //   computing_mastery: 0,
     //   overall_mastery: 0,
     // },
-    truck_score: {
-      initialize_velocity: 0,
-      initialize_position: 0,
-      initialize_acceleration: 0,
-      initialize_deltaT: 0,
-      set_speed_limit: 0,
-      start_simulation: 0,
-      accurate_comparison_position_velocity_time: 0,
-      accurate_comparison_velocity_acceleration_time: 0,
-      update_order_of_velocity_position: 0,
-      code_accuracy_to_accelerate_truck: 0,
-      setting_acceleration_to_cruise_truck: 0,
-      setting_acceleration_to_decelerate_truck: 0,
-      stop_simulation: 0,
-      code_accuracy_to_cruise_truck: 0,
-      code_accuracy_to_slowdown_truck: 0,
-      code_accuracy_to_stop_truck: 0,
-      accurate_acceleration_velocity_for_cruising: 0,
-      accurate_acceleration_position_for_slowing: 0,
-      accurate_code_for_stopping: 0,
-      accurate_order_cruising_slowing_stopping: 0,
-      physics_mastery: 0,
-      computing_mastery: 0,
-      overall_mastery: 0,
-    },
+    // Lesson chosen by the lesson card (?lessonId=...); see services/scoring
+    currentLesson: scoring.DEFAULT_LESSON,
+    score: scoring.getLesson(scoring.DEFAULT_LESSON).initialScore(),
     // farm_score: {
     //   initialize_velocity: 0,
     //   initialize_position: 0,
@@ -187,7 +160,10 @@ const store = createStore({
       return state.currentActionName;
     },
     getScore(state) {
-      return state.truck_score;
+      return state.score;
+    },
+    getCurrentLesson(state) {
+      return state.currentLesson;
     },
     getSegment(state) {
       return state.currentSegment;
@@ -228,7 +204,15 @@ const store = createStore({
       state.currentActionName = name;
     },
     updateScore(state, score) {
-      state.truck_score = score;
+      state.score = score;
+    },
+    setLesson(state, lessonId) {
+      const lesson = scoring.getLesson(lessonId);
+      state.currentLesson = lesson.id;
+      state.score = lesson.initialScore();
+    },
+    setSprites(state, sprites) {
+      state.sprites = sprites;
     },
     updateSegment(state, segment) {
       state.currentSegment = segment;
@@ -247,31 +231,7 @@ const store = createStore({
       state.currentGroup = "";
       state.currentActionName = "";
       state.currentSegment = "";
-      state.truck_score = {
-        initialize_velocity: 0,
-        initialize_position: 0,
-        initialize_acceleration: 0,
-        initialize_deltaT: 0,
-        set_speed_limit: 0,
-        start_simulation: 0,
-        accurate_comparison_position_velocity_time: 0,
-        accurate_comparison_velocity_acceleration_time: 0,
-        update_order_of_velocity_position: 0,
-        code_accuracy_to_accelerate_truck: 0,
-        setting_acceleration_to_cruise_truck: 0,
-        setting_acceleration_to_decelerate_truck: 0,
-        stop_simulation: 0,
-        code_accuracy_to_cruise_truck: 0,
-        code_accuracy_to_slowdown_truck: 0,
-        code_accuracy_to_stop_truck: 0,
-        accurate_acceleration_velocity_for_cruising: 0,
-        accurate_acceleration_position_for_slowing: 0,
-        accurate_code_for_stopping: 0,
-        accurate_order_cruising_slowing_stopping: 0,
-        physics_mastery: 0,
-        computing_mastery: 0,
-        overall_mastery: 0,
-      };
+      state.score = scoring.getLesson(state.currentLesson).initialScore();
       state.two_drone_score = undefined;
     },
     resetStore(state) {
@@ -361,6 +321,12 @@ const store = createStore({
     },
     updateScore(context, score) {
       context.commit("updateScore", score);
+    },
+    setLesson(context, lessonId) {
+      context.commit("setLesson", lessonId);
+    },
+    setSprites(context, sprites) {
+      context.commit("setSprites", sprites);
     },
     updateSegment(context, segment) {
       context.commit("updateSegment", segment);

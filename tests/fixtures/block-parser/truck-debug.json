@@ -1,0 +1,797 @@
+{
+  "name": "truck-debug",
+  "source": {
+    "user": "oele",
+    "project": "Truck_Model_debug_HIDDEN_BLOCKS"
+  },
+  "parser": "v1_truck",
+  "savedAt": "2026-10-20T03:32:28.909Z",
+  "sprites": {
+    "item_0": "Truck",
+    "item_0_2": "Stop"
+  },
+  "treeRoots": [
+    {
+      "name": "",
+      "ownerId": "",
+      "modifiedBefore": false,
+      "connectedBefore": false,
+      "next": {
+        "contained": [],
+        "underlay": []
+      }
+    },
+    {
+      "id": "item_230",
+      "name": "setXAcceleration",
+      "ownerId": "_netsblox1601053103896",
+      "modifiedBefore": false,
+      "connectedBefore": true,
+      "next": {
+        "contained": [
+          {
+            "name": "-4",
+            "ownerId": "",
+            "modifiedBefore": true,
+            "connectedBefore": false,
+            "next": {
+              "contained": [],
+              "underlay": []
+            }
+          }
+        ],
+        "underlay": []
+      }
+    },
+    {
+      "id": "item_274",
+      "name": "getPhysicsAttrOf",
+      "ownerId": "_netsblox1601481497369",
+      "modifiedBefore": false,
+      "connectedBefore": true,
+      "next": {
+        "contained": [
+          {
+            "name": "x position",
+            "ownerId": "",
+            "modifiedBefore": false,
+            "connectedBefore": false,
+            "next": {
+              "contained": [],
+              "underlay": []
+            }
+          },
+          {
+            "name": "",
+            "ownerId": "",
+            "modifiedBefore": true,
+            "connectedBefore": false,
+            "next": {
+              "contained": [],
+              "underlay": []
+            }
+          }
+        ],
+        "underlay": []
+      }
+    },
+    {
+      "id": "item_411",
+      "name": "physicsXPosition",
+      "ownerId": "_netsblox1759966613474",
+      "modifiedBefore": false,
+      "connectedBefore": true,
+      "next": {
+        "contained": [],
+        "underlay": []
+      }
+    },
+    {
+      "id": "item_412",
+      "name": "physicsXPosition",
+      "ownerId": "_netsblox1759966613474",
+      "modifiedBefore": false,
+      "connectedBefore": true,
+      "next": {
+        "contained": [],
+        "underlay": []
+      }
+    },
+    {
+      "id": "item_417",
+      "name": "receiveGo",
+      "ownerId": "item_0",
+      "modifiedBefore": false,
+      "connectedBefore": false,
+      "next": {
+        "next": {
+          "id": "item_456",
+          "name": "doSetVar",
+          "ownerId": "_netsblox1779192686366",
+          "modifiedBefore": false,
+          "connectedBefore": true,
+          "next": {
+            "next": {
+              "id": "item_418",
+              "name": "setDeltaTime",
+              "ownerId": "_netsblox1778864984804",
+              "modifiedBefore": false,
+              "connectedBefore": true,
+              "next": {
+                "next": {
+                  "id": "item_420",
+                  "name": "setXVelocity",
+                  "ownerId": "_netsblox1778864984804",
+                  "modifiedBefore": false,
+                  "connectedBefore": true,
+                  "next": {
+                    "next": {
+                      "id": "item_421",
+                      "name": "setXAcceleration",
+                      "ownerId": "_netsblox1778864984804",
+                      "modifiedBefore": false,
+                      "connectedBefore": true,
+                      "next": {
+                        "next": {
+                          "id": "item_422",
+                          "name": "setPhysicsXPosition",
+                          "ownerId": "_netsblox1778864984804",
+                          "modifiedBefore": false,
+                          "connectedBefore": true,
+                          "next": {
+                            "next": {
+                              "id": "item_423",
+                              "name": "startSimulation",
+                              "ownerId": "_netsblox1778864984804",
+                              "modifiedBefore": false,
+                              "connectedBefore": true,
+                              "next": {
+                                "contained": [],
+                                "underlay": []
+                              }
+                            },
+                            "contained": [
+                              {
+                                "name": "-60",
+                                "ownerId": "",
+                                "modifiedBefore": true,
+                                "connectedBefore": false,
+                                "next": {
+                                  "contained": [],
+                                  "underlay": []
+                                }
+                              }
+                            ],
+                            "underlay": []
+                          }
+                        },
+                        "contained": [
+                          {
+                            "name": "4",
+                            "ownerId": "",
+                            "modifiedBefore": true,
+                            "connectedBefore": false,
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          }
+                        ],
+                        "underlay": []
+                      }
+                    },
+                    "contained": [
+                      {
+                        "name": "0",
+                        "ownerId": "",
+                        "modifiedBefore": false,
+                        "connectedBefore": false,
+                        "next": {
+                          "contained": [],
+                          "underlay": []
+                        }
+                      }
+                    ],
+                    "underlay": []
+                  }
+                },
+                "contained": [
+                  {
+                    "name": "0.1",
+                    "ownerId": "",
+                    "modifiedBefore": true,
+                    "connectedBefore": false,
+                    "next": {
+                      "contained": [],
+                      "underlay": []
+                    }
+                  }
+                ],
+                "underlay": []
+              }
+            },
+            "contained": [
+              {
+                "name": "Speed Limit",
+                "ownerId": "",
+                "modifiedBefore": true,
+                "connectedBefore": false,
+                "next": {
+                  "contained": [],
+                  "underlay": []
+                }
+              },
+              {
+                "name": "15",
+                "ownerId": "",
+                "modifiedBefore": true,
+                "connectedBefore": false,
+                "next": {
+                  "contained": [],
+                  "underlay": []
+                }
+              }
+            ],
+            "underlay": []
+          }
+        },
+        "contained": [],
+        "underlay": []
+      }
+    },
+    {
+      "id": "item_426",
+      "name": "doSimulationStep",
+      "ownerId": "item_0",
+      "modifiedBefore": false,
+      "connectedBefore": false,
+      "next": {
+        "next": {
+          "id": "item_427",
+          "name": "changeXVelocity",
+          "ownerId": "_netsblox1778864984804",
+          "modifiedBefore": false,
+          "connectedBefore": true,
+          "next": {
+            "next": {
+              "id": "item_428",
+              "name": "changePhysicsXPosition",
+              "ownerId": "_netsblox1778864984804",
+              "modifiedBefore": false,
+              "connectedBefore": true,
+              "next": {
+                "next": {
+                  "id": "item_435",
+                  "name": "doIf",
+                  "ownerId": "_netsblox1778864984804",
+                  "modifiedBefore": false,
+                  "connectedBefore": true,
+                  "next": {
+                    "next": {
+                      "id": "item_436",
+                      "name": "doIf",
+                      "ownerId": "_netsblox1778864984804",
+                      "modifiedBefore": false,
+                      "connectedBefore": true,
+                      "next": {
+                        "next": {
+                          "id": "item_437",
+                          "name": "doIf",
+                          "ownerId": "_netsblox1778864984804",
+                          "modifiedBefore": false,
+                          "connectedBefore": true,
+                          "next": {
+                            "contained": [
+                              {
+                                "id": "item_440",
+                                "name": "reportOr",
+                                "ownerId": "_netsblox1778864984804",
+                                "modifiedBefore": false,
+                                "connectedBefore": true,
+                                "next": {
+                                  "contained": [
+                                    {
+                                      "id": "item_442",
+                                      "name": "reportGreaterThan",
+                                      "ownerId": "_netsblox1778864984804",
+                                      "modifiedBefore": false,
+                                      "connectedBefore": true,
+                                      "next": {
+                                        "contained": [
+                                          {
+                                            "id": "item_448",
+                                            "name": "physicsXPosition",
+                                            "ownerId": "_netsblox1778864984804",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": true,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          },
+                                          {
+                                            "id": "item_449",
+                                            "name": "getPhysicsAttrOf",
+                                            "ownerId": "_netsblox1778864984804",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": true,
+                                            "next": {
+                                              "contained": [
+                                                {
+                                                  "name": "x position",
+                                                  "ownerId": "",
+                                                  "modifiedBefore": false,
+                                                  "connectedBefore": false,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                },
+                                                {
+                                                  "name": "Stop",
+                                                  "ownerId": "",
+                                                  "modifiedBefore": true,
+                                                  "connectedBefore": false,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                }
+                                              ],
+                                              "underlay": []
+                                            }
+                                          }
+                                        ],
+                                        "underlay": [
+                                          {
+                                            "name": "",
+                                            "ownerId": "",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": false,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          },
+                                          {
+                                            "name": "",
+                                            "ownerId": "",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": false,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "id": "item_441",
+                                      "name": "reportLessThan",
+                                      "ownerId": "_netsblox1778864984804",
+                                      "modifiedBefore": false,
+                                      "connectedBefore": true,
+                                      "next": {
+                                        "contained": [
+                                          {
+                                            "id": "item_451",
+                                            "name": "xVelocity",
+                                            "ownerId": "_netsblox1778864984804",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": true,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          },
+                                          {
+                                            "name": "0",
+                                            "ownerId": "",
+                                            "modifiedBefore": true,
+                                            "connectedBefore": false,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          }
+                                        ],
+                                        "underlay": [
+                                          {
+                                            "name": "",
+                                            "ownerId": "",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": false,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ],
+                                  "underlay": [
+                                    {
+                                      "name": "",
+                                      "ownerId": "",
+                                      "modifiedBefore": false,
+                                      "connectedBefore": false,
+                                      "next": {
+                                        "contained": [],
+                                        "underlay": []
+                                      }
+                                    },
+                                    {
+                                      "name": "",
+                                      "ownerId": "",
+                                      "modifiedBefore": false,
+                                      "connectedBefore": false,
+                                      "next": {
+                                        "contained": [],
+                                        "underlay": []
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "id": "item_452",
+                                "name": "setXVelocity",
+                                "ownerId": "_netsblox1778864984804",
+                                "modifiedBefore": false,
+                                "connectedBefore": true,
+                                "next": {
+                                  "contained": [
+                                    {
+                                      "name": "0",
+                                      "ownerId": "",
+                                      "modifiedBefore": false,
+                                      "connectedBefore": false,
+                                      "next": {
+                                        "contained": [],
+                                        "underlay": []
+                                      }
+                                    }
+                                  ],
+                                  "underlay": []
+                                }
+                              }
+                            ],
+                            "underlay": [
+                              {
+                                "name": "",
+                                "ownerId": "",
+                                "modifiedBefore": false,
+                                "connectedBefore": false,
+                                "next": {
+                                  "contained": [],
+                                  "underlay": []
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "contained": [
+                          {
+                            "id": "item_439",
+                            "name": "reportGreaterThan",
+                            "ownerId": "_netsblox1778864984804",
+                            "modifiedBefore": false,
+                            "connectedBefore": true,
+                            "next": {
+                              "contained": [
+                                {
+                                  "id": "item_447",
+                                  "name": "physicsXPosition",
+                                  "ownerId": "_netsblox1778864984804",
+                                  "modifiedBefore": false,
+                                  "connectedBefore": true,
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                },
+                                {
+                                  "name": "",
+                                  "ownerId": "",
+                                  "modifiedBefore": false,
+                                  "connectedBefore": false,
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                }
+                              ],
+                              "underlay": [
+                                {
+                                  "name": "",
+                                  "ownerId": "",
+                                  "modifiedBefore": false,
+                                  "connectedBefore": false,
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                },
+                                {
+                                  "name": "28.125",
+                                  "ownerId": "",
+                                  "modifiedBefore": true,
+                                  "connectedBefore": false,
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "id": "item_453",
+                            "name": "setXAcceleration",
+                            "ownerId": "_netsblox1778864984804",
+                            "modifiedBefore": false,
+                            "connectedBefore": true,
+                            "next": {
+                              "contained": [
+                                {
+                                  "name": "-4",
+                                  "ownerId": "",
+                                  "modifiedBefore": true,
+                                  "connectedBefore": false,
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                }
+                              ],
+                              "underlay": []
+                            }
+                          }
+                        ],
+                        "underlay": [
+                          {
+                            "name": "",
+                            "ownerId": "",
+                            "modifiedBefore": false,
+                            "connectedBefore": false,
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "contained": [
+                      {
+                        "id": "item_438",
+                        "name": "reportGreaterThan",
+                        "ownerId": "_netsblox1778864984804",
+                        "modifiedBefore": false,
+                        "connectedBefore": true,
+                        "next": {
+                          "contained": [
+                            {
+                              "id": "item_446",
+                              "name": "xVelocity",
+                              "ownerId": "_netsblox1778864984804",
+                              "modifiedBefore": false,
+                              "connectedBefore": true,
+                              "next": {
+                                "contained": [],
+                                "underlay": []
+                              }
+                            },
+                            {
+                              "name": "15",
+                              "ownerId": "",
+                              "modifiedBefore": true,
+                              "connectedBefore": false,
+                              "next": {
+                                "contained": [],
+                                "underlay": []
+                              }
+                            }
+                          ],
+                          "underlay": [
+                            {
+                              "name": "",
+                              "ownerId": "",
+                              "modifiedBefore": false,
+                              "connectedBefore": false,
+                              "next": {
+                                "contained": [],
+                                "underlay": []
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "id": "item_454",
+                        "name": "setXAcceleration",
+                        "ownerId": "_netsblox1778864984804",
+                        "modifiedBefore": false,
+                        "connectedBefore": true,
+                        "next": {
+                          "contained": [
+                            {
+                              "name": "0",
+                              "ownerId": "",
+                              "modifiedBefore": false,
+                              "connectedBefore": false,
+                              "next": {
+                                "contained": [],
+                                "underlay": []
+                              }
+                            }
+                          ],
+                          "underlay": []
+                        }
+                      }
+                    ],
+                    "underlay": [
+                      {
+                        "name": "",
+                        "ownerId": "",
+                        "modifiedBefore": false,
+                        "connectedBefore": false,
+                        "next": {
+                          "contained": [],
+                          "underlay": []
+                        }
+                      }
+                    ]
+                  }
+                },
+                "contained": [
+                  {
+                    "id": "item_430",
+                    "name": "reportProduct",
+                    "ownerId": "_netsblox1778864984804",
+                    "modifiedBefore": false,
+                    "connectedBefore": true,
+                    "next": {
+                      "contained": [
+                        {
+                          "id": "item_434",
+                          "name": "xVelocity",
+                          "ownerId": "_netsblox1778864984804",
+                          "modifiedBefore": false,
+                          "connectedBefore": true,
+                          "next": {
+                            "contained": [],
+                            "underlay": []
+                          }
+                        },
+                        {
+                          "id": "item_432",
+                          "name": "deltaTime",
+                          "ownerId": "_netsblox1778864984804",
+                          "modifiedBefore": false,
+                          "connectedBefore": true,
+                          "next": {
+                            "contained": [],
+                            "underlay": []
+                          }
+                        }
+                      ],
+                      "underlay": [
+                        {
+                          "name": "",
+                          "ownerId": "",
+                          "modifiedBefore": false,
+                          "connectedBefore": false,
+                          "next": {
+                            "contained": [],
+                            "underlay": []
+                          }
+                        },
+                        {
+                          "name": "",
+                          "ownerId": "",
+                          "modifiedBefore": false,
+                          "connectedBefore": false,
+                          "next": {
+                            "contained": [],
+                            "underlay": []
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "underlay": [
+                  {
+                    "name": "0",
+                    "ownerId": "",
+                    "modifiedBefore": false,
+                    "connectedBefore": false,
+                    "next": {
+                      "contained": [],
+                      "underlay": []
+                    }
+                  }
+                ]
+              }
+            },
+            "contained": [
+              {
+                "id": "item_429",
+                "name": "reportProduct",
+                "ownerId": "_netsblox1778864984804",
+                "modifiedBefore": false,
+                "connectedBefore": true,
+                "next": {
+                  "contained": [
+                    {
+                      "id": "item_433",
+                      "name": "xAcceleration",
+                      "ownerId": "_netsblox1778864984804",
+                      "modifiedBefore": false,
+                      "connectedBefore": true,
+                      "next": {
+                        "contained": [],
+                        "underlay": []
+                      }
+                    },
+                    {
+                      "id": "item_431",
+                      "name": "deltaTime",
+                      "ownerId": "_netsblox1778864984804",
+                      "modifiedBefore": false,
+                      "connectedBefore": true,
+                      "next": {
+                        "contained": [],
+                        "underlay": []
+                      }
+                    }
+                  ],
+                  "underlay": [
+                    {
+                      "name": "",
+                      "ownerId": "",
+                      "modifiedBefore": false,
+                      "connectedBefore": false,
+                      "next": {
+                        "contained": [],
+                        "underlay": []
+                      }
+                    },
+                    {
+                      "name": "",
+                      "ownerId": "",
+                      "modifiedBefore": false,
+                      "connectedBefore": false,
+                      "next": {
+                        "contained": [],
+                        "underlay": []
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "underlay": [
+              {
+                "name": "0",
+                "ownerId": "",
+                "modifiedBefore": false,
+                "connectedBefore": false,
+                "next": {
+                  "contained": [],
+                  "underlay": []
+                }
+              }
+            ]
+          }
+        },
+        "contained": [],
+        "underlay": []
+      }
+    }
+  ],
+  "expected": "[Not Connected]\n[no value]\n\n[Not Connected]\n[set x_acceleration to (-4)]\n\n[Not Connected]\n[(x position) of (no value)]\n\n[Not Connected]\n[x_position]\n\n[Not Connected]\n[x_position]\n\n[when green flag clicked]\n[set (SpeedLimit) to (15)]\n[set DeltaT to (0.1)]\n[set x_velocity to (0)]\n[set x_acceleration to (4)]\n[set x_position to (-60)]\n[start simulation]\n\n[simulation step]\n[change x_velocity by ((x_acceleration) (×) (DeltaT))]\n[change x_position by ((x_velocity) (×) (DeltaT))]\n[if ((x_velocity) (>) (15))]\n\t[set x_acceleration to (0)]\n[if ((x_position) (>) (no value))]\n\t[set x_acceleration to (-4)]\n[if (((x_position) (>) (StopSignPosition)) (or) ((x_velocity) (<) (0)))]\n\t[set x_velocity to (0)]\n\n"
+}

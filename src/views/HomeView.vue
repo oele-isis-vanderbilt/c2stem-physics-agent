@@ -7,6 +7,7 @@
       :route="route"
       :logo="logo"
       :routeParams="routeParams"
+      :routeQueries="routeQueries"
     ></lesson-card>
   </div>
 </template>
@@ -32,6 +33,7 @@ export default {
       this.route.push("InquiryAuthorHome");
       this.logo.push(null);
       this.routeParams.push({});
+      this.routeQueries.push({});
     }
   },
   data() {
@@ -42,7 +44,9 @@ export default {
         "Scientific inquiry lessons",
         "Build a model of a cart being pushed",
       ],
-      route: ["ConstructAgent", "InquiryHome", "Construct"],
+      route: ["ConstructAgent", "InquiryHome", "ConstructAgent"],
+      // lessonId picks the lesson's scoring (services/scoring)
+      routeQueries: [{ lessonId: "truck" }, {}, { lessonId: "lesson1" }],
       // route: ["ConstructAgent", "ConstructAgent", "ConstructAgent"],
       logo: [c2stemTruckLogo, null, null],
       // logo: [c2stemTruckLogo, droneLogo, droneLogo],
@@ -54,8 +58,8 @@ export default {
         },
         {},
         {
-          userID: "NaveedMohd",
-          projectName: "ssmv-pushcart",
+          userID: "oele",
+          projectName: "Pushcart",
           source: "https://physics.c2stem.org",
         },
         // {
