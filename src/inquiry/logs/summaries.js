@@ -11,6 +11,7 @@ export const EVENT_TYPES = [
   "sim_run",
   "sim_error",
   "dialog_open",
+  "graph_change",
   "lesson_complete",
   "lesson_exit",
 ];
@@ -149,10 +150,18 @@ export function summarize(event, content) {
       );
     case "dialog_open":
       return data.dialog === "graph"
-        ? "Time graph"
+        ? "Graph"
         : data.dialog === "results"
         ? "Results"
         : String(data.dialog || "");
+    case "graph_change":
+      return short(
+        `shows ${
+          (data.variables || [])
+            .map((key) => variableLabel(content, key))
+            .join(", ") || "nothing"
+        }`
+      );
     case "lesson_complete":
     case "lesson_exit":
       return "";

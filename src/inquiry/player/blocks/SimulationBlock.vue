@@ -56,13 +56,13 @@
         </button>
         <div class="sim-panel sim-readouts">
           <button
-            v-if="graphKeys.length"
+            v-if="graphVariables.length"
             type="button"
             class="btn btn-link p-0 mb-1"
             :disabled="!hasSeries"
             @click="open('graph')"
           >
-            Time graph
+            Graph
           </button>
           <div v-for="o in outputs" :key="o.key">
             {{ o.label }}:
@@ -94,14 +94,14 @@
     <dialog
       ref="dialog"
       class="sim-dialog"
-      :aria-label="dialog === 'graph' ? 'Time graph' : 'Results'"
+      :aria-label="dialog === 'graph' ? 'Graph' : 'Results'"
       @click="closeOnBackdrop"
       @close="dialog = null"
     >
       <div class="sim-dialog-body">
         <div class="d-flex align-items-center mb-2">
           <h3 class="h5 mb-0 me-auto">
-            {{ dialog === "graph" ? "Time graph" : "Results" }}
+            {{ dialog === "graph" ? "Graph" : "Results" }}
           </h3>
           <button
             type="button"
@@ -138,15 +138,15 @@
           </table>
         </div>
 
-        <template v-if="dialog === 'graph'">
-          <time-graph
-            v-for="key in graphKeys"
-            :key="key"
-            :runs="graphRuns"
-            :y-key="key"
-            :y-title="heading(variable(key))"
-          />
-        </template>
+        <run-graph
+          v-if="dialog === 'graph'"
+          :runs="graphRuns"
+          :variables="graphVariables"
+          :chosen="graphChosen"
+          :choose="!!block.graph.choose"
+          :max-y="graphMaxY"
+          @update:chosen="chooseGraph"
+        />
       </div>
     </dialog>
   </div>
@@ -155,17 +155,19 @@
 <script>
 import { fillRefs, minRunsOf, runsOf } from "../lesson";
 import { NetsBloxSim, projectUrl } from "../sim/netsblox";
-import TimeGraph from "../sim/TimeGraph.vue";
+import RunGraph from "../sim/RunGraph.vue";
 import blockProps from "./blockProps";
 
 /**
  * Sliders, the embedded physics project, readouts of the latest run, and
- * Results / Time graph pop-ups. Each run is saved, so the answer is
+ * Results / Graph pop-ups. Each run is saved, so the answer is
  * { runs: [{ inputs, outputs, series, at }] }; Next waits for minRuns.
+ * The graph shows graph.y at first; with graph.choose students pick from
+ * every recorded output, up to graph.maxY at once.
  */
 export default {
   name: "SimulationBlock",
-  components: { TimeGraph },
+  components: { RunGraph },
   props: blockProps,
   emits: ["answer"],
   data() {
@@ -176,6 +178,7 @@ export default {
       missing: [],
       dialog: null,
       frameKey: 0,
+      picked: null, // the student's graph variables, once they change them
     };
   },
   computed: {
@@ -200,14 +203,27 @@ export default {
     outputs() {
       return this.block.outputs.map(this.variable);
     },
-    graphKeys() {
-      return (
-        (this.sim &&
-          this.sim.timeSeries &&
-          this.block.graph &&
-          this.block.graph.y) ||
-        []
-      );
+    /** Variables the graph may show: graph.y, or every recorded output if students choose. */
+    graphVariables() {
+      const graph = this.block.graph;
+      const series = this.sim && this.sim.timeSeries;
+      if (!graph || !series) return [];
+      const recorded = (series.columns || []).filter((c) => c !== "time");
+      const outputs = (this.ctx.lesson.variables || [])
+        .filter((v) => v.role === "output")
+        .map((v) => v.key);
+      const keys = graph.choose
+        ? recorded.filter((c) => outputs.includes(c))
+        : (graph.y || []).filter((k) => recorded.includes(k));
+      return keys.map(this.variable);
+    },
+    graphMaxY() {
+      return (this.block.graph && this.block.graph.maxY) || 4;
+    },
+    graphChosen() {
+      const offered = this.graphVariables.map((v) => v.key);
+      const start = this.picked || (this.block.graph && this.block.graph.y);
+      return (start || []).filter((k) => offered.includes(k));
     },
     runs() {
       return runsOf(this.value);
@@ -306,6 +322,10 @@ export default {
       this.dialog = which;
       this.$refs.dialog.showModal();
     },
+    chooseGraph(keys) {
+      this.picked = keys;
+      this.log("graph_change", { variables: keys });
+    },
     closeOnBackdrop(event) {
       if (event.target === this.$refs.dialog) this.$refs.dialog.close();
     },
@@ -323,6 +343,9 @@ export default {
 </script>
 
 <style scoped>
+.sim {
+  container-type: inline-size;
+}
 .sim-grid {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr) 190px;
@@ -357,13 +380,13 @@ export default {
   flex-direction: column;
   gap: 10px;
 }
-@media (max-width: 991.98px) {
+@container (max-width: 720px) {
   .sim-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas: "stage stage" "controls side";
   }
 }
-@media (max-width: 575.98px) {
+@container (max-width: 480px) {
   .sim-grid {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "stage" "controls" "side";
