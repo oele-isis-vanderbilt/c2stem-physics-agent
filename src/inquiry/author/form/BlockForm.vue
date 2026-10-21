@@ -60,10 +60,12 @@ import ChoiceForm from "./blocks/ChoiceForm.vue";
 import DesignTableForm from "./blocks/DesignTableForm.vue";
 import FillInBlanksForm from "./blocks/FillInBlanksForm.vue";
 import FreeTextForm from "./blocks/FreeTextForm.vue";
+import HypothesesForm from "./blocks/HypothesesForm.vue";
 import MediaForm from "./blocks/MediaForm.vue";
 import SelectForm from "./blocks/SelectForm.vue";
 import SimulationBlockForm from "./blocks/SimulationBlockForm.vue";
 import TextForm from "./blocks/TextForm.vue";
+import TrialTableForm from "./blocks/TrialTableForm.vue";
 import KeyField from "./fields/KeyField.vue";
 import ShowIfEditor from "./fields/ShowIfEditor.vue";
 import { isAnswerable } from "../../player/lesson";
@@ -78,6 +80,8 @@ const FORMS = {
   select: SelectForm,
   fillInBlanks: FillInBlanksForm,
   designTable: DesignTableForm,
+  hypotheses: HypothesesForm,
+  trialTable: TrialTableForm,
   simulation: SimulationBlockForm,
 };
 

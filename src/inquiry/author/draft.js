@@ -15,6 +15,8 @@ export const BLOCK_TYPES = [
   { type: "select", label: "Dropdown" },
   { type: "fillInBlanks", label: "Fill in the blanks" },
   { type: "designTable", label: "Design table" },
+  { type: "hypotheses", label: "Hypotheses" },
+  { type: "trialTable", label: "Trial table" },
   { type: "feedback", label: "Feedback" },
   { type: "simulation", label: "Simulation" },
 ];
@@ -28,6 +30,8 @@ export function typeLabel(type) {
 const VALUE_BLOCKS = new Set(["freeText", "choice", "select", "fillInBlanks"]);
 // Text fields that may hold {{refs}}, as in the service's validator
 const TEMPLATED = ["md", "prompt", "placeholder", "template"];
+// Fields that hold one answer name on its own, not inside text
+const BARE_REFS = new Set(["ref", "hypothesesFrom"]);
 const MAX_ID = 64;
 
 const copy = (value) => JSON.parse(JSON.stringify(value));
@@ -253,6 +257,7 @@ function eachRefField(block, visit) {
   if (isObject(block.showIf) && typeof block.showIf.ref === "string") {
     visit(block.showIf, "ref");
   }
+  if (typeof block.hypothesesFrom === "string") visit(block, "hypothesesFrom");
 }
 
 /** How many places use an answer name: {{key}}, dropdown lists, show-if rules. */
@@ -266,7 +271,7 @@ export function keyUses(draft, key) {
         uses += value.filter(
           (ref) => typeof ref === "string" && refNames(ref, key)
         ).length;
-      } else if (field === "ref") {
+      } else if (BARE_REFS.has(field)) {
         if (refNames(value, key)) uses += 1;
       } else {
         uses += (value.match(refPattern(key)) || []).length;
@@ -287,7 +292,7 @@ export function renameKey(draft, from, to) {
     eachRefField(block, (holder, field) => {
       const value = holder[field];
       if (Array.isArray(value)) holder[field] = value.map(rename);
-      else if (field === "ref") holder[field] = rename(value);
+      else if (BARE_REFS.has(field)) holder[field] = rename(value);
       else {
         holder[field] = value.replace(
           refPattern(from),
@@ -310,7 +315,7 @@ export function refUses(draft, ref) {
     eachRefField(block, (holder, field) => {
       const value = holder[field];
       if (Array.isArray(value)) uses += value.filter((r) => r === ref).length;
-      else if (field === "ref") uses += value === ref ? 1 : 0;
+      else if (BARE_REFS.has(field)) uses += value === ref ? 1 : 0;
       else uses += (value.match(exact) || []).length;
     });
   }
@@ -544,8 +549,37 @@ const KEY_BASE = {
   select: "pick",
   fillInBlanks: "blanks",
   designTable: "design",
+  hypotheses: "hypotheses",
+  trialTable: "trials",
   simulation: "runs",
 };
+
+/** Placeholder options for a new Hypotheses block, for the author to rename. */
+const placeholders = (letters) =>
+  letters.map((l) => ({ id: `variable${l}`, label: `Variable ${l}` }));
+
+/**
+ * Options made from the lesson's variables: inputs (sliders) for the
+ * independent and controlled variables, outputs (measured) for the dependent.
+ * Option ids are the variable keys, so trial-table columns show their units.
+ */
+export function variableOptions(draft) {
+  const of = (role) =>
+    variablesOf(draft)
+      .filter((v) => v.role === role && v.key)
+      .map((v) => ({ id: v.key, label: v.label || v.key }));
+  return { ivOptions: of("input"), dvOptions: of("output") };
+}
+
+/** Answer names of the lesson's Hypotheses blocks, in reading order. */
+export function hypothesesKeys(draft, beforeBlockId) {
+  const keys = [];
+  for (const { block } of blocksOf(draft)) {
+    if (block.id === beforeBlockId) break;
+    if (block.type === "hypotheses" && block.key) keys.push(block.key);
+  }
+  return keys;
+}
 
 /** A block of a type with starting content an author edits from. */
 export function newBlock(draft, type, idBase) {
@@ -580,6 +614,27 @@ export function newBlock(draft, type, idBase) {
       };
     case "designTable":
       return { ...block, title: "My experiment", editable: true, rowCount: 2 };
+    case "hypotheses":
+      return {
+        ...block,
+        statement: true,
+        minHypotheses: 1,
+        maxHypotheses: 1,
+        ivOptions: placeholders(["A", "B", "C"]),
+        dvOptions: placeholders(["D", "E"]),
+      };
+    case "trialTable": {
+      // Belongs to the lesson's last Hypotheses block, if there is one yet
+      const keys = hypothesesKeys(draft);
+      const table = {
+        ...block,
+        comparePrompt: "We compare the resulting values of:",
+        minTrials: 2,
+        maxTrials: 5,
+      };
+      if (keys.length) table.hypothesesFrom = keys[keys.length - 1];
+      return table;
+    }
     case "simulation": {
       const sim = {
         ...block,
