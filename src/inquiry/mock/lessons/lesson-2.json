@@ -75,18 +75,23 @@
             {
               "id": "hypothesis-intro",
               "type": "text",
-              "md": "Let's design another experiment examining a ball falling towards the ground.\n\nFill in the blanks and tables below:"
+              "md": "Let's design experiments examining a ball falling towards the ground. This time, you'll design two experiments!\n\nFill in the blanks and tables below:"
             },
             {
-              "id": "hypothesis-blanks",
-              "type": "fillInBlanks",
-              "key": "hypothesis",
-              "template": "My hypothesis is: [[statement]]\n\nMy independent variable is: [[iv]]\n\nMy dependent variable is: [[dv]]\n\nMy controlled variable(s) is/are: [[cv]]",
-              "blanks": [
-                { "id": "statement", "input": "text" },
-                { "id": "iv", "input": "text" },
-                { "id": "dv", "input": "text" },
-                { "id": "cv", "input": "text" }
+              "id": "hypothesis-set",
+              "type": "hypotheses",
+              "key": "hypotheses",
+              "statement": true,
+              "minHypotheses": 2,
+              "maxHypotheses": 3,
+              "ivOptions": [
+                { "id": "variableA", "label": "Variable A" },
+                { "id": "variableB", "label": "Variable B" },
+                { "id": "variableC", "label": "Variable C" }
+              ],
+              "dvOptions": [
+                { "id": "variableD", "label": "Variable D" },
+                { "id": "variableE", "label": "Variable E" }
               ]
             }
           ]
@@ -103,23 +108,17 @@
             {
               "id": "design-intro",
               "type": "text",
-              "md": "Let's design another experiment examining a ball falling towards the ground.\n\nFill in the blanks and tables below:"
+              "md": "Let's design experiments examining a ball falling towards the ground.\n\nFill in the table below for each of your hypotheses:"
             },
             {
-              "id": "design-table",
-              "type": "designTable",
+              "id": "design-trials",
+              "type": "trialTable",
               "key": "experimentDesign",
+              "hypothesesFrom": "hypotheses",
               "title": "Experiment:",
-              "editable": true,
-              "rowCount": 3,
-              "variableOptionsFrom": ["hypothesis.iv", "hypothesis.dv", "hypothesis.cv"]
-            },
-            {
-              "id": "design-compare",
-              "type": "select",
-              "key": "compareValues",
-              "prompt": "We compare the resulting values of:",
-              "optionsFrom": ["hypothesis.iv", "hypothesis.dv", "hypothesis.cv"]
+              "comparePrompt": "We compare the resulting values of:",
+              "minTrials": 2,
+              "maxTrials": 5
             }
           ]
         }

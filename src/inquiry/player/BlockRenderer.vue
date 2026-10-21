@@ -19,9 +19,11 @@ import DesignTableBlock from "./blocks/DesignTableBlock.vue";
 import FeedbackBlock from "./blocks/FeedbackBlock.vue";
 import FillInBlanksBlock from "./blocks/FillInBlanksBlock.vue";
 import FreeTextBlock from "./blocks/FreeTextBlock.vue";
+import HypothesesBlock from "./blocks/HypothesesBlock.vue";
 import MediaBlock from "./blocks/MediaBlock.vue";
 import SelectBlock from "./blocks/SelectBlock.vue";
 import TextBlock from "./blocks/TextBlock.vue";
+import TrialTableBlock from "./blocks/TrialTableBlock.vue";
 import { isShown } from "./lesson";
 import SimulationBlock from "./blocks/SimulationBlock.vue";
 
@@ -33,6 +35,8 @@ const COMPONENTS = {
   select: SelectBlock,
   fillInBlanks: FillInBlanksBlock,
   designTable: DesignTableBlock,
+  hypotheses: HypothesesBlock,
+  trialTable: TrialTableBlock,
   feedback: FeedbackBlock,
   simulation: SimulationBlock,
 };

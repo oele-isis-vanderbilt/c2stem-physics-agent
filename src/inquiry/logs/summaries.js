@@ -61,6 +61,29 @@ function answerText(value, block) {
     const option = ((block && block.options) || []).find((o) => o.id === value);
     return quoted(option ? option.label : value);
   }
+  if (Array.isArray(value && value.items)) {
+    const name = (list, id) =>
+      ((list || []).find((o) => o.id === id) || {}).label || id || "?";
+    const items = value.items.map((item, i) => {
+      const parts = [
+        `IV ${name(block && block.ivOptions, item.iv)}`,
+        `DV ${name(block && block.dvOptions, item.dv)}`,
+        `CV ${name(block && block.ivOptions, item.cv)}`,
+      ];
+      if (item.statement) parts.unshift(quoted(item.statement));
+      return `H${i + 1} ${parts.join(", ")}`;
+    });
+    return short(items.join("; "));
+  }
+  if (value && typeof value.byHypothesis === "object") {
+    const tables = Object.entries(value.byHypothesis).map(
+      ([id, table]) =>
+        `${id}: compare ${table.compare || "?"}, ${
+          (table.trials || []).length
+        } trials`
+    );
+    return short(tables.join("; "));
+  }
   if (Array.isArray(value && value.rows)) {
     const rows = value.rows.map((row) => {
       const cells = Object.entries(row.values || {})

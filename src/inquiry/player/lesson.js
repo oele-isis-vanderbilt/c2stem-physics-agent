@@ -12,6 +12,8 @@ const ANSWERABLE = new Set([
   "select",
   "fillInBlanks",
   "designTable",
+  "hypotheses",
+  "trialTable",
   "simulation",
 ]);
 
@@ -134,7 +136,8 @@ function filled(value) {
   return value !== undefined && value !== null;
 }
 
-export function isAnswered(block, value) {
+/** Whether a block's answer is complete. `ctx` is needed by trial tables. */
+export function isAnswered(block, value, ctx) {
   switch (block.type) {
     case "freeText":
       return typeof value === "string" && value.trim() !== "";
@@ -151,6 +154,10 @@ export function isAnswered(block, value) {
             trialsOf(block).every((t) => row.values && filled(row.values[t]))
         )
       );
+    case "hypotheses":
+      return hypothesesAnswered(block, value);
+    case "trialTable":
+      return trialTableAnswered(block, value, ctx);
     case "simulation":
       return runsOf(value).length >= minRunsOf(block);
     default:
@@ -196,6 +203,126 @@ export function trialsOf(block) {
 
 export function rowCountOf(block) {
   return block.rowCount || 2;
+}
+
+// --- hypotheses and trial tables ---------------------------------------------------
+
+/** A hypothesis: { id, statement, iv, dv, cv }, the variables as option ids. */
+function emptyHypothesis(id) {
+  return { id, statement: "", iv: "", dv: "", cv: "" };
+}
+
+export function minHypothesesOf(block) {
+  return block.minHypotheses || 1;
+}
+
+export function maxHypothesesOf(block) {
+  return Math.max(block.maxHypotheses || 1, minHypothesesOf(block));
+}
+
+/** Whether the "My hypothesis is" box is shown; on unless turned off. */
+export function asksStatement(block) {
+  return block.statement !== false;
+}
+
+/**
+ * The student's hypotheses, with empty ones added up to the minimum so a
+ * lesson that asks for two shows two from the start.
+ */
+export function hypothesesOf(block, value) {
+  const saved = (value && Array.isArray(value.items) && value.items) || [];
+  const items = saved.map((item) => ({ ...emptyHypothesis(item.id), ...item }));
+  while (items.length < minHypothesesOf(block)) {
+    items.push(emptyHypothesis(newHypothesisId(items)));
+  }
+  return items;
+}
+
+/** h1, h2, … : the first id no hypothesis uses, so a removed one isn't reused by mistake. */
+export function newHypothesisId(items) {
+  const used = new Set(items.map((item) => item.id));
+  let n = items.length + 1;
+  while (used.has(`h${n}`)) n += 1;
+  return `h${n}`;
+}
+
+/** Controlled-variable options: the independent ones, less the one chosen as independent. */
+export function controlledOptions(block, hypothesis) {
+  return block.ivOptions.filter((o) => o.id !== hypothesis.iv);
+}
+
+/** Whether one hypothesis has every part the lesson asks for. */
+export function hypothesisDone(block, item) {
+  const has = (options, id) => options.some((o) => o.id === id);
+  return (
+    (!asksStatement(block) || filled(item.statement)) &&
+    has(block.ivOptions, item.iv) &&
+    has(block.dvOptions, item.dv) &&
+    has(controlledOptions(block, item), item.cv)
+  );
+}
+
+function hypothesesAnswered(block, value) {
+  const items = hypothesesOf(block, value);
+  return (
+    items.length <= maxHypothesesOf(block) &&
+    items.every((item) => hypothesisDone(block, item))
+  );
+}
+
+/** The Hypotheses block a trial table belongs to, and the student's hypotheses. */
+export function tableSource(block, ctx) {
+  const source = ctx.blocksByKey[block.hypothesesFrom];
+  if (!source || source.type !== "hypotheses") return null;
+  return { block: source, items: hypothesesOf(source, ctx.answers[source.id]) };
+}
+
+export function minTrialsOf(block) {
+  return block.minTrials || 2;
+}
+
+export function maxTrialsOf(block) {
+  return Math.max(block.maxTrials || 5, minTrialsOf(block));
+}
+
+/** One hypothesis's part of a trial table: { compare, trials }, padded to the minimum rows. */
+export function tableFor(block, value, hypothesisId) {
+  const saved =
+    (value && value.byHypothesis && value.byHypothesis[hypothesisId]) || {};
+  const trials = (Array.isArray(saved.trials) ? saved.trials : []).map(
+    (row) => ({ ...row })
+  );
+  while (trials.length < minTrialsOf(block)) trials.push({});
+  return { compare: saved.compare || "", trials };
+}
+
+/** A filled trial cell: a number, saved as typed ("1.5"). */
+function isNumber(value) {
+  if (typeof value === "number") return Number.isFinite(value);
+  return (
+    typeof value === "string" &&
+    value.trim() !== "" &&
+    Number.isFinite(Number(value))
+  );
+}
+
+export function tableDone(block, value, source, hypothesisId) {
+  const table = tableFor(block, value, hypothesisId);
+  return (
+    source.block.dvOptions.some((o) => o.id === table.compare) &&
+    table.trials.length <= maxTrialsOf(block) &&
+    table.trials.every((row) =>
+      source.block.ivOptions.every((o) => isNumber(row[o.id]))
+    )
+  );
+}
+
+function trialTableAnswered(block, value, ctx) {
+  const source = ctx && tableSource(block, ctx);
+  return (
+    !!source &&
+    source.items.every((item) => tableDone(block, value, source, item.id))
+  );
 }
 
 /**
@@ -252,6 +379,18 @@ export function staleAnswers(step, ctx) {
         return { ...row, variable: "" };
       });
       if (changed) fixes.push({ blockId: block.id, value: { rows } });
+    } else if (block.type === "trialTable") {
+      // Drop the tables of hypotheses the student has since removed
+      const source = tableSource(block, ctx);
+      const byHypothesis = value.byHypothesis || {};
+      if (!source) continue;
+      const kept = new Set(source.items.map((item) => item.id));
+      const stale = Object.keys(byHypothesis).filter((id) => !kept.has(id));
+      if (stale.length) {
+        const next = { ...byHypothesis };
+        stale.forEach((id) => delete next[id]);
+        fixes.push({ blockId: block.id, value: { byHypothesis: next } });
+      }
     }
   }
   return fixes;
@@ -264,6 +403,6 @@ export function canContinue(step, ctx) {
       !isAnswerable(block) ||
       block.optional ||
       !isShown(block, ctx) ||
-      isAnswered(block, ctx.answers[block.id])
+      isAnswered(block, ctx.answers[block.id], ctx)
   );
 }

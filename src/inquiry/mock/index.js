@@ -223,6 +223,8 @@ const BLOCK_TYPES = new Set([
   "select",
   "fillInBlanks",
   "designTable",
+  "hypotheses",
+  "trialTable",
   "feedback",
   "simulation",
 ]);
