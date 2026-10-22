@@ -2,14 +2,13 @@
   <table class="table table-sm static-table mb-0">
     <thead>
       <tr>
-        <th scope="col">Variable</th>
-        <th v-for="trial in trials" :key="trial" scope="col">
-          Trial {{ trial }}
+        <th v-for="(header, i) in headers" :key="i" scope="col">
+          {{ header }}
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="row in table.rows" :key="row.label">
+      <tr v-for="(row, r) in table.rows" :key="r">
         <th scope="row">{{ row.label }}</th>
         <td v-for="trial in trials" :key="trial">{{ row.values[trial] }}</td>
       </tr>
@@ -18,15 +17,20 @@
 </template>
 
 <script>
-/** Variable / Trial A / Trial B table, shared by choice cards and design tables. */
+import { headersOf, trialsOf } from "../lesson";
+
+/** A read-only table with typed headings, shared by choice cards and design tables. */
 export default {
   name: "StaticTable",
   props: {
-    table: { type: Object, required: true }, // { rows, trials? }
+    table: { type: Object, required: true }, // { rows, trials?, headers? }
   },
   computed: {
     trials() {
-      return this.table.trials || ["A", "B"];
+      return trialsOf(this.table);
+    },
+    headers() {
+      return headersOf(this.table);
     },
   },
 };

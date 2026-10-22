@@ -753,6 +753,13 @@ export default {
   display: flex;
   gap: 2px;
 }
+/* Room to read a heading next to its column tools */
+.lesson-form .static-table thead th {
+  min-width: 120px;
+}
+.lesson-form .trial-head .form-control {
+  min-width: 90px;
+}
 .lesson-form .show-if-rule {
   display: flex;
   flex-wrap: wrap;

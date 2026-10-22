@@ -23,6 +23,31 @@
       </label>
     </div>
 
+    <fieldset class="field">
+      <legend class="field-label">Controlled variables per hypothesis</legend>
+      <div v-for="n in [1, 2]" :key="n" class="form-check form-check-inline">
+        <input
+          :id="`cvcount-${block.id}-${n}`"
+          class="form-check-input"
+          type="radio"
+          :name="`cvcount-${block.id}`"
+          :checked="(block.controlledCount || 1) === n"
+          @change="setControlledCount(n)"
+        />
+        <label class="form-check-label" :for="`cvcount-${block.id}-${n}`">
+          {{ n === 1 ? "One" : "Two (… and …)" }}
+        </label>
+      </div>
+      <p class="field-hint">
+        Picked from the independent options the student didn't choose as
+        independent{{
+          (block.controlledCount || 1) === 2
+            ? "; two need at least 3 independent options"
+            : ""
+        }}.
+      </p>
+    </fieldset>
+
     <div class="field">
       <div class="field-label"><span>Number of hypotheses</span></div>
       <div class="counts">
@@ -120,6 +145,10 @@ export default {
       this.edit((block) => {
         block.statement = on;
       }, true);
+    },
+    setControlledCount(n) {
+      // One is the default, so it isn't stored
+      this.set("controlledCount", n === 1 ? null : n, { boundary: true });
     },
     setCount(field, text) {
       const n = parseInt(text, 10);

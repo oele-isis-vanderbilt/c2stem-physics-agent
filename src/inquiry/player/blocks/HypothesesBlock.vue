@@ -78,7 +78,11 @@
         </select>
       </p>
       <p class="hyp-line">
-        <label :for="`${uid}-cv`">My controlled variable is:</label>
+        <label :for="`${uid}-cv`">
+          {{
+            two ? "My controlled variables are:" : "My controlled variable is:"
+          }}
+        </label>
         <select
           :id="`${uid}-cv`"
           class="form-select"
@@ -95,6 +99,26 @@
             {{ o.label }}
           </option>
         </select>
+        <template v-if="two">
+          <span class="and">and</span>
+          <select
+            :id="`${uid}-cv2`"
+            class="form-select"
+            aria-label="My second controlled variable"
+            :value="current.cv2"
+            :disabled="readOnly || !current.iv"
+            @change="update({ cv2: $event.target.value })"
+          >
+            <option value="" disabled>
+              {{
+                current.iv ? "Select…" : "Choose the independent variable first"
+              }}
+            </option>
+            <option v-for="o in controlled2" :key="o.id" :value="o.id">
+              {{ o.label }}
+            </option>
+          </select>
+        </template>
       </p>
     </div>
   </div>
@@ -103,6 +127,7 @@
 <script>
 import {
   asksStatement,
+  controlledCountOf,
   controlledOptions,
   fillRefs,
   hypothesesOf,
@@ -116,7 +141,8 @@ import blockProps from "./blockProps";
 
 /**
  * One or more hypotheses, each with its own independent, dependent and
- * controlled variable. Saves { items: [{ id, statement, iv, dv, cv }] }; the
+ * controlled variable (two with controlledCount: 2, saved as cv and cv2).
+ * Saves { items: [{ id, statement, iv, dv, cv, cv2 }] }; the
  * variables are option ids. The controlled variable is picked from the
  * independent-variable options the student didn't choose as independent.
  */
@@ -161,8 +187,14 @@ export default {
     current() {
       return this.items.find((i) => i.id === this.active) || this.items[0];
     },
+    two() {
+      return controlledCountOf(this.block) === 2;
+    },
     controlled() {
-      return controlledOptions(this.block, this.current);
+      return controlledOptions(this.block, this.current, 1);
+    },
+    controlled2() {
+      return controlledOptions(this.block, this.current, 2);
     },
   },
   methods: {
@@ -190,13 +222,17 @@ export default {
       // A variable can't be both independent and controlled
       const fields = { iv };
       if (this.current.cv === iv) fields.cv = "";
+      if (this.current.cv2 === iv) fields.cv2 = "";
       this.update(fields);
     },
     add() {
       const items = this.live();
       if (items.length >= this.max) return;
       const id = newHypothesisId(items);
-      this.save([...items, { id, statement: "", iv: "", dv: "", cv: "" }]);
+      this.save([
+        ...items,
+        { id, statement: "", iv: "", dv: "", cv: "", cv2: "" },
+      ]);
       this.active = id;
     },
     remove() {
@@ -240,6 +276,9 @@ export default {
 }
 .hyp-line label {
   margin: 0;
+}
+.hyp-line .and {
+  color: var(--inq-muted, #5c5670);
 }
 .hyp-line .form-control,
 .hyp-line .form-select {

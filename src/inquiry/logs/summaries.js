@@ -70,7 +70,9 @@ function answerText(value, block) {
       const parts = [
         `IV ${name(block && block.ivOptions, item.iv)}`,
         `DV ${name(block && block.dvOptions, item.dv)}`,
-        `CV ${name(block && block.ivOptions, item.cv)}`,
+        `CV ${name(block && block.ivOptions, item.cv)}${
+          item.cv2 ? ` and ${name(block && block.ivOptions, item.cv2)}` : ""
+        }`,
       ];
       if (item.statement) parts.unshift(quoted(item.statement));
       return `H${i + 1} ${parts.join(", ")}`;

@@ -4,24 +4,55 @@
       <table class="table table-sm align-middle mb-1">
         <thead>
           <tr>
-            <th scope="col">Row</th>
-            <th v-for="(trial, t) in trials" :key="t" scope="col">
+            <th scope="col">
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                :class="{ 'is-invalid': invalid('headers') }"
+                aria-label="First column heading"
+                placeholder="Heading"
+                :value="headers[0]"
+                @input="header(0, $event.target.value)"
+              />
+            </th>
+            <th v-for="(trial, t) in trials" :key="trial" scope="col">
               <span class="trial-head">
                 <input
                   type="text"
                   class="form-control form-control-sm"
-                  :class="{ 'is-invalid': invalid('trials') }"
-                  :aria-label="`Trial ${t + 1} name`"
-                  :value="trial"
-                  @change="renameTrial(t, $event.target.value)"
+                  :class="{ 'is-invalid': invalid('headers') }"
+                  :aria-label="`Column ${t + 2} heading`"
+                  placeholder="Heading"
+                  :value="headers[t + 1]"
+                  @input="header(t + 1, $event.target.value)"
                 />
                 <button
                   type="button"
+                  class="tool"
+                  :disabled="t === 0"
+                  :aria-label="`Move column ${t + 2} left`"
+                  title="Move left"
+                  @click="column((table) => moveColumn(table, t, -1))"
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  class="tool"
+                  :disabled="t === trials.length - 1"
+                  :aria-label="`Move column ${t + 2} right`"
+                  title="Move right"
+                  @click="column((table) => moveColumn(table, t, 1))"
+                >
+                  →
+                </button>
+                <button
+                  type="button"
                   class="tool tool-remove"
-                  :disabled="trials.length <= 2"
-                  :aria-label="`Remove trial ${trial}`"
-                  title="Remove trial"
-                  @click="removeTrial(t)"
+                  :disabled="trials.length <= 1"
+                  :aria-label="`Remove column ${t + 2}`"
+                  title="Remove column"
+                  @click="column((table) => removeColumn(table, t))"
                 >
                   ✕
                 </button>
@@ -38,6 +69,7 @@
                 class="form-control form-control-sm"
                 :class="{ 'is-invalid': invalid(`rows/${r}/label`) }"
                 :aria-label="`Row ${r + 1} label`"
+                placeholder="Label"
                 :value="row.label"
                 @input="setLabel(r, $event.target.value)"
               />
@@ -47,7 +79,10 @@
                 type="text"
                 class="form-control form-control-sm"
                 :class="{ 'is-invalid': invalid(`rows/${r}/values`) }"
-                :aria-label="`${row.label || `Row ${r + 1}`}, trial ${trial}`"
+                :aria-label="`${row.label || `Row ${r + 1}`}, ${
+                  headers[trials.indexOf(trial) + 1] || `column ${trial}`
+                }`"
+                placeholder="Value"
                 :value="valueOf(row, trial)"
                 @input="setValue(r, trial, $event.target.value)"
               />
@@ -72,20 +107,21 @@
     <button
       type="button"
       class="btn btn-sm btn-link add-link"
-      @click="addTrial"
+      @click="column(addColumn)"
     >
-      + Add trial
+      + Add column
     </button>
   </div>
 </template>
 
 <script>
 import RowTools from "./RowTools.vue";
-import { trialsOf } from "../../../player/lesson";
+import { headersOf, trialsOf } from "../../../player/lesson";
+import { addColumn, moveColumn, removeColumn, setHeader } from "../../draft";
 
 /**
- * A read-only table: trial columns (A and B unless renamed) and rows of
- * typed values. Emits edit(fn(table), boundary).
+ * A read-only table: headings, value columns and rows, all typed by the
+ * author and allowed to be blank. Emits edit(fn(table), boundary).
  */
 export default {
   name: "StaticTableEditor",
@@ -98,6 +134,9 @@ export default {
   computed: {
     trials() {
       return trialsOf(this.table);
+    },
+    headers() {
+      return headersOf(this.table);
     },
     rows() {
       return (Array.isArray(this.table.rows) ? this.table.rows : []).filter(
@@ -135,50 +174,15 @@ export default {
         };
       }, false);
     },
-    /** Names every trial explicitly, since the default A, B is implied. */
-    withTrials(fn) {
-      const trials = [...this.trials];
-      this.edit((table) => {
-        table.trials = trials;
-        fn(table);
-      });
+    addColumn,
+    moveColumn,
+    removeColumn,
+    header(i, text) {
+      this.edit((table) => setHeader(table, i, text), false);
     },
-    renameTrial(t, name) {
-      const from = this.trials[t];
-      const to = name.trim();
-      if (!to || to === from || this.trials.includes(to)) return;
-      this.withTrials((table) => {
-        table.trials[t] = to;
-        for (const row of table.rows || []) {
-          if (row.values && from in row.values) {
-            const values = {};
-            for (const [k, v] of Object.entries(row.values)) {
-              values[k === from ? to : k] = v;
-            }
-            row.values = values;
-          }
-        }
-      });
-    },
-    addTrial() {
-      let n = this.trials.length;
-      let name;
-      do {
-        name =
-          String.fromCharCode(65 + (n % 26)) +
-          (n >= 26 ? Math.floor(n / 26) : "");
-        n += 1;
-      } while (this.trials.includes(name));
-      this.withTrials((table) => table.trials.push(name));
-    },
-    removeTrial(t) {
-      const name = this.trials[t];
-      this.withTrials((table) => {
-        table.trials.splice(t, 1);
-        for (const row of table.rows || []) {
-          if (row.values) delete row.values[name];
-        }
-      });
+    /** A change to the columns, as its own undo step. */
+    column(fn) {
+      this.edit(fn);
     },
     addRow() {
       const values = Object.fromEntries(this.trials.map((t) => [t, ""]));

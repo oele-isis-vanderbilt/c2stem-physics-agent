@@ -85,6 +85,7 @@ import OptionsEditor from "../fields/OptionsEditor.vue";
 import StaticTableEditor from "../fields/StaticTableEditor.vue";
 import TextField from "../fields/TextField.vue";
 import blockForm from "../blockForm";
+import { emptyTable } from "../../draft";
 
 /** Choice: question and options; an option can be a card with text and a table. */
 export default {
@@ -129,7 +130,7 @@ export default {
       this.editOption(
         index,
         (option) => {
-          option.table = { rows: [{ label: "", values: { A: "", B: "" } }] };
+          option.table = emptyTable();
         },
         true
       );

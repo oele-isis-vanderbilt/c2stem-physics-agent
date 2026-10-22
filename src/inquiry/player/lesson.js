@@ -202,15 +202,37 @@ export function trialsOf(block) {
   return block.trials || ["A", "B"];
 }
 
+/**
+ * A table's column headings: the first column's, then one per trial column.
+ * Tables saved before headings could be typed show "Variable" and "Trial A".
+ */
+export function headersOf(table) {
+  const trials = trialsOf(table);
+  if (!Array.isArray(table.headers)) {
+    return ["Variable", ...trials.map((t) => `Trial ${t}`)];
+  }
+  return Array.from({ length: trials.length + 1 }, (_, i) =>
+    typeof table.headers[i] === "string" ? table.headers[i] : ""
+  );
+}
+
 export function rowCountOf(block) {
   return block.rowCount || 2;
 }
 
 // --- hypotheses and trial tables ---------------------------------------------------
 
-/** A hypothesis: { id, statement, iv, dv, cv }, the variables as option ids. */
+/**
+ * A hypothesis: { id, statement, iv, dv, cv, cv2 }, the variables as option
+ * ids; cv2 is the second controlled variable, when the lesson asks for two.
+ */
 function emptyHypothesis(id) {
-  return { id, statement: "", iv: "", dv: "", cv: "" };
+  return { id, statement: "", iv: "", dv: "", cv: "", cv2: "" };
+}
+
+/** How many controlled variables each hypothesis names: 1 or 2. */
+export function controlledCountOf(block) {
+  return block.controlledCount === 2 ? 2 : 1;
 }
 
 export function minHypothesesOf(block) {
@@ -248,8 +270,13 @@ export function newHypothesisId(items) {
 }
 
 /** Controlled-variable options: the independent ones, less the one chosen as independent. */
-export function controlledOptions(block, hypothesis) {
-  return block.ivOptions.filter((o) => o.id !== hypothesis.iv);
+export function controlledOptions(block, hypothesis, slot = 1) {
+  // With two, neither may repeat the other
+  const other = slot === 1 ? hypothesis.cv2 : hypothesis.cv;
+  const twoSlots = controlledCountOf(block) === 2;
+  return block.ivOptions.filter(
+    (o) => o.id !== hypothesis.iv && !(twoSlots && o.id === other)
+  );
 }
 
 /** Whether one hypothesis has every part the lesson asks for. */
@@ -259,7 +286,9 @@ export function hypothesisDone(block, item) {
     (!asksStatement(block) || filled(item.statement)) &&
     has(block.ivOptions, item.iv) &&
     has(block.dvOptions, item.dv) &&
-    has(controlledOptions(block, item), item.cv)
+    has(controlledOptions(block, item, 1), item.cv) &&
+    (controlledCountOf(block) === 1 ||
+      has(controlledOptions(block, item, 2), item.cv2))
   );
 }
 

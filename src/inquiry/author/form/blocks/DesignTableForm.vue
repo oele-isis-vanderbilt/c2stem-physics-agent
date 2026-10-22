@@ -57,33 +57,45 @@
 
     <template v-else>
       <div class="field">
-        <div class="field-label"><span>Trials (columns)</span></div>
+        <div class="field-label"><span>Column headings</span></div>
+        <div class="item-row mb-1">
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            :class="{ 'is-invalid': invalid('headers') }"
+            aria-label="First column heading"
+            placeholder="First column (the variable), e.g. Variable"
+            :value="headers[0]"
+            @input="header(0, $event.target.value)"
+          />
+        </div>
         <ol class="list-unstyled item-list">
-          <li v-for="(trial, t) in trials" :key="t" class="item-row">
+          <li v-for="(trial, t) in trials" :key="trial" class="item-row">
             <input
               type="text"
               class="form-control form-control-sm"
-              :class="{ 'is-invalid': invalid('trials') }"
-              :aria-label="`Trial ${t + 1} name`"
-              :value="trial"
-              @change="renameTrial(t, $event.target.value)"
+              :class="{ 'is-invalid': invalid('headers') }"
+              :aria-label="`Column ${t + 2} heading`"
+              placeholder="Heading, e.g. Trial A"
+              :value="headers[t + 1]"
+              @input="header(t + 1, $event.target.value)"
             />
             <row-tools
               :index="t"
               :count="trials.length"
-              :can-remove="trials.length > 2"
-              :what="`trial ${trial}`"
-              @move="(dir) => moveTrial(t, dir)"
-              @remove="removeTrial(t)"
+              :can-remove="trials.length > 1"
+              :what="`column ${t + 2}`"
+              @move="(dir) => edit((b) => moveColumn(b, t, dir), true)"
+              @remove="edit((b) => removeColumn(b, t), true)"
             />
           </li>
         </ol>
         <button
           type="button"
           class="btn btn-sm btn-link add-link"
-          @click="addTrial"
+          @click="edit(addColumn, true)"
         >
-          + Add trial
+          + Add column
         </button>
       </div>
 
@@ -152,7 +164,8 @@ import RowTools from "../fields/RowTools.vue";
 import StaticTableEditor from "../fields/StaticTableEditor.vue";
 import TextField from "../fields/TextField.vue";
 import blockForm from "../blockForm";
-import { trialsOf } from "../../../player/lesson";
+import { headersOf, trialsOf } from "../../../player/lesson";
+import { addColumn, moveColumn, removeColumn, setHeader } from "../../draft";
 
 // Fields that belong to one mode only; the other mode's wait here
 const READ_ONLY_FIELDS = ["rows"];
@@ -160,8 +173,8 @@ const EDITABLE_FIELDS = ["rowCount", "variableOptionsFrom"];
 
 /**
  * Design table: read-only rows of values, or a table students fill in
- * (trials, a number of rows, and a Variable column typed or picked from
- * earlier answers). Switching mode keeps the other mode's settings.
+ * (typed headings, a number of rows, and a first column typed or picked
+ * from earlier answers). Switching mode keeps the other mode's settings.
  */
 export default {
   name: "DesignTableForm",
@@ -173,6 +186,9 @@ export default {
   computed: {
     trials() {
       return trialsOf(this.block);
+    },
+    headers() {
+      return headersOf(this.block);
     },
   },
   methods: {
@@ -197,8 +213,16 @@ export default {
         } else {
           delete block.editable;
           if (!("rows" in block)) {
-            const values = Object.fromEntries(this.trials.map((t) => [t, ""]));
-            block.rows = [{ label: "", values }];
+            // Starts empty: blank headings, 2 rows, the current columns
+            const values = () =>
+              Object.fromEntries(this.trials.map((t) => [t, ""]));
+            block.rows = [
+              { label: "", values: values() },
+              { label: "", values: values() },
+            ];
+            if (!("headers" in block)) {
+              block.headers = this.trials.map(() => "").concat("");
+            }
           }
         }
       }, true);
@@ -221,39 +245,11 @@ export default {
         this.edit((block) => delete block.variableOptionsFrom, true);
       }
     },
-    editTrials(fn) {
-      const trials = [...this.trials];
-      this.edit((block) => {
-        block.trials = trials;
-        fn(block.trials);
-      }, true);
-    },
-    renameTrial(t, name) {
-      const to = name.trim();
-      if (!to || this.trials.includes(to)) return;
-      this.editTrials((trials) => {
-        trials[t] = to;
-      });
-    },
-    moveTrial(t, dir) {
-      this.editTrials((trials) => {
-        const [trial] = trials.splice(t, 1);
-        trials.splice(t + dir, 0, trial);
-      });
-    },
-    removeTrial(t) {
-      this.editTrials((trials) => trials.splice(t, 1));
-    },
-    addTrial() {
-      let n = this.trials.length;
-      let name;
-      do {
-        name =
-          String.fromCharCode(65 + (n % 26)) +
-          (n >= 26 ? Math.floor(n / 26) : "");
-        n += 1;
-      } while (this.trials.includes(name));
-      this.editTrials((trials) => trials.push(name));
+    addColumn,
+    moveColumn,
+    removeColumn,
+    header(i, text) {
+      this.edit((block) => setHeader(block, i, text));
     },
   },
 };

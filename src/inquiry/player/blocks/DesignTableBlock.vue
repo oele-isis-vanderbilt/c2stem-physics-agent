@@ -8,9 +8,9 @@
       <table class="table table-sm design-edit mb-0">
         <thead>
           <tr>
-            <th scope="col">Variable</th>
-            <th v-for="trial in trials" :key="trial" scope="col">
-              Trial {{ trial }}
+            <th scope="col">{{ headers[0] }}</th>
+            <th v-for="(trial, t) in trials" :key="trial" scope="col">
+              {{ headers[t + 1] }}
             </th>
           </tr>
         </thead>
@@ -20,7 +20,7 @@
               <select
                 v-if="block.variableOptionsFrom"
                 class="form-select form-select-sm"
-                :aria-label="`Row ${r + 1}, Variable`"
+                :aria-label="`Row ${r + 1}, ${headers[0] || 'first column'}`"
                 :value="row.variable"
                 :disabled="readOnly || !variableOptions.length"
                 @change="setVariable(r, $event.target.value)"
@@ -38,7 +38,7 @@
                 v-else
                 type="text"
                 class="form-control form-control-sm"
-                :aria-label="`Row ${r + 1}, Variable`"
+                :aria-label="`Row ${r + 1}, ${headers[0] || 'first column'}`"
                 :value="row.variable"
                 :readonly="readOnly"
                 @input="setVariable(r, $event.target.value, true)"
@@ -49,7 +49,9 @@
               <input
                 type="text"
                 class="form-control form-control-sm"
-                :aria-label="`Row ${r + 1}, Trial ${trial}`"
+                :aria-label="`Row ${r + 1}, ${
+                  headers[trials.indexOf(trial) + 1] || `column ${trial}`
+                }`"
                 :value="row.values[trial] || ''"
                 :readonly="readOnly"
                 @input="setTrial(r, trial, $event.target.value)"
@@ -61,12 +63,21 @@
       </table>
     </div>
 
-    <static-table v-else :table="{ rows: block.rows || [], trials }" />
+    <static-table
+      v-else
+      :table="{ rows: block.rows || [], trials, headers: block.headers }"
+    />
   </div>
 </template>
 
 <script>
-import { fillRefs, optionsFrom, rowCountOf, trialsOf } from "../lesson";
+import {
+  fillRefs,
+  headersOf,
+  optionsFrom,
+  rowCountOf,
+  trialsOf,
+} from "../lesson";
 import blockProps from "./blockProps";
 import StaticTable from "./StaticTable.vue";
 
@@ -88,6 +99,9 @@ export default {
     },
     trials() {
       return trialsOf(this.block);
+    },
+    headers() {
+      return headersOf(this.block);
     },
     variableOptions() {
       return this.block.variableOptionsFrom

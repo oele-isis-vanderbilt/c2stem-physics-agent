@@ -7,6 +7,8 @@
  * positions, so it still points at the same thing after a move or an undo.
  */
 
+import { headersOf, trialsOf } from "../player/lesson";
+
 export const BLOCK_TYPES = [
   { type: "text", label: "Text" },
   { type: "media", label: "Media" },
@@ -321,6 +323,70 @@ export function refUses(draft, ref) {
     });
   }
   return uses;
+}
+
+// --- table columns ---------------------------------------------------------------------
+// Trial columns have a fixed key (A, B, …) that answers and values are stored
+// under, and a heading the author types. These change a table (or a design
+// table block) in place, so they go inside an edit().
+
+/** Makes the keys and headings explicit, so they can be changed. */
+function explicitColumns(table) {
+  table.headers = headersOf(table);
+  table.trials = [...trialsOf(table)];
+}
+
+export function setHeader(table, i, text) {
+  explicitColumns(table);
+  table.headers[i] = text;
+}
+
+export function addColumn(table) {
+  explicitColumns(table);
+  let n = table.trials.length;
+  let key;
+  do {
+    key =
+      String.fromCharCode(65 + (n % 26)) + (n >= 26 ? Math.floor(n / 26) : "");
+    n += 1;
+  } while (table.trials.includes(key));
+  table.trials.push(key);
+  table.headers.push("");
+  for (const row of Array.isArray(table.rows) ? table.rows : []) {
+    row.values = { ...row.values, [key]: "" };
+  }
+}
+
+/** Removes trial column t (0 = the first trial column) and its values. */
+export function removeColumn(table, t) {
+  explicitColumns(table);
+  const [key] = table.trials.splice(t, 1);
+  table.headers.splice(t + 1, 1);
+  for (const row of Array.isArray(table.rows) ? table.rows : []) {
+    if (row.values) delete row.values[key];
+  }
+}
+
+/** Moves trial column t one place left (-1) or right (1). */
+export function moveColumn(table, t, dir) {
+  explicitColumns(table);
+  const [key] = table.trials.splice(t, 1);
+  table.trials.splice(t + dir, 0, key);
+  const [header] = table.headers.splice(t + 1, 1);
+  table.headers.splice(t + 1 + dir, 0, header);
+}
+
+/** A new empty read-only table: blank headings, 2 rows, 2 value columns. */
+export function emptyTable() {
+  const values = () => ({ A: "", B: "" });
+  return {
+    headers: ["", "", ""],
+    trials: ["A", "B"],
+    rows: [
+      { label: "", values: values() },
+      { label: "", values: values() },
+    ],
+  };
 }
 
 // --- fill in the blanks ------------------------------------------------------------
