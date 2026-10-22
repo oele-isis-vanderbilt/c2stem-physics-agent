@@ -212,10 +212,15 @@ export default {
         this.collapseInstance.toggle();
       }
     },
-    // CoSMo started a conversation (server "intervention" message): open the chat window
+    // CoSMo started a conversation (server "intervention" message): open the chat window, and tell the chat page to
+    // show the message now instead of on its next 15-second heartbeat
     openChatForIntervention() {
       if (this.collapseInstance) {
         this.collapseInstance.show();
+      }
+      const chat = document.getElementById("chat-iframe");
+      if (chat && chat.contentWindow) {
+        chat.contentWindow.postMessage({ type: "cosmo-intervention" }, "*");
       }
     },
     saveProject() {
