@@ -19,6 +19,7 @@ import LessonCard from "../components/LessonCard.vue";
 import c2stemTruckLogo from "@/assets/c2stem_truck.png";
 // import droneLogo from "@/assets/drone.png";
 // import farmTruckLogo from "@/assets/farm.png";
+import inquiryLogo from "@/assets/a-magnifier-graph.png";
 
 export default {
   name: "HomeView",
@@ -38,30 +39,29 @@ export default {
   },
   data() {
     return {
-      names: ["Truck: Debug", "Inquiry", "Push the Cart"],
+      names: ["Truck: Problem Solving", "Inquiry"],
       description: [
         "Complete your computational model lessons",
         "Scientific inquiry lessons",
-        "Build a model of a cart being pushed",
       ],
-      route: ["ConstructAgent", "InquiryHome", "ConstructAgent"],
+      route: ["ConstructAgent", "InquiryHome"],
       // lessonId picks the lesson's scoring (services/scoring)
-      routeQueries: [{ lessonId: "truck" }, {}, { lessonId: "lesson1" }],
+      routeQueries: [{ lessonId: "truck" }, {}],
       // route: ["ConstructAgent", "ConstructAgent", "ConstructAgent"],
-      logo: [c2stemTruckLogo, null, null],
+      logo: [c2stemTruckLogo, inquiryLogo],
       // logo: [c2stemTruckLogo, droneLogo, droneLogo],
       routeParams: [
         {
           userID: "oele",
-          projectName: "Truck_Model_debug_HIDDEN_BLOCKS",
+          projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
           source: "https://physics.c2stem.org",
         },
         {},
-        {
-          userID: "oele",
-          projectName: "Pushcart",
-          source: "https://physics.c2stem.org",
-        },
+        // {
+        //   userID: "oele",
+        //   projectName: "Pushcart",
+        //   source: "https://physics.c2stem.org",
+        // },
         // {
         //   userID: "oele",
         //   projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
