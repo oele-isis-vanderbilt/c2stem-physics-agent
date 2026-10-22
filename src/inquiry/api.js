@@ -36,6 +36,9 @@ export function createInquiryApi({ baseURL, getToken }) {
     orderLessons: (ids) => http.put("/lessons/order", { ids }).then(data),
     setLessonHidden: (id, hidden) =>
       http.patch(`/lessons/${id}`, { hidden }).then(data),
+    // Students' sessions: list them, and reset one (it is deleted)
+    sessions: (params) => http.get("/sessions", { params }).then(data),
+    resetSession: (id) => http.delete(`/sessions/${id}`).then(data),
 
     // Media (authors upload and list; anyone can fetch a file)
     uploadMedia(file, onProgress) {

@@ -129,8 +129,9 @@ import {
   minTrialsOf,
   tableDone,
   tableFor,
-  tableSource,
+  hypothesisSource,
 } from "../lesson";
+import { reactive } from "vue";
 import blockProps from "./blockProps";
 
 // What may be typed in a cell: a number, or the start of one
@@ -146,10 +147,19 @@ export default {
   name: "TrialTableBlock",
   props: blockProps,
   emits: ["answer", "leave"],
-  data() {
-    return { active: null };
+  inject: {
+    // The hypothesis picked, shared with the lesson's other pages
+    hypothesisFocus: { default: () => reactive({}) },
   },
   computed: {
+    active: {
+      get() {
+        return this.hypothesisFocus[this.block.hypothesesFrom] || null;
+      },
+      set(id) {
+        this.hypothesisFocus[this.block.hypothesesFrom] = id;
+      },
+    },
     uid() {
       return `inquiry-${this.block.id}`;
     },
@@ -163,7 +173,7 @@ export default {
       return this.block.comparePrompt || "We compare the resulting values of:";
     },
     source() {
-      return tableSource(this.block, this.ctx);
+      return hypothesisSource(this.block, this.ctx);
     },
     current() {
       const items = this.source.items;

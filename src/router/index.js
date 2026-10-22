@@ -12,6 +12,7 @@ import InquiryHomeView from "@/views/InquiryHomeView.vue";
 import InquiryLessonView from "@/views/InquiryLessonView.vue";
 import InquiryAuthorHomeView from "@/views/InquiryAuthorHomeView.vue";
 import InquiryAuthorEditView from "@/views/InquiryAuthorEditView.vue";
+import InquiryProgressView from "@/views/InquiryProgressView.vue";
 
 function islogin(to, from, next) {
   if (!store.state.user) {
@@ -78,6 +79,16 @@ const routes = [
       requiresAuth: true,
       requiresAdmin: true,
       title: "C2STEM | Inquiry authoring",
+    },
+  },
+  {
+    path: "/inquiry/author/progress",
+    name: "InquiryProgress",
+    component: InquiryProgressView,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: "C2STEM | Student progress",
     },
   },
   {

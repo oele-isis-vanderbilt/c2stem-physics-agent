@@ -12,7 +12,7 @@ function emptyLesson() {
     answers: {}, // blockId -> value, what the screens show
     unsaved: {}, // blockId -> value, changed since the last save
     unsavedPosition: null,
-    saveStatus: "saved", // saved | saving | retrying | loginRequired
+    saveStatus: "saved", // saved | saving | retrying | loginRequired | reset
   };
 }
 
@@ -77,6 +77,9 @@ export function createInquiryStore(api) {
         commit("setSaveStatus", "loginRequired");
       } else if (code === 409) {
         commit("markCompleted"); // finished in another tab; now read-only
+      } else if (code === 404) {
+        // A teacher reset this lesson: the session is gone, retrying won't help
+        commit("setSaveStatus", "reset");
       } else {
         commit("setSaveStatus", "retrying");
         schedule(

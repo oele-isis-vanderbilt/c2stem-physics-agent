@@ -140,6 +140,7 @@ function filled(value) {
 export function isAnswered(block, value, ctx) {
   switch (block.type) {
     case "freeText":
+      if (block.hypothesesFrom) return perHypothesisAnswered(block, value, ctx);
       return typeof value === "string" && value.trim() !== "";
     case "fillInBlanks":
       return !!value && block.blanks.every((b) => filled(value[b.id]));
@@ -270,8 +271,11 @@ function hypothesesAnswered(block, value) {
   );
 }
 
-/** The Hypotheses block a trial table belongs to, and the student's hypotheses. */
-export function tableSource(block, ctx) {
+/**
+ * The Hypotheses block a trial table or per-hypothesis question belongs to
+ * (block.hypothesesFrom), and the student's hypotheses: { block, items }.
+ */
+export function hypothesisSource(block, ctx) {
   const source = ctx.blocksByKey[block.hypothesesFrom];
   if (!source || source.type !== "hypotheses") return null;
   return { block: source, items: hypothesesOf(source, ctx.answers[source.id]) };
@@ -317,8 +321,48 @@ export function tableDone(block, value, source, hypothesisId) {
   );
 }
 
+/** A free-text block answered once for each hypothesis of an earlier Hypotheses block. */
+export function answersPerHypothesis(block) {
+  return block.type === "freeText" && !!block.hypothesesFrom;
+}
+
+/** One hypothesis's text in a per-hypothesis answer: { byHypothesis: { h1: "…" } }. */
+export function textFor(value, hypothesisId) {
+  const text = value && value.byHypothesis && value.byHypothesis[hypothesisId];
+  return typeof text === "string" ? text : "";
+}
+
+function perHypothesisAnswered(block, value, ctx) {
+  const source = ctx && hypothesisSource(block, ctx);
+  return (
+    !!source && source.items.every((item) => filled(textFor(value, item.id)))
+  );
+}
+
+/**
+ * The hypotheses a step's per-hypothesis questions answer, so the player can
+ * show one selector above them: [{ key, items, blocks }], one per Hypotheses
+ * block the step's visible questions point at.
+ */
+export function stepHypotheses(step, ctx) {
+  const groups = [];
+  for (const block of step.blocks) {
+    if (!answersPerHypothesis(block) || !isShown(block, ctx)) continue;
+    let group = groups.find((g) => g.key === block.hypothesesFrom);
+    if (!group) {
+      const source = hypothesisSource(block, ctx);
+      if (!source) continue;
+      groups.push(
+        (group = { key: block.hypothesesFrom, ...source, blocks: [] })
+      );
+    }
+    group.blocks.push(block);
+  }
+  return groups;
+}
+
 function trialTableAnswered(block, value, ctx) {
-  const source = ctx && tableSource(block, ctx);
+  const source = ctx && hypothesisSource(block, ctx);
   return (
     !!source &&
     source.items.every((item) => tableDone(block, value, source, item.id))
@@ -379,9 +423,9 @@ export function staleAnswers(step, ctx) {
         return { ...row, variable: "" };
       });
       if (changed) fixes.push({ blockId: block.id, value: { rows } });
-    } else if (block.type === "trialTable") {
-      // Drop the tables of hypotheses the student has since removed
-      const source = tableSource(block, ctx);
+    } else if (block.type === "trialTable" || answersPerHypothesis(block)) {
+      // Drop the answers of hypotheses the student has since removed
+      const source = hypothesisSource(block, ctx);
       const byHypothesis = value.byHypothesis || {};
       if (!source) continue;
       const kept = new Set(source.items.map((item) => item.id));

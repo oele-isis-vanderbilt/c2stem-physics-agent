@@ -162,11 +162,12 @@
               "type": "text",
               "md": "Let's reflect on the results. You can go back to the simulation as needed by clicking on the Back button."
             },
-            { "id": "conclusion-why", "type": "freeText", "key": "whyResults", "prompt": "Why did the results happen? What theory or concept explains this phenomenon?" },
+            { "id": "conclusion-why", "type": "freeText", "key": "whyResults", "hypothesesFrom": "hypotheses", "prompt": "Why did the results happen? What theory or concept explains this phenomenon?" },
             {
               "id": "conclusion-data",
               "type": "freeText",
               "key": "resultsData",
+              "hypothesesFrom": "hypotheses",
               "prompt": "What was the result of your experiment? Explain the data from your results. Does the data support your hypothesis? Why?"
             }
           ]
@@ -185,7 +186,7 @@
               "type": "text",
               "md": "To conclude, write a statement with a claim, evidence, and reasoning.\n\n- The **claim** should be about the collision of the ball and the ground: what was your hypothesis?\n- The **evidence** should include your experiment results. Be specific about the experiments you ran!\n- The **reasoning** should mention the physics concepts that explain your results."
             },
-            { "id": "discussion-cer", "type": "freeText", "key": "cer", "placeholder": "Enter here...", "rows": 8 }
+            { "id": "discussion-cer", "type": "freeText", "key": "cer", "hypothesesFrom": "hypotheses", "placeholder": "Enter here...", "rows": 8 }
           ]
         }
       ]

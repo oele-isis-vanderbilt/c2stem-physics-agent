@@ -111,6 +111,7 @@ import {
   minHypothesesOf,
   newHypothesisId,
 } from "../lesson";
+import { reactive } from "vue";
 import blockProps from "./blockProps";
 
 /**
@@ -123,10 +124,19 @@ export default {
   name: "HypothesesBlock",
   props: blockProps,
   emits: ["answer", "leave"],
-  data() {
-    return { active: null };
+  inject: {
+    // The hypothesis picked, shared with the lesson's other pages
+    hypothesisFocus: { default: () => reactive({}) },
   },
   computed: {
+    active: {
+      get() {
+        return this.hypothesisFocus[this.block.key || this.block.id] || null;
+      },
+      set(id) {
+        this.hypothesisFocus[this.block.key || this.block.id] = id;
+      },
+    },
     uid() {
       return `inquiry-${this.block.id}`;
     },

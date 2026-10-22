@@ -64,13 +64,19 @@
             :class="{ done: i < pageStep, current: i === pageStep }"
           ></span>
         </div>
-        <block-renderer
-          v-for="block in current.step.blocks"
-          :key="block.id"
-          :block="block"
-          :ctx="ctx"
-          :read-only="readOnly"
-        />
+        <template v-for="block in current.step.blocks" :key="block.id">
+          <!-- Which hypothesis the per-hypothesis questions below are about -->
+          <hypothesis-picker
+            v-if="pickerBefore[block.id]"
+            :items="pickerBefore[block.id].items"
+            :current="pickerBefore[block.id].current"
+            :done="pickerBefore[block.id].done"
+            @update:current="
+              (id) => (hypothesisFocus[pickerBefore[block.id].key] = id)
+            "
+          />
+          <block-renderer :block="block" :ctx="ctx" :read-only="readOnly" />
+        </template>
       </div>
 
       <div class="nav-bar">
@@ -121,6 +127,7 @@
 <script>
 import { mapGetters, mapState } from "vuex";
 import BlockRenderer from "./BlockRenderer.vue";
+import HypothesisPicker from "./HypothesisPicker.vue";
 import {
   allSteps,
   canContinue,
@@ -129,7 +136,9 @@ import {
   phasesOf,
   positionOf,
   staleAnswers,
+  stepHypotheses,
   stepIndex,
+  textFor,
 } from "./lesson";
 
 // Below this the page scrolls instead; a very short window can't fit the card.
@@ -140,18 +149,24 @@ const SAVE_LABELS = {
   saving: "Saving…",
   retrying: "Couldn't save, retrying",
   loginRequired: "Please log in again",
+  reset: "This lesson was reset. Reload the page to start again.",
 };
 
 /** Plays the open session in the inquiry store. Emits finished and exit. */
 export default {
   name: "LessonPlayer",
-  components: { BlockRenderer },
+  components: { BlockRenderer, HypothesisPicker },
+  // The hypothesis picked on any page, by Hypotheses block key, so the
+  // hypotheses, trial table and per-hypothesis questions stay on the same one
+  provide() {
+    return { hypothesisFocus: this.hypothesisFocus };
+  },
   props: {
     homeLabel: { type: String, default: "Inquiry" }, // first breadcrumb
   },
   emits: ["finished", "exit"],
   data() {
-    return { finishing: false, fitHeight: null };
+    return { finishing: false, fitHeight: null, hypothesisFocus: {} };
   },
   computed: {
     ...mapState("inquiry", ["session", "answers", "saveStatus"]),
@@ -194,6 +209,36 @@ export default {
         else if (i === this.place.phaseIndex) state = "current";
         return { name: phase.name, state };
       });
+    },
+    /** A selector per Hypotheses block this step's questions answer, when there are several hypotheses. */
+    pickers() {
+      return stepHypotheses(this.current.step, this.ctx)
+        .filter((group) => group.items.length > 1)
+        .map((group) => {
+          const picked = this.hypothesisFocus[group.key];
+          const current = group.items.some((i) => i.id === picked)
+            ? picked
+            : group.items[0].id;
+          const done = group.items
+            .filter((item) =>
+              group.blocks.every(
+                (b) => textFor(this.answers[b.id], item.id).trim() !== ""
+              )
+            )
+            .map((item) => item.id);
+          return { key: group.key, items: group.items, current, done };
+        });
+    },
+    /** Each selector goes just above the first question it applies to. */
+    pickerBefore() {
+      const at = {};
+      for (const picker of this.pickers) {
+        const group = stepHypotheses(this.current.step, this.ctx).find(
+          (g) => g.key === picker.key
+        );
+        at[group.blocks[0].id] = picker;
+      }
+      return at;
     },
     isLast() {
       return this.index === this.steps.length - 1;

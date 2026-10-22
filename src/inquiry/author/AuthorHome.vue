@@ -2,14 +2,23 @@
   <div class="author-home">
     <div class="head">
       <h2 class="mb-0">Authoring</h2>
-      <button
-        type="button"
-        class="btn btn-purple"
-        :disabled="busy"
-        @click="create()"
-      >
-        + New lesson
-      </button>
+      <div class="head-actions">
+        <button
+          type="button"
+          class="btn btn-outline-purple"
+          @click="progress()"
+        >
+          Student progress
+        </button>
+        <button
+          type="button"
+          class="btn btn-purple"
+          :disabled="busy"
+          @click="create()"
+        >
+          + New lesson
+        </button>
+      </div>
     </div>
 
     <div v-if="status === 'loading'" class="text-center my-5">
@@ -30,98 +39,171 @@
     <p v-else-if="!lessons.length" class="text-muted">
       No lessons yet. Start one with New lesson.
     </p>
-    <p v-else class="list-hint">
-      Students see published lessons in this order. Hidden lessons stay
-      published but are off their list.
-    </p>
-    <div v-if="message" class="alert alert-warning py-2" role="alert">
-      {{ message }}
-    </div>
 
-    <ul v-else class="lessons list-unstyled">
-      <li
-        v-for="(lesson, i) in lessons"
-        :key="lesson.id"
-        class="lesson"
-        :class="{ 'lesson-hidden': lesson.hidden }"
+    <template v-else>
+      <div v-if="message" class="alert alert-warning py-2" role="alert">
+        {{ message }}
+      </div>
+
+      <section
+        v-for="group in groups"
+        :key="group.id"
+        class="group"
+        :class="`group-${group.id}`"
       >
-        <div class="lesson-order">
-          <button
-            type="button"
-            class="order-btn"
-            :disabled="busy || i === 0"
-            :aria-label="`Move ${lesson.title} up`"
-            title="Move up"
-            @click="move(i, -1)"
-          >
-            ↑
-          </button>
-          <button
-            type="button"
-            class="order-btn"
-            :disabled="busy || i === lessons.length - 1"
-            :aria-label="`Move ${lesson.title} down`"
-            title="Move down"
-            @click="move(i, 1)"
-          >
-            ↓
-          </button>
+        <button
+          type="button"
+          class="group-head"
+          :aria-expanded="isOpen(group.id) ? 'true' : 'false'"
+          :aria-controls="`lessons-${group.id}`"
+          @click="toggleGroup(group.id)"
+        >
+          <span class="chevron" aria-hidden="true">{{
+            isOpen(group.id) ? "▾" : "▸"
+          }}</span>
+          {{ group.title }}
+          <span class="count">{{ group.lessons.length }}</span>
+        </button>
+        <div v-show="isOpen(group.id)" :id="`lessons-${group.id}`">
+          <p class="list-hint">{{ group.hint }}</p>
+          <p v-if="!group.lessons.length" class="empty">{{ group.empty }}</p>
+          <ul class="lessons list-unstyled">
+            <li
+              v-for="(lesson, i) in group.lessons"
+              :key="lesson.id"
+              class="lesson"
+              :class="{ 'lesson-hidden': lesson.hidden }"
+            >
+              <div v-if="group.id === 'visible'" class="lesson-order">
+                <button
+                  type="button"
+                  class="order-btn"
+                  :disabled="busy || i === 0"
+                  :aria-label="`Move ${lesson.title} up`"
+                  title="Move up"
+                  @click="move(i, -1)"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  class="order-btn"
+                  :disabled="busy || i === group.lessons.length - 1"
+                  :aria-label="`Move ${lesson.title} down`"
+                  title="Move down"
+                  @click="move(i, 1)"
+                >
+                  ↓
+                </button>
+              </div>
+              <div class="lesson-main">
+                <div class="lesson-title">{{ lesson.title }}</div>
+                <div class="lesson-meta">
+                  <span class="badge" :class="badgeOf(lesson).cls">
+                    {{ badgeOf(lesson).text }}
+                  </span>
+                  Updated by {{ lesson.updatedBy }} ·
+                  {{ when(lesson.updatedAt) }}
+                </div>
+              </div>
+              <div class="lesson-actions">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  :disabled="busy"
+                  :aria-pressed="lesson.hidden ? 'true' : 'false'"
+                  @click="toggleHidden(lesson)"
+                >
+                  {{ lesson.hidden ? "Show" : "Hide" }}
+                </button>
+                <button
+                  v-if="lesson.latestVersion"
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  @click="progress(lesson.id)"
+                >
+                  Progress
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-purple"
+                  @click="$emit('open', lesson.id)"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-purple"
+                  :disabled="busy"
+                  @click="create(lesson)"
+                >
+                  Copy
+                </button>
+              </div>
+            </li>
+          </ul>
         </div>
-        <div class="lesson-main">
-          <div class="lesson-title">{{ lesson.title }}</div>
-          <div class="lesson-meta">
-            <span class="badge" :class="badgeOf(lesson).cls">
-              {{ badgeOf(lesson).text }}
-            </span>
-            <span v-if="lesson.hidden" class="badge badge-hidden">
-              Hidden from students
-            </span>
-            Updated by {{ lesson.updatedBy }} · {{ when(lesson.updatedAt) }}
-          </div>
-        </div>
-        <div class="lesson-actions">
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary"
-            :disabled="busy"
-            :aria-pressed="lesson.hidden ? 'true' : 'false'"
-            @click="toggleHidden(lesson)"
-          >
-            {{ lesson.hidden ? "Show" : "Hide" }}
-          </button>
-          <button
-            type="button"
-            class="btn btn-sm btn-purple"
-            @click="$emit('open', lesson.id)"
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-purple"
-            :disabled="busy"
-            @click="create(lesson)"
-          >
-            Copy
-          </button>
-        </div>
-      </li>
-    </ul>
+      </section>
+    </template>
   </div>
 </template>
 
 <script>
 import { inquiryApi } from "../connection";
 
+// Which sections are open, kept for this browser only
+const OPEN_KEY = "inquiry.authorHome.open";
+
+function readOpen() {
+  try {
+    return JSON.parse(localStorage.getItem(OPEN_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
 /**
- * Every lesson with its publish state, in the order students see them:
- * reorder, hide or show, New and Copy. Emits open(lessonId).
+ * Every lesson with its publish state, in two sections: visible to students
+ * (in the order they see them, reorderable) and hidden. Hide or show, New,
+ * Copy, and each lesson's student progress. Emits open(lessonId).
  */
 export default {
   name: "AuthorHome",
   emits: ["open"],
   data() {
-    return { lessons: [], status: "loading", busy: false, message: null };
+    return {
+      lessons: [],
+      status: "loading",
+      busy: false,
+      message: null,
+      open: { visible: true, hidden: true, ...readOpen() },
+    };
+  },
+  computed: {
+    visible() {
+      return this.lessons.filter((l) => !l.hidden);
+    },
+    hidden() {
+      return this.lessons.filter((l) => l.hidden);
+    },
+    groups() {
+      return [
+        {
+          id: "visible",
+          title: "Visible to students",
+          lessons: this.visible,
+          hint: "Students see the published lessons here, in this order. Drafts appear once published.",
+          empty: "No visible lessons.",
+        },
+        {
+          id: "hidden",
+          title: "Hidden from students",
+          lessons: this.hidden,
+          hint: "Still published, but off the students' list. Students who started one keep their work. Shown again, a lesson returns to its place in the order.",
+          empty: "No hidden lessons.",
+        },
+      ];
+    },
   },
   mounted() {
     this.load();
@@ -136,11 +218,29 @@ export default {
         this.status = "error";
       }
     },
-    /** Moves a lesson one place and saves the whole order. */
+    isOpen(id) {
+      return this.open[id] !== false;
+    },
+    toggleGroup(id) {
+      this.open = { ...this.open, [id]: !this.isOpen(id) };
+      try {
+        localStorage.setItem(OPEN_KEY, JSON.stringify(this.open));
+      } catch (e) {
+        // not saved; it still works for this visit
+      }
+    },
+    progress(lessonId) {
+      this.$router.push({
+        name: "InquiryProgress",
+        query: lessonId ? { lessonId } : {},
+      });
+    },
+    /** Moves a visible lesson one place and saves the whole order (hidden ones after). */
     async move(i, dir) {
-      const lessons = [...this.lessons];
-      const [lesson] = lessons.splice(i, 1);
-      lessons.splice(i + dir, 0, lesson);
+      const visible = [...this.visible];
+      const [lesson] = visible.splice(i, 1);
+      visible.splice(i + dir, 0, lesson);
+      const lessons = [...visible, ...this.hidden];
       const before = this.lessons;
       this.lessons = lessons; // show it straight away
       this.busy = true;
@@ -293,6 +393,45 @@ export default {
 .list-hint {
   font-size: 14px;
   color: #5c5670;
+  margin: 4px 0 10px;
+}
+.head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.group {
+  margin-bottom: 18px;
+}
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 2px;
+  border: 0;
+  border-bottom: 2px solid #ddd8ea;
+  background: none;
+  color: #2e2645;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: left;
+}
+.chevron {
+  width: 1em;
+  color: #615195;
+}
+.count {
+  background: #e9e5f2;
+  color: #463a73;
+  border-radius: 10px;
+  padding: 0 8px;
+  font-size: 13px;
+}
+.empty {
+  font-size: 14px;
+  color: #5c5670;
+  font-style: italic;
 }
 .lesson-title {
   font-weight: 600;
@@ -317,10 +456,6 @@ export default {
 .badge-live {
   background: #e7f4ec;
   color: #1e6b3a;
-}
-.badge-hidden {
-  background: #ececf0;
-  color: #4a4658;
 }
 .badge-changed {
   background: #fdf1e3;

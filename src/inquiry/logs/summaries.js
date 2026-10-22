@@ -12,6 +12,7 @@ export const EVENT_TYPES = [
   "sim_error",
   "dialog_open",
   "graph_change",
+  "session_reset",
   "lesson_complete",
   "lesson_exit",
 ];
@@ -77,11 +78,12 @@ function answerText(value, block) {
     return short(items.join("; "));
   }
   if (value && typeof value.byHypothesis === "object") {
-    const tables = Object.entries(value.byHypothesis).map(
-      ([id, table]) =>
-        `${id}: compare ${table.compare || "?"}, ${
-          (table.trials || []).length
-        } trials`
+    const tables = Object.entries(value.byHypothesis).map(([id, entry]) =>
+      typeof entry === "string"
+        ? `${id}: ${quoted(entry)}` // a per-hypothesis text answer
+        : `${id}: compare ${entry.compare || "?"}, ${
+            (entry.trials || []).length
+          } trials`
     );
     return short(tables.join("; "));
   }
@@ -162,6 +164,10 @@ export function summarize(event, content) {
             .join(", ") || "nothing"
         }`
       );
+    case "session_reset":
+      return `reset by ${data.by || "?"}${
+        data.answered !== undefined ? ` · had ${data.answered} answers` : ""
+      }`;
     case "lesson_complete":
     case "lesson_exit":
       return "";

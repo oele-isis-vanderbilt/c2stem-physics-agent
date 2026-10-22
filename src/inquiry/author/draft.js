@@ -213,6 +213,7 @@ export function earlierAnswers(draft, blockId) {
   for (const { block } of blocksOf(draft)) {
     if (block.id === blockId) break;
     if (!block.key || !VALUE_BLOCKS.has(block.type)) continue;
+    if (block.hypothesesFrom) continue; // answered per hypothesis: not one text
     if (block.type === "fillInBlanks") {
       for (const blank of block.blanks || []) {
         answers.push({

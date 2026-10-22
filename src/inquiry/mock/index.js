@@ -42,6 +42,21 @@ const sessions = {
   "mock-2": newSession(LESSONS[2], 6, "completed", 48),
 };
 
+// Other students' sessions, for the Student progress page (they match the seeded events)
+const otherSessions = [
+  {
+    ...newSession(LESSONS[0], 4, "in_progress", 3),
+    id: "mock-seed-student1",
+    username: "student1",
+  },
+  {
+    ...newSession(LESSONS[0], 2, "in_progress", 2),
+    id: "mock-seed-student2",
+    username: "student2",
+  },
+];
+let resets = 0;
+
 const copy = (value) => JSON.parse(JSON.stringify(value));
 const wait = (value) =>
   new Promise((resolve) => setTimeout(() => resolve(copy(value)), 400));
@@ -343,8 +358,11 @@ export function createMockInquiryApi() {
       if (authoring[lessonId].hidden && !sessions[lessonId]) {
         return Promise.reject(httpError(404));
       }
-      sessions[lessonId] =
-        sessions[lessonId] || newSession(lesson, 0, "in_progress", 0);
+      if (!sessions[lessonId]) {
+        sessions[lessonId] = newSession(lesson, 0, "in_progress", 0);
+        // A reset session's id is gone for good, as in the service
+        if (resets) sessions[lessonId].id += `-${resets}`;
+      }
       return wait(sessions[lessonId]);
     },
 
@@ -359,6 +377,49 @@ export function createMockInquiryApi() {
       if (position) session.position = position;
       session.updatedAt = new Date().toISOString();
       return wait({ position: session.position, updatedAt: session.updatedAt });
+    },
+
+    sessions({ lessonId, username, status } = {}) {
+      const mine = Object.values(sessions).map((s) => ({
+        ...s,
+        username: "you",
+      }));
+      const rows = [...mine, ...otherSessions]
+        .filter(
+          (s) =>
+            (!lessonId || s.lessonId === lessonId) &&
+            (!username ||
+              s.username.toLowerCase().includes(username.toLowerCase())) &&
+            (!status || s.status === status)
+        )
+        .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
+        .map((s) => {
+          // Rows carry no answers or content, as in the service
+          const row = { ...s, answered: Object.keys(s.answers).length };
+          delete row.answers;
+          delete row.content;
+          return row;
+        });
+      return wait(rows);
+    },
+
+    resetSession(id) {
+      const key = Object.keys(sessions).find((k) => sessions[k].id === id);
+      const other = otherSessions.findIndex((s) => s.id === id);
+      const session = key ? sessions[key] : otherSessions[other];
+      if (!session) return Promise.reject(httpError(404));
+      if (key) delete sessions[key];
+      else otherSessions.splice(other, 1);
+      resets += 1;
+      storeEvent({
+        username: session.username || "you",
+        lessonId: session.lessonId,
+        sessionId: id,
+        type: "session_reset",
+        at: new Date().toISOString(),
+        data: { by: "you", status: session.status },
+      });
+      return wait(null);
     },
 
     completeSession(id) {
