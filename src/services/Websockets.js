@@ -57,6 +57,13 @@ export default {
           }
           return;
         }
+        // CoSMo started a conversation: let the open lesson view show the chat
+        if (data.type === "intervention") {
+          window.dispatchEvent(
+            new CustomEvent("cosmo-intervention", { detail: data })
+          );
+          return;
+        }
       } catch (e) {
         // Not a JSON message or not an ack, continue with normal handling
       }

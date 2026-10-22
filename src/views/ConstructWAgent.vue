@@ -212,6 +212,12 @@ export default {
         this.collapseInstance.toggle();
       }
     },
+    // CoSMo started a conversation (server "intervention" message): open the chat window
+    openChatForIntervention() {
+      if (this.collapseInstance) {
+        this.collapseInstance.show();
+      }
+    },
     saveProject() {
       this.emitter.emit("save-project", { status: true });
     },
@@ -433,6 +439,7 @@ export default {
     // Initialize collapse manually
     const collapseElement = document.getElementById("collapseWindow");
     this.collapseInstance = new Collapse(collapseElement, { toggle: false });
+    window.addEventListener("cosmo-intervention", this.openChatForIntervention);
 
     // Wait for iframe NetsBlox IDE to fully initialize before wiring listeners.
     // openProject fires during iframe load (before this timeout), so by 8 seconds
@@ -506,6 +513,10 @@ export default {
     console.log("[Auto-save] Auto-save enabled (every 2 minutes)");
   },
   beforeUnmount() {
+    window.removeEventListener(
+      "cosmo-intervention",
+      this.openChatForIntervention
+    );
     // Clear the auto-save interval when component is destroyed
     if (this.autoSaveInterval) {
       clearInterval(this.autoSaveInterval);
