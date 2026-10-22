@@ -66,7 +66,7 @@
           </button>
           <div v-for="o in outputs" :key="o.key">
             {{ o.label }}:
-            <strong>{{ format(latest && latest.outputs[o.key]) }}</strong>
+            <strong>{{ format(latest && latest.outputs[o.key], o) }}</strong>
             {{ latest && o.unit ? o.unit : "" }}
           </div>
         </div>
@@ -128,10 +128,10 @@
               <tr v-for="(r, i) in runs" :key="i">
                 <th scope="row">{{ i + 1 }}</th>
                 <td v-for="v in inputs" :key="v.key">
-                  {{ format(r.inputs[v.key]) }}
+                  {{ format(r.inputs[v.key], v) }}
                 </td>
                 <td v-for="o in outputs" :key="o.key">
-                  {{ format(r.outputs[o.key]) }}
+                  {{ format(r.outputs[o.key], o) }}
                 </td>
               </tr>
             </tbody>
@@ -157,6 +157,20 @@ import { fillRefs, minRunsOf, runsOf } from "../lesson";
 import { NetsBloxSim, projectUrl } from "../sim/netsblox";
 import RunGraph from "../sim/RunGraph.vue";
 import blockProps from "./blockProps";
+
+/** Decimals a slider's step, min and max need: 0.001 → 3. At least 2, at most 6. */
+function stepDecimals(v) {
+  const decimals = (x) => {
+    if (typeof x !== "number" || !Number.isFinite(x)) return 0;
+    const [mantissa, exponent] = x.toExponential().split("e");
+    const places = (mantissa.split(".")[1] || "").length - Number(exponent);
+    return Math.max(places, 0);
+  };
+  return Math.min(
+    Math.max(2, decimals(v.step), decimals(v.min), decimals(v.max)),
+    6
+  );
+}
 
 /**
  * Sliders, the embedded physics project, readouts of the latest run, and
@@ -332,11 +346,12 @@ export default {
     heading(v) {
       return v.unit ? `${v.label} (${v.unit})` : v.label;
     },
-    format(n) {
+    /** A value for display: a slider setting as precise as its step, results to 2 decimals. */
+    format(n, v) {
       if (n === undefined || n === null || n === "") return "—";
-      return typeof n === "number"
-        ? n.toLocaleString(undefined, { maximumFractionDigits: 2 })
-        : String(n);
+      if (typeof n !== "number") return String(n);
+      const digits = v && v.role === "input" ? stepDecimals(v) : 2;
+      return n.toLocaleString(undefined, { maximumFractionDigits: digits });
     },
   },
 };

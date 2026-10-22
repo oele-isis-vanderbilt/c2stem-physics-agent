@@ -39,7 +39,7 @@ function blockOf(content, blockId) {
 
 function number(value) {
   return typeof value === "number"
-    ? String(Math.round(value * 1000) / 1000)
+    ? String(Math.round(value * 1e6) / 1e6) // keeps settings like 0.0225
     : String(value);
 }
 
