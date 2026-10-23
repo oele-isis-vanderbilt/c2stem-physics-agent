@@ -20,6 +20,7 @@ import c2stemTruckLogo from "@/assets/c2stem_truck.png";
 // import droneLogo from "@/assets/drone.png";
 // import farmTruckLogo from "@/assets/farm.png";
 import inquiryLogo from "@/assets/a-magnifier-graph.png";
+import pushcartLogo from "@/assets/c2stem_pushcart.png";
 
 export default {
   name: "HomeView",
@@ -39,16 +40,21 @@ export default {
   },
   data() {
     return {
-      names: ["Truck: Problem Solving", "Inquiry"],
+      names: [
+        "Truck: Problem Solving",
+        "Inquiry",
+        "Push cart: Problem Solving",
+      ],
       description: [
         "Complete your computational model lessons",
         "Scientific inquiry lessons",
+        "Complete your computational model lessons",
       ],
-      route: ["ConstructAgent", "InquiryHome"],
+      route: ["ConstructAgent", "InquiryHome", "ConstructAgent"],
       // lessonId picks the lesson's scoring (services/scoring)
-      routeQueries: [{ lessonId: "truck" }, {}],
+      routeQueries: [{ lessonId: "truck" }, {}, { lessonId: "lesson1" }],
       // route: ["ConstructAgent", "ConstructAgent", "ConstructAgent"],
-      logo: [c2stemTruckLogo, inquiryLogo],
+      logo: [c2stemTruckLogo, inquiryLogo, pushcartLogo],
       // logo: [c2stemTruckLogo, droneLogo, droneLogo],
       routeParams: [
         {
@@ -57,11 +63,11 @@ export default {
           source: "https://physics.c2stem.org",
         },
         {},
-        // {
-        //   userID: "oele",
-        //   projectName: "Pushcart",
-        //   source: "https://physics.c2stem.org",
-        // },
+        {
+          userID: "oele",
+          projectName: "Pushcart",
+          source: "https://physics.c2stem.org",
+        },
         // {
         //   userID: "oele",
         //   projectName: "Truck_Model_full_empty_HIDDEN_BLOCKS",
