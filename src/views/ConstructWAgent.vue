@@ -7,6 +7,7 @@
       :username="userID"
       :projectname="projectLessonName"
       :embed="false"
+      :inert="focusSecondsLeft > 0"
     ></iframe-loader>
     <button
       type="button"
@@ -17,7 +18,19 @@
       <!--      <i class="bi bi-chat-left-fill fs-2"></i>-->
       <img src="../assets/peer_agent_image.png" alt="" width="60" height="60" />
     </button>
-    <div class="collapse bottom-0 end-0" id="collapseWindow">
+    <!-- Holds the workspace while CoSMo's message is new; the chat window stays above it and usable -->
+    <div v-if="focusSecondsLeft > 0" class="focus-overlay">
+      <div class="focus-banner">
+        CoSMo has a message for you. Take a moment to read it ({{
+          focusSecondsLeft
+        }})
+      </div>
+    </div>
+    <div
+      class="collapse bottom-0 end-0"
+      :class="{ 'focus-raised': focusSecondsLeft > 0 }"
+      id="collapseWindow"
+    >
       <div class="card card-body mb-5">
         <iframe
           v-if="getChatURL.length !== 0"
@@ -77,6 +90,8 @@ export default {
       pendingNavigation: null,
       socket: null,
       autoSaveInterval: null,
+      focusSecondsLeft: 0,
+      focusTimer: null,
     };
   },
   computed: {
@@ -222,6 +237,31 @@ export default {
       if (chat && chat.contentWindow) {
         chat.contentWindow.postMessage({ type: "cosmo-intervention" }, "*");
       }
+    },
+    // CoSMo's message is in the chat (server "intervention-focus" message): hold the workspace for a few seconds,
+    // dimmed with the chat window on top and still usable, so the student reads the message. A second message
+    // restarts the countdown.
+    focusOnIntervention(event) {
+      const seconds = Number(event.detail && event.detail.seconds) || 10;
+      if (this.collapseInstance) {
+        this.collapseInstance.show();
+      }
+      clearInterval(this.focusTimer);
+      this.focusSecondsLeft = seconds;
+      this.focusTimer = setInterval(() => {
+        this.focusSecondsLeft -= 1;
+        if (this.focusSecondsLeft <= 0) {
+          clearInterval(this.focusTimer);
+          this.focusTimer = null;
+        }
+      }, 1000);
+      // Move keyboard focus to the chat so the student can reply
+      this.$nextTick(() => {
+        const chat = document.getElementById("chat-iframe");
+        if (chat) {
+          chat.focus();
+        }
+      });
     },
     saveProject() {
       this.emitter.emit("save-project", { status: true });
@@ -445,6 +485,10 @@ export default {
     const collapseElement = document.getElementById("collapseWindow");
     this.collapseInstance = new Collapse(collapseElement, { toggle: false });
     window.addEventListener("cosmo-intervention", this.openChatForIntervention);
+    window.addEventListener(
+      "cosmo-intervention-focus",
+      this.focusOnIntervention
+    );
 
     // Wait for iframe NetsBlox IDE to fully initialize before wiring listeners.
     // openProject fires during iframe load (before this timeout), so by 8 seconds
@@ -522,6 +566,11 @@ export default {
       "cosmo-intervention",
       this.openChatForIntervention
     );
+    window.removeEventListener(
+      "cosmo-intervention-focus",
+      this.focusOnIntervention
+    );
+    clearInterval(this.focusTimer);
     // Clear the auto-save interval when component is destroyed
     if (this.autoSaveInterval) {
       clearInterval(this.autoSaveInterval);
@@ -572,6 +621,28 @@ strong {
 }
 .card {
   height: 100%;
+}
+.focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1040;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+}
+.focus-banner {
+  margin-top: 24px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: #8270ba;
+  color: white;
+  font-size: large;
+}
+#collapseWindow.focus-raised {
+  z-index: 1050;
+  box-shadow: 0 0 0 4px #8270ba;
 }
 .chat-btn {
   position: absolute;

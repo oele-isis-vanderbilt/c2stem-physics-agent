@@ -57,10 +57,14 @@ export default {
           }
           return;
         }
-        // CoSMo started a conversation: let the open lesson view show the chat
-        if (data.type === "intervention") {
+        // CoSMo started a conversation ("intervention"), or its message is now in the chat ("intervention-focus"):
+        // let the open lesson view react
+        if (
+          data.type === "intervention" ||
+          data.type === "intervention-focus"
+        ) {
           window.dispatchEvent(
-            new CustomEvent("cosmo-intervention", { detail: data })
+            new CustomEvent(`cosmo-${data.type}`, { detail: data })
           );
           return;
         }
