@@ -11,6 +11,13 @@ export default class ActionScorer {
     return blocks.filter((block) => block.includes(searchString));
   }
 
+  // The value in the n-th "(...)" of a block line, e.g. "[set x_velocity to (0)]" -> "0"; null when there is none,
+  // e.g. "[set x_acceleration to 4]" or an empty set block
+  valueInParens(line, n = 1) {
+    const part = line ? line.split("(")[n] : undefined;
+    return part === undefined ? null : part.split(")")[0];
+  }
+
   getRootBlock(ast, searchString) {
     const sections = ast.split("\n\n");
     let greenFlagSection = "";
@@ -379,14 +386,14 @@ export default class ActionScorer {
 
   updateScore(ast) {
     let scoringRubric = this.store.getters.getScore;
-    Object.keys(scoringRubric).forEach((key) => {
+    const scoreItem = (key) => {
       switch (key) {
         case "initialize_position": {
           let block = this.getMatchingBlock(ast, "set x_position to");
           let value;
           let parent = this.getRootBlock(ast, "set x_position to");
           if (block && parent === "green flag clicked") {
-            value = block[0].split("(")[1].split(")")[0];
+            value = this.valueInParens(block[0]);
             if (value === "-60") {
               scoringRubric.initialize_position = 1;
             } else {
@@ -402,7 +409,7 @@ export default class ActionScorer {
           let value;
           let parent = this.getRootBlock(ast, "set x_velocity to");
           if (block && parent === "green flag clicked") {
-            value = block[0].split("(")[1].split(")")[0];
+            value = this.valueInParens(block[0]);
             if (value === "0") {
               scoringRubric.initialize_velocity = 1;
             } else {
@@ -418,7 +425,7 @@ export default class ActionScorer {
           let value;
           let parent = this.getRootBlock(ast, "set x_acceleration to");
           if (block && parent === "green flag clicked") {
-            value = block[0].split("(")[1].split(")")[0];
+            value = this.valueInParens(block[0]);
             if (["3", "4"].includes(value)) {
               scoringRubric.initialize_acceleration = 1;
             } else {
@@ -434,7 +441,7 @@ export default class ActionScorer {
           let value;
           let parent = this.getRootBlock(ast, "set DeltaT to");
           if (block && parent === "green flag clicked") {
-            value = block[0].split("(")[1].split(")")[0];
+            value = this.valueInParens(block[0]);
             if (["0", "0.1"].includes(value)) {
               scoringRubric.initialize_deltaT = 1;
             } else {
@@ -446,12 +453,16 @@ export default class ActionScorer {
           break;
         }
         case "set_speed_limit": {
-          let block = this.getMatchingBlock(ast, "SpeedLimit");
-          let value;
-          let parent = this.getRootBlock(ast, "SpeedLimit");
-          if (block && parent === "green flag clicked") {
-            value = block[0].split("(")[2].split(")")[0];
-            if (value === "15") {
+          // Only the set block, "[set (SpeedLimit) to (15)]": other lines with SpeedLimit (the release condition, a loose
+          // SpeedLimit variable block) have no value to read
+          let block = this.getMatchingBlock(ast, "(SpeedLimit) to");
+          let parent = this.getRootBlock(ast, "(SpeedLimit) to");
+          const match =
+            block.length > 0
+              ? block[0].match(/\(SpeedLimit\) to \(([^)]*)\)/)
+              : null;
+          if (match && parent === "green flag clicked") {
+            if (match[1] === "15") {
               scoringRubric.set_speed_limit = 1;
             } else {
               scoringRubric.set_speed_limit = 0;
@@ -540,7 +551,7 @@ export default class ActionScorer {
               scoringRubric.accurate_comparison_position_velocity_time === 1 &&
               scoringRubric.accurate_comparison_velocity_acceleration_time === 1
             ) {
-              let value = block.split("(")[1].split(")")[0];
+              let value = this.valueInParens(block);
               if (parseInt(value) > 0) {
                 scoringRubric.code_accuracy_to_accelerate_truck = 1;
               } else {
@@ -2160,6 +2171,16 @@ export default class ActionScorer {
         //   scoringRubric.overall_mastery = total;
         //   break;
         // }
+      }
+    };
+
+    // A program shape one rubric item does not expect scores that item 0 instead of stopping the items after it
+    Object.keys(scoringRubric).forEach((key) => {
+      try {
+        scoreItem(key);
+      } catch (error) {
+        console.error(`[Scoring] Could not score "${key}":`, error);
+        scoringRubric[key] = 0;
       }
     });
 

@@ -21,6 +21,15 @@ const vuexLocal = new VuexPersistence({
     agentURL: state.agentURL,
     // Explicitly exclude socket - it will be null after page reload
   }),
+  // Saving runs after every mutation; a state that can't be saved must not
+  // make the mutation (and whatever dispatched it) throw
+  saveState: (key, state, storage) => {
+    try {
+      storage.setItem(key, JSON.stringify(state));
+    } catch (error) {
+      console.error("[Store] Could not save state to sessionStorage", error);
+    }
+  },
 });
 
 const store = createStore({

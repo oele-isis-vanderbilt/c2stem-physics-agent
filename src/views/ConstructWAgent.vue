@@ -524,25 +524,32 @@ export default {
           astController.actionListener(action, segmentparser);
           this.sendActionGroup(action);
           this.$nextTick(() => {
-            // for one v1 and v2 versions of block parser file with multiple headers
-            // let state = blockParser.generate(this.$store);
-            let state = this.generateState();
-            scorer.updateScore(
-              state,
-              scoring.visibleRoots(this.lesson, this.$store)
-            );
-            console.log(
-              `[Score] ${this.lesson.id} after ${action.type}`,
-              JSON.stringify(this.getScore, null, 2)
-            );
-            console.log(
-              `[Segment] ${action.type} ${
-                this.$store.getters.getCurrentActionName || "(no block)"
-              } -> ${this.getSegment}`
-            );
-            this.sendState({ type: "state", data: state });
-            this.sendScore({ type: "score", data: this.getScore });
-            this.sendSegment({ type: "segment", data: this.getSegment });
+            try {
+              // for one v1 and v2 versions of block parser file with multiple headers
+              // let state = blockParser.generate(this.$store);
+              let state = this.generateState();
+              scorer.updateScore(
+                state,
+                scoring.visibleRoots(this.lesson, this.$store)
+              );
+              console.log(
+                `[Score] ${this.lesson.id} after ${action.type}`,
+                JSON.stringify(this.getScore, null, 2)
+              );
+              console.log(
+                `[Segment] ${action.type} ${
+                  this.$store.getters.getCurrentActionName || "(no block)"
+                } -> ${this.getSegment}`
+              );
+              this.sendState({ type: "state", data: state });
+              this.sendScore({ type: "score", data: this.getScore });
+              this.sendSegment({ type: "segment", data: this.getSegment });
+            } catch (error) {
+              console.error(
+                `[Action] Failed to update state after ${action.type}`,
+                error
+              );
+            }
           });
         }
       });

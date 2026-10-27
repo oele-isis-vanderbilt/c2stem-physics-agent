@@ -79,51 +79,6 @@ export default class ASTController {
     if (node.next.next) ret.push(node.next.next);
     return [...ret, ...node.next.contained];
   };
-  findParentId(data, searchId) {
-    function search(obj, parentId = null) {
-      // If current object has the search ID
-      if (obj && obj.id === searchId) {
-        return parentId === null ? obj.id : parentId;
-      }
-
-      // Only update parentId if current object has an ID
-      const currentParentId = obj && obj.id ? obj.id : parentId;
-
-      // Search in 'next' property
-      if (obj && obj.next) {
-        const result = search(obj.next, currentParentId);
-        if (result !== null) return result;
-      }
-
-      // Search in 'contained' array
-      if (obj && obj.contained && Array.isArray(obj.contained)) {
-        for (const item of obj.contained) {
-          const result = search(item, currentParentId);
-          if (result !== null) return result;
-        }
-      }
-
-      // Search in 'underlay' array
-      if (obj && obj.underlay && Array.isArray(obj.underlay)) {
-        for (const item of obj.underlay) {
-          const result = search(item, currentParentId);
-          if (result !== null) return result;
-        }
-      }
-
-      return null;
-    }
-
-    if (Array.isArray(data)) {
-      for (const root of data) {
-        const result = search(root);
-        if (result !== null) return result;
-      }
-      return null;
-    }
-
-    return search(data);
-  }
 
   actionListener = (action, segmentparser = null) => {
     try {
@@ -317,6 +272,55 @@ export default class ASTController {
         }
       };
 
+      // Find where the model has a block: "parentId" if it's the parent's next block,
+      // "parentId/i" if it's in the parent's contained slot i, or null if it has no parent.
+      const findParentRef = (block) => {
+        for (const key of Object.keys(this.blocks)) {
+          const parent = this.blocks[key];
+          if (!parent || !parent.next || parent === block) continue;
+          if (parent.next.next === block) return key;
+          const contained = parent.next.contained || [];
+          const i = contained.indexOf(block);
+          if (i !== -1) return `${key}/${i}`;
+        }
+        return null;
+      };
+
+      // Take a block (and the blocks under it) out of wherever the model has it, and root it.
+      // NetsBlox reports where a moved block came from, but that can be stale, so
+      // we use the model instead; otherwise the block stays linked to its old parent
+      // and linking it again can make a loop in the tree.
+      const detachBlock = (id) => {
+        const block = this.blocks[id];
+        if (!block || !block.next) return;
+        let ref;
+        let guard = 0;
+        while ((ref = findParentRef(block)) && guard++ < 100) {
+          rootChildren(ref);
+        }
+        // rootChildren roots the block once per parent it had; keep a single root
+        for (let i = this.treeRoots.length - 1; i >= 0; --i) {
+          if (this.treeRoots[i] === block) this.treeRoots.splice(i, 1);
+        }
+        this.treeRoots.push(block);
+      };
+
+      // Is the block with this id the given block, or anywhere under or inside it?
+      const stackContains = (block, id) => {
+        const seen = new Set();
+        const search = (node) => {
+          if (!node || seen.has(node)) return false;
+          seen.add(node);
+          if (node.id === id) return true;
+          if (!node.next) return false;
+          return (
+            search(node.next.next) ||
+            (node.next.contained || []).some((child) => search(child))
+          );
+        };
+        return search(block);
+      };
+
       let id = action.args[0];
       let actionRep = {
         // Is this a valid action (not a duplicate or unsupported action)?
@@ -383,15 +387,27 @@ export default class ASTController {
             } else {
               actionRep.group = "ADJUST";
             }
+            detachBlock(id);
           }
 
           actionRep.block = id;
 
-          if (typeof action.args[1] == "string") {
-            if (action.args[3] && typeof action.args[3][1] == "string") {
-              rootChildren(action.args[3][1]);
-            }
+          // Never link a block into its own stack: that makes a loop in the tree
+          const target =
+            typeof action.args[1] == "string"
+              ? action.args[1]
+              : action.args[1] && action.args[1].element;
+          if (target && stackContains(this.blocks[id], target.split("/")[0])) {
+            console.error(
+              "ASTController: moveBlock target is inside the moved stack",
+              id,
+              target
+            );
+            actionRep.valid = false;
+            break;
+          }
 
+          if (typeof action.args[1] == "string") {
             // If the block is being inserted into a block's condition
             // (e.g. variable into if statement condition), this branch is taken.
             let t = action.args[1].split("/");
@@ -469,6 +485,8 @@ export default class ASTController {
               break;
             }
 
+            detachBlock(action.args[1].element);
+
             if (action.args[4] && typeof action.args[4][1] == "object") {
               // If there's a block above the one being inserted,
               // make this its next block.
@@ -487,6 +505,7 @@ export default class ASTController {
               this.blocks[parentElement].next.next = this.blocks[id];
               // Since there's a block above, this isn't a root block, so unroot.
               unrootBlock(id);
+              unrootBlock(action.args[1].element);
             } else {
               // Otherwise, we're wrapping around a root block, so unroot it (this block is now the root).
               unrootBlock(action.args[1].element);
@@ -500,15 +519,6 @@ export default class ASTController {
               this.blocks[action.args[1].element]
             );
           } else {
-            // If this block came from the "contained" of another block
-            // (e.g. if it used to be in the body of an if statement),
-            // root it to get it out of where it came from.
-            if (action.args[3] && typeof action.args[3][1] == "object") {
-              if (action.args[3][1].element) {
-                rootChildren(action.args[3][1].element);
-              }
-            }
-
             // You can connect multiple blocks at the same time (a stack of blocks).
             // The API will give the first block in the stack, but in order to do
             // an insertion at the bottom, we need the block at the bottom
@@ -522,7 +532,11 @@ export default class ASTController {
               actionRep.valid = false;
               break;
             }
-            while (block.next.next) block = block.next.next;
+            const seen = new Set([block]);
+            while (block.next.next && !seen.has(block.next.next)) {
+              block = block.next.next;
+              seen.add(block);
+            }
 
             // Insertion!
             if (!action.args[1] || !action.args[1].loc) {
@@ -601,6 +615,7 @@ export default class ASTController {
                 break;
               }
 
+              detachBlock(action.args[1].element);
               // Block below this block is our next block
               block.next.next = this.blocks[action.args[1].element];
               // You can only insert on top of blocks that are roots,
@@ -767,23 +782,17 @@ export default class ASTController {
           actionRep.action = "modify";
           actionRep.group = "ADJUST";
 
-          if (typeof action.args[3][1] == "object") {
-            // If the block is a normal block, this branch is taken.
-
-            // Root the child, based on its parent.
-            rootChildren(action.args[3][1].element);
-          } else if (typeof action.args[3][1] == "string") {
-            // If the block is part of a condition statement of another block, this branch is taken.
-
-            // Root the child, based on its parent and its index (in the string, separated by a slash).
-            rootChildren(action.args[3][1]);
+          const origin = action.args[3] && action.args[3][1];
+          if (
+            typeof origin != "object" &&
+            typeof origin != "string" &&
+            this.treeRoots.some((root) => root && root.id === action.args[0])
+          ) {
+            // A root block moved around the canvas, with no connection changes.
+            actionRep.valid = false;
           } else {
-            if (this.treeRoots.some((root) => root.id === action.args[0])) {
-              actionRep.valid = false;
-            } else {
-              let parent = this.findParentId(this.treeRoots, action.args[0]);
-              rootChildren(parent);
-            }
+            // The block was taken off another block (its next block, or a slot of it).
+            detachBlock(action.args[0]);
           }
 
           break;
