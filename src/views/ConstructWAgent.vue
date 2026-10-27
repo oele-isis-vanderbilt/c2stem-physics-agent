@@ -18,6 +18,11 @@
       <!--      <i class="bi bi-chat-left-fill fs-2"></i>-->
       <img src="../assets/peer_agent_image.png" alt="" width="60" height="60" />
     </button>
+    <!-- The server has no login for this student (e.g. after a server restart): CoSMo stops until they log in again -->
+    <div v-if="sessionEnded" class="session-ended" role="alert">
+      Your session with CoSMo has ended. Please log out and log in again to keep
+      working with CoSMo.
+    </div>
     <!-- Holds the workspace while CoSMo's message is new; the chat window stays above it and usable -->
     <div v-if="focusSecondsLeft > 0" class="focus-overlay">
       <div class="focus-banner">
@@ -92,6 +97,7 @@ export default {
       autoSaveInterval: null,
       focusSecondsLeft: 0,
       focusTimer: null,
+      sessionEnded: false,
     };
   },
   computed: {
@@ -262,6 +268,11 @@ export default {
           chat.focus();
         }
       });
+    },
+    // The server closed the connection because it has no login for this student ("cosmo-session-ended", sent by
+    // Websockets.js on close code 1008): show the banner until the student logs in again
+    onSessionEnded() {
+      this.sessionEnded = true;
     },
     saveProject() {
       this.emitter.emit("save-project", { status: true });
@@ -489,6 +500,7 @@ export default {
       "cosmo-intervention-focus",
       this.focusOnIntervention
     );
+    window.addEventListener("cosmo-session-ended", this.onSessionEnded);
 
     // Wait for iframe NetsBlox IDE to fully initialize before wiring listeners.
     // openProject fires during iframe load (before this timeout), so by 8 seconds
@@ -570,6 +582,7 @@ export default {
       "cosmo-intervention-focus",
       this.focusOnIntervention
     );
+    window.removeEventListener("cosmo-session-ended", this.onSessionEnded);
     clearInterval(this.focusTimer);
     // Clear the auto-save interval when component is destroyed
     if (this.autoSaveInterval) {
@@ -621,6 +634,17 @@ strong {
 }
 .card {
   height: 100%;
+}
+.session-ended {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1060;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: #b02a37;
+  color: white;
 }
 .focus-overlay {
   position: fixed;

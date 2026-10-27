@@ -12,9 +12,11 @@ export default {
   onCloseCallback: null,
   onReconnectCallback: null,
   reconnectTimer: null,
+  stopped: false, // No reconnecting after a logout or once the server ends the session
   connectionState: "disconnected", // disconnected, connecting, connected, reconnecting
 
   connect(username, onMessage, onClose, onReconnect) {
+    this.stopped = false;
     this.username = username;
     this.onMessageCallback = onMessage;
     this.onCloseCallback = onClose;
@@ -30,18 +32,23 @@ export default {
     this.socket.onopen = () => {
       console.log("Connected to the WebSocket server for", username);
       this.connectionState = "connected";
-      this.reconnectAttempts = 0;
-      this.reconnectDelay = 1000;
+      // The reconnect count resets on the server's first message, not here: the server accepts the socket before it
+      // checks the login, so an open socket can still be rejected
+      const reconnected = this.reconnectAttempts > 0;
 
       // Send any queued messages
       this.flushMessageQueue();
 
-      if (this.reconnectAttempts > 0 && this.onReconnectCallback) {
+      if (reconnected && this.onReconnectCallback) {
         this.onReconnectCallback();
       }
     };
 
     this.socket.onmessage = (event) => {
+      // The server only sends messages once it has accepted the login
+      this.reconnectAttempts = 0;
+      this.reconnectDelay = 1000;
+
       // Check if this is an acknowledgment message
       try {
         const data = JSON.parse(event.data);
@@ -94,6 +101,18 @@ export default {
         this.onCloseCallback(event);
       }
 
+      // 1008: the server has no login for this user (e.g. after a server restart). Reconnecting cannot help, so stop
+      // and let the open lesson view ask the student to log in again
+      if (event.code === 1008) {
+        this.stopped = true;
+        window.dispatchEvent(
+          new CustomEvent("cosmo-session-ended", {
+            detail: { reason: event.reason },
+          })
+        );
+        return;
+      }
+
       // Attempt to reconnect
       this.attemptReconnect();
     };
@@ -102,6 +121,9 @@ export default {
   },
 
   attemptReconnect() {
+    if (this.stopped) {
+      return;
+    }
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.error(
         "Max reconnection attempts reached. Please refresh the page."
@@ -241,7 +263,8 @@ export default {
     });
     this.pendingMessages.clear();
 
-    this.reconnectAttempts = this.maxReconnectAttempts; // Prevent auto-reconnect
+    this.stopped = true; // Prevent auto-reconnect
+    this.reconnectAttempts = 0;
     if (this.socket) {
       this.socket.close();
       this.socket = null;
