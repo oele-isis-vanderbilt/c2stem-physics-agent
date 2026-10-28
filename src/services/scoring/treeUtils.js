@@ -152,6 +152,41 @@ function comparison(node) {
   return swapped ? { op, left: b, right: a } : { op, left: a, right: b };
 }
 
+// Value of an arithmetic expression, or NaN when it holds anything else.
+// env: { variables: { normalizedName: number }, reporters: { selector: number } }
+const OPERATORS = {
+  reportSum: (a, b) => a + b,
+  reportDifference: (a, b) => a - b,
+  reportProduct: (a, b) => a * b,
+  reportQuotient: (a, b) => a / b,
+  reportPower: (a, b) => Math.pow(a, b),
+};
+const MONADIC = { neg: (a) => -a, abs: Math.abs, sqrt: Math.sqrt };
+
+function evaluate(node, env = {}) {
+  if (!isBlock(node)) {
+    const value = numberValue(node);
+    return value === null ? NaN : value;
+  }
+  const variable = variableName(node);
+  if (variable !== null) {
+    const value = (env.variables || {})[variable];
+    return value === undefined ? NaN : value;
+  }
+  if (OPERATORS[node.name]) {
+    return OPERATORS[node.name](
+      evaluate(input(node, 0), env),
+      evaluate(input(node, 1), env)
+    );
+  }
+  if (node.name === "reportMonadic") {
+    const fn = MONADIC[literalText(input(node, 0))];
+    return fn ? fn(evaluate(input(node, 1), env)) : NaN;
+  }
+  const value = (env.reporters || {})[node.name];
+  return value === undefined ? NaN : value;
+}
+
 // Expression patterns: each returns a function (node) => boolean
 const pattern = {
   number: (value) => (node) => numberValue(node) === value,
@@ -194,5 +229,6 @@ export default {
   variableName,
   boolValue,
   comparison,
+  evaluate,
   pattern,
 };

@@ -1,0 +1,1528 @@
+{
+  "name": "springmass-expert-v3",
+  "note": "Lesson 2 expert built from scratch: the Springmass starter history plus the expert build, block by block (Crate only)",
+  "source": {
+    "user": "oele",
+    "project": "Springmass"
+  },
+  "parser": "v3",
+  "savedAt": "2026-10-28T21:57:41.895Z",
+  "spriteFilter": [
+    "Crate"
+  ],
+  "sprites": {
+    "item_-1": "Crate"
+  },
+  "treeRoots": [
+    {
+      "id": "item_1000",
+      "name": "receiveGo",
+      "ownerId": "item_-1",
+      "modifiedBefore": false,
+      "connectedBefore": false,
+      "next": {
+        "next": {
+          "id": "item_1001",
+          "name": "doSetVar",
+          "ownerId": "_netsblox1800000000000",
+          "modifiedBefore": false,
+          "connectedBefore": true,
+          "next": {
+            "next": {
+              "id": "item_1002",
+              "name": "setMass",
+              "ownerId": "_netsblox1800000000000",
+              "modifiedBefore": false,
+              "connectedBefore": true,
+              "next": {
+                "next": {
+                  "id": "item_1003",
+                  "name": "doSetVar",
+                  "ownerId": "_netsblox1800000000000",
+                  "modifiedBefore": false,
+                  "connectedBefore": true,
+                  "next": {
+                    "next": {
+                      "id": "item_1004",
+                      "name": "setDeltaTime",
+                      "ownerId": "_netsblox1800000000000",
+                      "modifiedBefore": false,
+                      "connectedBefore": true,
+                      "next": {
+                        "next": {
+                          "id": "item_1005",
+                          "name": "setPhysicsXPosition",
+                          "ownerId": "_netsblox1800000000000",
+                          "modifiedBefore": false,
+                          "connectedBefore": true,
+                          "next": {
+                            "next": {
+                              "id": "item_1007",
+                              "name": "setXVelocity",
+                              "ownerId": "_netsblox1800000000000",
+                              "modifiedBefore": false,
+                              "connectedBefore": true,
+                              "next": {
+                                "next": {
+                                  "id": "item_1008",
+                                  "name": "doSetVar",
+                                  "ownerId": "_netsblox1800000000000",
+                                  "modifiedBefore": false,
+                                  "connectedBefore": true,
+                                  "next": {
+                                    "next": {
+                                      "id": "item_1009",
+                                      "name": "setXNetForce",
+                                      "ownerId": "_netsblox1800000000000",
+                                      "modifiedBefore": false,
+                                      "connectedBefore": true,
+                                      "next": {
+                                        "next": {
+                                          "id": "item_1014",
+                                          "name": "setXAcceleration",
+                                          "ownerId": "_netsblox1800000000000",
+                                          "modifiedBefore": false,
+                                          "connectedBefore": true,
+                                          "next": {
+                                            "next": {
+                                              "id": "item_1018",
+                                              "name": "doSetVar",
+                                              "ownerId": "_netsblox1800000000000",
+                                              "modifiedBefore": false,
+                                              "connectedBefore": true,
+                                              "next": {
+                                                "next": {
+                                                  "id": "item_1024",
+                                                  "name": "doSetVar",
+                                                  "ownerId": "_netsblox1800000000000",
+                                                  "modifiedBefore": false,
+                                                  "connectedBefore": true,
+                                                  "next": {
+                                                    "next": {
+                                                      "id": "item_1030",
+                                                      "name": "startSimulation",
+                                                      "ownerId": "_netsblox1800000000000",
+                                                      "modifiedBefore": false,
+                                                      "connectedBefore": true,
+                                                      "next": {
+                                                        "contained": [],
+                                                        "underlay": []
+                                                      }
+                                                    },
+                                                    "contained": [
+                                                      {
+                                                        "name": "kinetic energy",
+                                                        "ownerId": "",
+                                                        "modifiedBefore": true,
+                                                        "connectedBefore": false,
+                                                        "next": {
+                                                          "contained": [],
+                                                          "underlay": []
+                                                        }
+                                                      },
+                                                      {
+                                                        "id": "item_1025",
+                                                        "name": "reportQuotient",
+                                                        "ownerId": "_netsblox1800000000000",
+                                                        "modifiedBefore": false,
+                                                        "connectedBefore": true,
+                                                        "next": {
+                                                          "contained": [
+                                                            {
+                                                              "id": "item_1026",
+                                                              "name": "reportProduct",
+                                                              "ownerId": "_netsblox1800000000000",
+                                                              "modifiedBefore": false,
+                                                              "connectedBefore": true,
+                                                              "next": {
+                                                                "contained": [
+                                                                  {
+                                                                    "id": "item_1027",
+                                                                    "name": "mass",
+                                                                    "ownerId": "_netsblox1800000000000",
+                                                                    "modifiedBefore": false,
+                                                                    "connectedBefore": true,
+                                                                    "next": {
+                                                                      "contained": [],
+                                                                      "underlay": []
+                                                                    }
+                                                                  },
+                                                                  {
+                                                                    "id": "item_1028",
+                                                                    "name": "reportPower",
+                                                                    "ownerId": "_netsblox1800000000000",
+                                                                    "modifiedBefore": false,
+                                                                    "connectedBefore": true,
+                                                                    "next": {
+                                                                      "contained": [
+                                                                        {
+                                                                          "id": "item_1029",
+                                                                          "name": "xVelocity",
+                                                                          "ownerId": "_netsblox1800000000000",
+                                                                          "modifiedBefore": false,
+                                                                          "connectedBefore": true,
+                                                                          "next": {
+                                                                            "contained": [],
+                                                                            "underlay": []
+                                                                          }
+                                                                        },
+                                                                        {
+                                                                          "name": "2",
+                                                                          "ownerId": "",
+                                                                          "modifiedBefore": true,
+                                                                          "connectedBefore": false,
+                                                                          "next": {
+                                                                            "contained": [],
+                                                                            "underlay": []
+                                                                          }
+                                                                        }
+                                                                      ],
+                                                                      "underlay": [
+                                                                        {
+                                                                          "name": "",
+                                                                          "ownerId": "",
+                                                                          "modifiedBefore": false,
+                                                                          "connectedBefore": false,
+                                                                          "next": {
+                                                                            "contained": [],
+                                                                            "underlay": []
+                                                                          }
+                                                                        }
+                                                                      ]
+                                                                    }
+                                                                  }
+                                                                ],
+                                                                "underlay": [
+                                                                  {
+                                                                    "name": "",
+                                                                    "ownerId": "",
+                                                                    "modifiedBefore": false,
+                                                                    "connectedBefore": false,
+                                                                    "next": {
+                                                                      "contained": [],
+                                                                      "underlay": []
+                                                                    }
+                                                                  },
+                                                                  {
+                                                                    "name": "",
+                                                                    "ownerId": "",
+                                                                    "modifiedBefore": false,
+                                                                    "connectedBefore": false,
+                                                                    "next": {
+                                                                      "contained": [],
+                                                                      "underlay": []
+                                                                    }
+                                                                  }
+                                                                ]
+                                                              }
+                                                            },
+                                                            {
+                                                              "name": "2",
+                                                              "ownerId": "",
+                                                              "modifiedBefore": true,
+                                                              "connectedBefore": false,
+                                                              "next": {
+                                                                "contained": [],
+                                                                "underlay": []
+                                                              }
+                                                            }
+                                                          ],
+                                                          "underlay": [
+                                                            {
+                                                              "name": "",
+                                                              "ownerId": "",
+                                                              "modifiedBefore": false,
+                                                              "connectedBefore": false,
+                                                              "next": {
+                                                                "contained": [],
+                                                                "underlay": []
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    ],
+                                                    "underlay": [
+                                                      null,
+                                                      {
+                                                        "name": "0",
+                                                        "ownerId": "",
+                                                        "modifiedBefore": false,
+                                                        "connectedBefore": false,
+                                                        "next": {
+                                                          "contained": [],
+                                                          "underlay": []
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                },
+                                                "contained": [
+                                                  {
+                                                    "name": "potential energy",
+                                                    "ownerId": "",
+                                                    "modifiedBefore": true,
+                                                    "connectedBefore": false,
+                                                    "next": {
+                                                      "contained": [],
+                                                      "underlay": []
+                                                    }
+                                                  },
+                                                  {
+                                                    "id": "item_1019",
+                                                    "name": "reportQuotient",
+                                                    "ownerId": "_netsblox1800000000000",
+                                                    "modifiedBefore": false,
+                                                    "connectedBefore": true,
+                                                    "next": {
+                                                      "contained": [
+                                                        {
+                                                          "id": "item_1020",
+                                                          "name": "reportProduct",
+                                                          "ownerId": "_netsblox1800000000000",
+                                                          "modifiedBefore": false,
+                                                          "connectedBefore": true,
+                                                          "next": {
+                                                            "contained": [
+                                                              {
+                                                                "id": "item_1021",
+                                                                "name": "var: spring stiffness",
+                                                                "ownerId": "_netsblox1800000000000",
+                                                                "modifiedBefore": false,
+                                                                "connectedBefore": true,
+                                                                "next": {
+                                                                  "contained": [],
+                                                                  "underlay": []
+                                                                }
+                                                              },
+                                                              {
+                                                                "id": "item_1022",
+                                                                "name": "reportPower",
+                                                                "ownerId": "_netsblox1800000000000",
+                                                                "modifiedBefore": false,
+                                                                "connectedBefore": true,
+                                                                "next": {
+                                                                  "contained": [
+                                                                    {
+                                                                      "id": "item_1023",
+                                                                      "name": "physicsXPosition",
+                                                                      "ownerId": "_netsblox1800000000000",
+                                                                      "modifiedBefore": false,
+                                                                      "connectedBefore": true,
+                                                                      "next": {
+                                                                        "contained": [],
+                                                                        "underlay": []
+                                                                      }
+                                                                    },
+                                                                    {
+                                                                      "name": "2",
+                                                                      "ownerId": "",
+                                                                      "modifiedBefore": true,
+                                                                      "connectedBefore": false,
+                                                                      "next": {
+                                                                        "contained": [],
+                                                                        "underlay": []
+                                                                      }
+                                                                    }
+                                                                  ],
+                                                                  "underlay": [
+                                                                    {
+                                                                      "name": "",
+                                                                      "ownerId": "",
+                                                                      "modifiedBefore": false,
+                                                                      "connectedBefore": false,
+                                                                      "next": {
+                                                                        "contained": [],
+                                                                        "underlay": []
+                                                                      }
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              }
+                                                            ],
+                                                            "underlay": [
+                                                              {
+                                                                "name": "",
+                                                                "ownerId": "",
+                                                                "modifiedBefore": false,
+                                                                "connectedBefore": false,
+                                                                "next": {
+                                                                  "contained": [],
+                                                                  "underlay": []
+                                                                }
+                                                              },
+                                                              {
+                                                                "name": "",
+                                                                "ownerId": "",
+                                                                "modifiedBefore": false,
+                                                                "connectedBefore": false,
+                                                                "next": {
+                                                                  "contained": [],
+                                                                  "underlay": []
+                                                                }
+                                                              }
+                                                            ]
+                                                          }
+                                                        },
+                                                        {
+                                                          "name": "2",
+                                                          "ownerId": "",
+                                                          "modifiedBefore": true,
+                                                          "connectedBefore": false,
+                                                          "next": {
+                                                            "contained": [],
+                                                            "underlay": []
+                                                          }
+                                                        }
+                                                      ],
+                                                      "underlay": [
+                                                        {
+                                                          "name": "",
+                                                          "ownerId": "",
+                                                          "modifiedBefore": false,
+                                                          "connectedBefore": false,
+                                                          "next": {
+                                                            "contained": [],
+                                                            "underlay": []
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                ],
+                                                "underlay": [
+                                                  null,
+                                                  {
+                                                    "name": "0",
+                                                    "ownerId": "",
+                                                    "modifiedBefore": false,
+                                                    "connectedBefore": false,
+                                                    "next": {
+                                                      "contained": [],
+                                                      "underlay": []
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "contained": [
+                                              {
+                                                "id": "item_1015",
+                                                "name": "reportQuotient",
+                                                "ownerId": "_netsblox1800000000000",
+                                                "modifiedBefore": false,
+                                                "connectedBefore": true,
+                                                "next": {
+                                                  "contained": [
+                                                    {
+                                                      "id": "item_1016",
+                                                      "name": "xNetForce",
+                                                      "ownerId": "_netsblox1800000000000",
+                                                      "modifiedBefore": false,
+                                                      "connectedBefore": true,
+                                                      "next": {
+                                                        "contained": [],
+                                                        "underlay": []
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "item_1017",
+                                                      "name": "mass",
+                                                      "ownerId": "_netsblox1800000000000",
+                                                      "modifiedBefore": false,
+                                                      "connectedBefore": true,
+                                                      "next": {
+                                                        "contained": [],
+                                                        "underlay": []
+                                                      }
+                                                    }
+                                                  ],
+                                                  "underlay": [
+                                                    {
+                                                      "name": "",
+                                                      "ownerId": "",
+                                                      "modifiedBefore": false,
+                                                      "connectedBefore": false,
+                                                      "next": {
+                                                        "contained": [],
+                                                        "underlay": []
+                                                      }
+                                                    },
+                                                    {
+                                                      "name": "",
+                                                      "ownerId": "",
+                                                      "modifiedBefore": false,
+                                                      "connectedBefore": false,
+                                                      "next": {
+                                                        "contained": [],
+                                                        "underlay": []
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ],
+                                            "underlay": [
+                                              {
+                                                "name": "0",
+                                                "ownerId": "",
+                                                "modifiedBefore": false,
+                                                "connectedBefore": false,
+                                                "next": {
+                                                  "contained": [],
+                                                  "underlay": []
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "contained": [
+                                          {
+                                            "id": "item_1010",
+                                            "name": "reportProduct",
+                                            "ownerId": "_netsblox1800000000000",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": true,
+                                            "next": {
+                                              "contained": [
+                                                {
+                                                  "name": "-1",
+                                                  "ownerId": "",
+                                                  "modifiedBefore": true,
+                                                  "connectedBefore": false,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                },
+                                                {
+                                                  "id": "item_1011",
+                                                  "name": "reportProduct",
+                                                  "ownerId": "_netsblox1800000000000",
+                                                  "modifiedBefore": false,
+                                                  "connectedBefore": true,
+                                                  "next": {
+                                                    "contained": [
+                                                      {
+                                                        "id": "item_1012",
+                                                        "name": "var: spring stiffness",
+                                                        "ownerId": "_netsblox1800000000000",
+                                                        "modifiedBefore": false,
+                                                        "connectedBefore": true,
+                                                        "next": {
+                                                          "contained": [],
+                                                          "underlay": []
+                                                        }
+                                                      },
+                                                      {
+                                                        "id": "item_1013",
+                                                        "name": "physicsXPosition",
+                                                        "ownerId": "_netsblox1800000000000",
+                                                        "modifiedBefore": false,
+                                                        "connectedBefore": true,
+                                                        "next": {
+                                                          "contained": [],
+                                                          "underlay": []
+                                                        }
+                                                      }
+                                                    ],
+                                                    "underlay": [
+                                                      {
+                                                        "name": "",
+                                                        "ownerId": "",
+                                                        "modifiedBefore": false,
+                                                        "connectedBefore": false,
+                                                        "next": {
+                                                          "contained": [],
+                                                          "underlay": []
+                                                        }
+                                                      },
+                                                      {
+                                                        "name": "",
+                                                        "ownerId": "",
+                                                        "modifiedBefore": false,
+                                                        "connectedBefore": false,
+                                                        "next": {
+                                                          "contained": [],
+                                                          "underlay": []
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ],
+                                              "underlay": [
+                                                null,
+                                                {
+                                                  "name": "",
+                                                  "ownerId": "",
+                                                  "modifiedBefore": false,
+                                                  "connectedBefore": false,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ],
+                                        "underlay": [
+                                          {
+                                            "name": "0",
+                                            "ownerId": "",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": false,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "contained": [
+                                      {
+                                        "name": "time",
+                                        "ownerId": "",
+                                        "modifiedBefore": true,
+                                        "connectedBefore": false,
+                                        "next": {
+                                          "contained": [],
+                                          "underlay": []
+                                        }
+                                      },
+                                      {
+                                        "name": "0",
+                                        "ownerId": "",
+                                        "modifiedBefore": false,
+                                        "connectedBefore": false,
+                                        "next": {
+                                          "contained": [],
+                                          "underlay": []
+                                        }
+                                      }
+                                    ],
+                                    "underlay": []
+                                  }
+                                },
+                                "contained": [
+                                  {
+                                    "name": "0",
+                                    "ownerId": "",
+                                    "modifiedBefore": false,
+                                    "connectedBefore": false,
+                                    "next": {
+                                      "contained": [],
+                                      "underlay": []
+                                    }
+                                  }
+                                ],
+                                "underlay": []
+                              }
+                            },
+                            "contained": [
+                              {
+                                "id": "item_1006",
+                                "name": "var: initial displacement",
+                                "ownerId": "_netsblox1800000000000",
+                                "modifiedBefore": false,
+                                "connectedBefore": true,
+                                "next": {
+                                  "contained": [],
+                                  "underlay": []
+                                }
+                              }
+                            ],
+                            "underlay": [
+                              {
+                                "name": "0",
+                                "ownerId": "",
+                                "modifiedBefore": false,
+                                "connectedBefore": false,
+                                "next": {
+                                  "contained": [],
+                                  "underlay": []
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "contained": [
+                          {
+                            "name": "0.1",
+                            "ownerId": "",
+                            "modifiedBefore": true,
+                            "connectedBefore": false,
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          }
+                        ],
+                        "underlay": []
+                      }
+                    },
+                    "contained": [
+                      {
+                        "name": "initial displacement",
+                        "ownerId": "",
+                        "modifiedBefore": true,
+                        "connectedBefore": false,
+                        "next": {
+                          "contained": [],
+                          "underlay": []
+                        }
+                      },
+                      {
+                        "name": "0.2",
+                        "ownerId": "",
+                        "modifiedBefore": true,
+                        "connectedBefore": false,
+                        "next": {
+                          "contained": [],
+                          "underlay": []
+                        }
+                      }
+                    ],
+                    "underlay": []
+                  }
+                },
+                "contained": [
+                  {
+                    "name": "1",
+                    "ownerId": "",
+                    "modifiedBefore": true,
+                    "connectedBefore": false,
+                    "next": {
+                      "contained": [],
+                      "underlay": []
+                    }
+                  }
+                ],
+                "underlay": []
+              }
+            },
+            "contained": [
+              {
+                "name": "spring stiffness",
+                "ownerId": "",
+                "modifiedBefore": true,
+                "connectedBefore": false,
+                "next": {
+                  "contained": [],
+                  "underlay": []
+                }
+              },
+              {
+                "name": "10",
+                "ownerId": "",
+                "modifiedBefore": true,
+                "connectedBefore": false,
+                "next": {
+                  "contained": [],
+                  "underlay": []
+                }
+              }
+            ],
+            "underlay": []
+          }
+        },
+        "contained": [],
+        "underlay": []
+      }
+    },
+    {
+      "id": "item_1031",
+      "name": "doSimulationStep",
+      "ownerId": "item_-1",
+      "modifiedBefore": false,
+      "connectedBefore": false,
+      "next": {
+        "next": {
+          "id": "item_1032",
+          "name": "setXNetForce",
+          "ownerId": "_netsblox1800000000000",
+          "modifiedBefore": false,
+          "connectedBefore": true,
+          "next": {
+            "next": {
+              "id": "item_1037",
+              "name": "setXAcceleration",
+              "ownerId": "_netsblox1800000000000",
+              "modifiedBefore": false,
+              "connectedBefore": true,
+              "next": {
+                "next": {
+                  "id": "item_1041",
+                  "name": "changeXVelocity",
+                  "ownerId": "_netsblox1800000000000",
+                  "modifiedBefore": false,
+                  "connectedBefore": true,
+                  "next": {
+                    "next": {
+                      "id": "item_1045",
+                      "name": "changePhysicsXPosition",
+                      "ownerId": "_netsblox1800000000000",
+                      "modifiedBefore": false,
+                      "connectedBefore": true,
+                      "next": {
+                        "next": {
+                          "id": "item_1049",
+                          "name": "doSetVar",
+                          "ownerId": "_netsblox1800000000000",
+                          "modifiedBefore": false,
+                          "connectedBefore": true,
+                          "next": {
+                            "next": {
+                              "id": "item_1055",
+                              "name": "doSetVar",
+                              "ownerId": "_netsblox1800000000000",
+                              "modifiedBefore": false,
+                              "connectedBefore": true,
+                              "next": {
+                                "next": {
+                                  "id": "item_1061",
+                                  "name": "doChangeVar",
+                                  "ownerId": "_netsblox1800000000000",
+                                  "modifiedBefore": false,
+                                  "connectedBefore": true,
+                                  "next": {
+                                    "next": {
+                                      "id": "item_1063",
+                                      "name": "doIf",
+                                      "ownerId": "_netsblox1800000000000",
+                                      "modifiedBefore": false,
+                                      "connectedBefore": true,
+                                      "next": {
+                                        "contained": [
+                                          {
+                                            "id": "item_1064",
+                                            "name": "reportLessThan",
+                                            "ownerId": "_netsblox1800000000000",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": true,
+                                            "next": {
+                                              "contained": [
+                                                {
+                                                  "name": "8",
+                                                  "ownerId": "",
+                                                  "modifiedBefore": true,
+                                                  "connectedBefore": false,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                },
+                                                {
+                                                  "id": "item_1065",
+                                                  "name": "var: time",
+                                                  "ownerId": "_netsblox1800000000000",
+                                                  "modifiedBefore": false,
+                                                  "connectedBefore": true,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                }
+                                              ],
+                                              "underlay": [
+                                                null,
+                                                {
+                                                  "name": "",
+                                                  "ownerId": "",
+                                                  "modifiedBefore": false,
+                                                  "connectedBefore": false,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "id": "item_1066",
+                                            "name": "stopSimulation",
+                                            "ownerId": "item_-1",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": true,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          }
+                                        ],
+                                        "underlay": [
+                                          {
+                                            "name": "",
+                                            "ownerId": "",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": false,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "contained": [
+                                      {
+                                        "name": "time",
+                                        "ownerId": "",
+                                        "modifiedBefore": true,
+                                        "connectedBefore": false,
+                                        "next": {
+                                          "contained": [],
+                                          "underlay": []
+                                        }
+                                      },
+                                      {
+                                        "id": "item_1062",
+                                        "name": "deltaTime",
+                                        "ownerId": "_netsblox1800000000000",
+                                        "modifiedBefore": false,
+                                        "connectedBefore": true,
+                                        "next": {
+                                          "contained": [],
+                                          "underlay": []
+                                        }
+                                      }
+                                    ],
+                                    "underlay": [
+                                      null,
+                                      {
+                                        "name": "1",
+                                        "ownerId": "",
+                                        "modifiedBefore": false,
+                                        "connectedBefore": false,
+                                        "next": {
+                                          "contained": [],
+                                          "underlay": []
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                "contained": [
+                                  {
+                                    "name": "kinetic energy",
+                                    "ownerId": "",
+                                    "modifiedBefore": true,
+                                    "connectedBefore": false,
+                                    "next": {
+                                      "contained": [],
+                                      "underlay": []
+                                    }
+                                  },
+                                  {
+                                    "id": "item_1056",
+                                    "name": "reportQuotient",
+                                    "ownerId": "_netsblox1800000000000",
+                                    "modifiedBefore": false,
+                                    "connectedBefore": true,
+                                    "next": {
+                                      "contained": [
+                                        {
+                                          "id": "item_1057",
+                                          "name": "reportProduct",
+                                          "ownerId": "_netsblox1800000000000",
+                                          "modifiedBefore": false,
+                                          "connectedBefore": true,
+                                          "next": {
+                                            "contained": [
+                                              {
+                                                "id": "item_1058",
+                                                "name": "mass",
+                                                "ownerId": "_netsblox1800000000000",
+                                                "modifiedBefore": false,
+                                                "connectedBefore": true,
+                                                "next": {
+                                                  "contained": [],
+                                                  "underlay": []
+                                                }
+                                              },
+                                              {
+                                                "id": "item_1059",
+                                                "name": "reportPower",
+                                                "ownerId": "_netsblox1800000000000",
+                                                "modifiedBefore": false,
+                                                "connectedBefore": true,
+                                                "next": {
+                                                  "contained": [
+                                                    {
+                                                      "id": "item_1060",
+                                                      "name": "xVelocity",
+                                                      "ownerId": "_netsblox1800000000000",
+                                                      "modifiedBefore": false,
+                                                      "connectedBefore": true,
+                                                      "next": {
+                                                        "contained": [],
+                                                        "underlay": []
+                                                      }
+                                                    },
+                                                    {
+                                                      "name": "2",
+                                                      "ownerId": "",
+                                                      "modifiedBefore": true,
+                                                      "connectedBefore": false,
+                                                      "next": {
+                                                        "contained": [],
+                                                        "underlay": []
+                                                      }
+                                                    }
+                                                  ],
+                                                  "underlay": [
+                                                    {
+                                                      "name": "",
+                                                      "ownerId": "",
+                                                      "modifiedBefore": false,
+                                                      "connectedBefore": false,
+                                                      "next": {
+                                                        "contained": [],
+                                                        "underlay": []
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            ],
+                                            "underlay": [
+                                              {
+                                                "name": "",
+                                                "ownerId": "",
+                                                "modifiedBefore": false,
+                                                "connectedBefore": false,
+                                                "next": {
+                                                  "contained": [],
+                                                  "underlay": []
+                                                }
+                                              },
+                                              {
+                                                "name": "",
+                                                "ownerId": "",
+                                                "modifiedBefore": false,
+                                                "connectedBefore": false,
+                                                "next": {
+                                                  "contained": [],
+                                                  "underlay": []
+                                                }
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        {
+                                          "name": "2",
+                                          "ownerId": "",
+                                          "modifiedBefore": true,
+                                          "connectedBefore": false,
+                                          "next": {
+                                            "contained": [],
+                                            "underlay": []
+                                          }
+                                        }
+                                      ],
+                                      "underlay": [
+                                        {
+                                          "name": "",
+                                          "ownerId": "",
+                                          "modifiedBefore": false,
+                                          "connectedBefore": false,
+                                          "next": {
+                                            "contained": [],
+                                            "underlay": []
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ],
+                                "underlay": [
+                                  null,
+                                  {
+                                    "name": "0",
+                                    "ownerId": "",
+                                    "modifiedBefore": false,
+                                    "connectedBefore": false,
+                                    "next": {
+                                      "contained": [],
+                                      "underlay": []
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            "contained": [
+                              {
+                                "name": "potential energy",
+                                "ownerId": "",
+                                "modifiedBefore": true,
+                                "connectedBefore": false,
+                                "next": {
+                                  "contained": [],
+                                  "underlay": []
+                                }
+                              },
+                              {
+                                "id": "item_1050",
+                                "name": "reportQuotient",
+                                "ownerId": "_netsblox1800000000000",
+                                "modifiedBefore": false,
+                                "connectedBefore": true,
+                                "next": {
+                                  "contained": [
+                                    {
+                                      "id": "item_1051",
+                                      "name": "reportProduct",
+                                      "ownerId": "_netsblox1800000000000",
+                                      "modifiedBefore": false,
+                                      "connectedBefore": true,
+                                      "next": {
+                                        "contained": [
+                                          {
+                                            "id": "item_1052",
+                                            "name": "var: spring stiffness",
+                                            "ownerId": "_netsblox1800000000000",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": true,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          },
+                                          {
+                                            "id": "item_1053",
+                                            "name": "reportPower",
+                                            "ownerId": "_netsblox1800000000000",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": true,
+                                            "next": {
+                                              "contained": [
+                                                {
+                                                  "id": "item_1054",
+                                                  "name": "physicsXPosition",
+                                                  "ownerId": "_netsblox1800000000000",
+                                                  "modifiedBefore": false,
+                                                  "connectedBefore": true,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                },
+                                                {
+                                                  "name": "2",
+                                                  "ownerId": "",
+                                                  "modifiedBefore": true,
+                                                  "connectedBefore": false,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                }
+                                              ],
+                                              "underlay": [
+                                                {
+                                                  "name": "",
+                                                  "ownerId": "",
+                                                  "modifiedBefore": false,
+                                                  "connectedBefore": false,
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ],
+                                        "underlay": [
+                                          {
+                                            "name": "",
+                                            "ownerId": "",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": false,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          },
+                                          {
+                                            "name": "",
+                                            "ownerId": "",
+                                            "modifiedBefore": false,
+                                            "connectedBefore": false,
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "name": "2",
+                                      "ownerId": "",
+                                      "modifiedBefore": true,
+                                      "connectedBefore": false,
+                                      "next": {
+                                        "contained": [],
+                                        "underlay": []
+                                      }
+                                    }
+                                  ],
+                                  "underlay": [
+                                    {
+                                      "name": "",
+                                      "ownerId": "",
+                                      "modifiedBefore": false,
+                                      "connectedBefore": false,
+                                      "next": {
+                                        "contained": [],
+                                        "underlay": []
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "underlay": [
+                              null,
+                              {
+                                "name": "0",
+                                "ownerId": "",
+                                "modifiedBefore": false,
+                                "connectedBefore": false,
+                                "next": {
+                                  "contained": [],
+                                  "underlay": []
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "contained": [
+                          {
+                            "id": "item_1046",
+                            "name": "reportProduct",
+                            "ownerId": "_netsblox1800000000000",
+                            "modifiedBefore": false,
+                            "connectedBefore": true,
+                            "next": {
+                              "contained": [
+                                {
+                                  "id": "item_1047",
+                                  "name": "xVelocity",
+                                  "ownerId": "_netsblox1800000000000",
+                                  "modifiedBefore": false,
+                                  "connectedBefore": true,
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                },
+                                {
+                                  "id": "item_1048",
+                                  "name": "deltaTime",
+                                  "ownerId": "_netsblox1800000000000",
+                                  "modifiedBefore": false,
+                                  "connectedBefore": true,
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                }
+                              ],
+                              "underlay": [
+                                {
+                                  "name": "",
+                                  "ownerId": "",
+                                  "modifiedBefore": false,
+                                  "connectedBefore": false,
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                },
+                                {
+                                  "name": "",
+                                  "ownerId": "",
+                                  "modifiedBefore": false,
+                                  "connectedBefore": false,
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "underlay": [
+                          {
+                            "name": "0",
+                            "ownerId": "",
+                            "modifiedBefore": false,
+                            "connectedBefore": false,
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "contained": [
+                      {
+                        "id": "item_1042",
+                        "name": "reportProduct",
+                        "ownerId": "_netsblox1800000000000",
+                        "modifiedBefore": false,
+                        "connectedBefore": true,
+                        "next": {
+                          "contained": [
+                            {
+                              "id": "item_1043",
+                              "name": "xAcceleration",
+                              "ownerId": "_netsblox1800000000000",
+                              "modifiedBefore": false,
+                              "connectedBefore": true,
+                              "next": {
+                                "contained": [],
+                                "underlay": []
+                              }
+                            },
+                            {
+                              "id": "item_1044",
+                              "name": "deltaTime",
+                              "ownerId": "_netsblox1800000000000",
+                              "modifiedBefore": false,
+                              "connectedBefore": true,
+                              "next": {
+                                "contained": [],
+                                "underlay": []
+                              }
+                            }
+                          ],
+                          "underlay": [
+                            {
+                              "name": "",
+                              "ownerId": "",
+                              "modifiedBefore": false,
+                              "connectedBefore": false,
+                              "next": {
+                                "contained": [],
+                                "underlay": []
+                              }
+                            },
+                            {
+                              "name": "",
+                              "ownerId": "",
+                              "modifiedBefore": false,
+                              "connectedBefore": false,
+                              "next": {
+                                "contained": [],
+                                "underlay": []
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "underlay": [
+                      {
+                        "name": "0",
+                        "ownerId": "",
+                        "modifiedBefore": false,
+                        "connectedBefore": false,
+                        "next": {
+                          "contained": [],
+                          "underlay": []
+                        }
+                      }
+                    ]
+                  }
+                },
+                "contained": [
+                  {
+                    "id": "item_1038",
+                    "name": "reportQuotient",
+                    "ownerId": "_netsblox1800000000000",
+                    "modifiedBefore": false,
+                    "connectedBefore": true,
+                    "next": {
+                      "contained": [
+                        {
+                          "id": "item_1039",
+                          "name": "xNetForce",
+                          "ownerId": "_netsblox1800000000000",
+                          "modifiedBefore": false,
+                          "connectedBefore": true,
+                          "next": {
+                            "contained": [],
+                            "underlay": []
+                          }
+                        },
+                        {
+                          "id": "item_1040",
+                          "name": "mass",
+                          "ownerId": "_netsblox1800000000000",
+                          "modifiedBefore": false,
+                          "connectedBefore": true,
+                          "next": {
+                            "contained": [],
+                            "underlay": []
+                          }
+                        }
+                      ],
+                      "underlay": [
+                        {
+                          "name": "",
+                          "ownerId": "",
+                          "modifiedBefore": false,
+                          "connectedBefore": false,
+                          "next": {
+                            "contained": [],
+                            "underlay": []
+                          }
+                        },
+                        {
+                          "name": "",
+                          "ownerId": "",
+                          "modifiedBefore": false,
+                          "connectedBefore": false,
+                          "next": {
+                            "contained": [],
+                            "underlay": []
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "underlay": [
+                  {
+                    "name": "0",
+                    "ownerId": "",
+                    "modifiedBefore": false,
+                    "connectedBefore": false,
+                    "next": {
+                      "contained": [],
+                      "underlay": []
+                    }
+                  }
+                ]
+              }
+            },
+            "contained": [
+              {
+                "id": "item_1033",
+                "name": "reportProduct",
+                "ownerId": "_netsblox1800000000000",
+                "modifiedBefore": false,
+                "connectedBefore": true,
+                "next": {
+                  "contained": [
+                    {
+                      "name": "-1",
+                      "ownerId": "",
+                      "modifiedBefore": true,
+                      "connectedBefore": false,
+                      "next": {
+                        "contained": [],
+                        "underlay": []
+                      }
+                    },
+                    {
+                      "id": "item_1034",
+                      "name": "reportProduct",
+                      "ownerId": "_netsblox1800000000000",
+                      "modifiedBefore": false,
+                      "connectedBefore": true,
+                      "next": {
+                        "contained": [
+                          {
+                            "id": "item_1035",
+                            "name": "var: spring stiffness",
+                            "ownerId": "_netsblox1800000000000",
+                            "modifiedBefore": false,
+                            "connectedBefore": true,
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          },
+                          {
+                            "id": "item_1036",
+                            "name": "physicsXPosition",
+                            "ownerId": "_netsblox1800000000000",
+                            "modifiedBefore": false,
+                            "connectedBefore": true,
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          }
+                        ],
+                        "underlay": [
+                          {
+                            "name": "",
+                            "ownerId": "",
+                            "modifiedBefore": false,
+                            "connectedBefore": false,
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          },
+                          {
+                            "name": "",
+                            "ownerId": "",
+                            "modifiedBefore": false,
+                            "connectedBefore": false,
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "underlay": [
+                    null,
+                    {
+                      "name": "",
+                      "ownerId": "",
+                      "modifiedBefore": false,
+                      "connectedBefore": false,
+                      "next": {
+                        "contained": [],
+                        "underlay": []
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "underlay": [
+              {
+                "name": "0",
+                "ownerId": "",
+                "modifiedBefore": false,
+                "connectedBefore": false,
+                "next": {
+                  "contained": [],
+                  "underlay": []
+                }
+              }
+            ]
+          }
+        },
+        "contained": [],
+        "underlay": []
+      }
+    }
+  ],
+  "expected": "[when green flag clicked]\n[set (springstiffness) to (10)]\n[set mass to (1) kg]\n[set (initialdisplacement) to (0.2)]\n[set DeltaT to (0.1)]\n[set x_position to (initialdisplacement)]\n[set x_velocity to (0)]\n[set (time) to (0)]\n[set x net force to ((-1) (×) ((springstiffness) (×) (x_position))) N]\n[set x_acceleration to ((x net force in N) (/) (mass in kg))]\n[set (potentialenergy) to (((springstiffness) (×) ((x_position) (power) (2))) (/) (2))]\n[set (kineticenergy) to (((mass in kg) (×) ((x_velocity) (power) (2))) (/) (2))]\n[start simulation]\n\n[simulation step]\n[set x net force to ((-1) (×) ((springstiffness) (×) (x_position))) N]\n[set x_acceleration to ((x net force in N) (/) (mass in kg))]\n[change x_velocity by ((x_acceleration) (×) (DeltaT))]\n[change x_position by ((x_velocity) (×) (DeltaT))]\n[set (potentialenergy) to (((springstiffness) (×) ((x_position) (power) (2))) (/) (2))]\n[set (kineticenergy) to (((mass in kg) (×) ((x_velocity) (power) (2))) (/) (2))]\n[change (time) by (DeltaT)]\n[if ((8) (<) (time))]\n\t[stop simulation]\n\n"
+}

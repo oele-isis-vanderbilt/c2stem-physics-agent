@@ -1,8 +1,10 @@
 /**
  * test-segments.js
  *
- * Tests for TreeSegmentParser (Lesson 1 task segments), against the segment
- * picture (C2STEM docs/lesson1_segment.png) on the Pushcart_expert Cart tree.
+ * Tests for TreeSegmentParser (task segments), against the segment pictures:
+ *  - Lesson 1: C2STEM docs/lesson1_segment.png on the Pushcart_expert Cart tree
+ *  - Lesson 2: C2STEM docs/lesson2_segmentation.png on the Springmass expert
+ *    Crate tree
  *
  * Usage:  npm run test:segments
  */
@@ -225,6 +227,115 @@ compare('expert: every block in its picture segment', loadRoots('pushcart-expert
   check(
     'without a sprite list the Pusher is segmented',
     new TreeSegmentParser(makeStore(roots, sprites)).extractSegment({ block: 'pusher-move' }) === UNDER
+  );
+}
+
+// ---- Lesson 2: every block against lesson2_segmentation.png -------------------
+
+const PE_KE = (first, second) => [
+  ['doSetVar', null],
+  ['reportQuotient', null],
+  ['reportProduct', null],
+  [first, null],
+  ['reportPower', null],
+  [second, null],
+];
+const inSegment = (rows, segment) => rows.map(([label]) => [label, segment]);
+const netForceAndAcceleration = [
+  ['setXNetForce'],
+  ['reportProduct'],
+  ['reportProduct'],
+  ['var: spring stiffness'],
+  ['physicsXPosition'],
+  ['setXAcceleration'],
+  ['reportQuotient'],
+  ['xNetForce'],
+  ['mass'],
+];
+
+compare('lesson2 expert: every block in its picture segment', loadRoots('springmass-expert-v3'), [
+  // Initializing Variables
+  ...inSegment(
+    [
+      ['receiveGo'],
+      ['doSetVar'],
+      ['setMass'],
+      ['doSetVar'],
+      ['setDeltaTime'],
+      ['setPhysicsXPosition'],
+      ['var: initial displacement'],
+      ['setXVelocity'],
+      ['doSetVar'],
+      ...netForceAndAcceleration,
+      ...PE_KE('var: spring stiffness', 'physicsXPosition'),
+      ...PE_KE('mass', 'xVelocity'),
+      ['startSimulation'],
+    ],
+    INIT
+  ),
+  // Updating Variables, Each Simulation Step
+  ...inSegment(
+    [
+      ['doSimulationStep'],
+      ...netForceAndAcceleration,
+      ['changeXVelocity'],
+      ['reportProduct'],
+      ['xAcceleration'],
+      ['deltaTime'],
+      ['changePhysicsXPosition'],
+      ['reportProduct'],
+      ['xVelocity'],
+      ['deltaTime'],
+      ...PE_KE('var: spring stiffness', 'physicsXPosition'),
+      ...PE_KE('mass', 'xVelocity'),
+      ['doChangeVar'],
+      ['deltaTime'],
+    ],
+    EVERY
+  ),
+  // if (8 < time): Conditional Statements, stop simulation under it
+  ['doIf', COND],
+  ['reportLessThan', COND],
+  ['var: time', COND],
+  ['stopSimulation', UNDER],
+]);
+
+// ---- Lesson 2: only the Crate is segmented ------------------------------------
+
+{
+  const lesson2 = requireService('services/scoring/index.js').getLesson('lesson2');
+  const roots = loadRoots('springmass-expert-v3');
+  const crateStep = roots.find((r) => r.name === 'doSimulationStep');
+  const crateIf = allBlocks([crateStep]).map((e) => e.block).find((b) => b.name === 'doIf');
+  // Spring: green flag script and a simulation step whose if body draws
+  const springIf = {
+    id: 'spring-if',
+    name: 'doIf',
+    ownerId: 'item_3',
+    next: {
+      contained: [
+        { name: 'true' },
+        { id: 'spring-draw', name: 'gotoXY', ownerId: 'item_3', next: { contained: [{ name: '0' }, { name: '0' }], next: null } },
+      ],
+      next: null,
+    },
+  };
+  roots.push({ id: 'spring-flag', name: 'receiveGo', ownerId: 'item_3', next: { contained: [], next: null } });
+  roots.push({ id: 'spring-step', name: 'doSimulationStep', ownerId: 'item_3', next: { contained: [], next: springIf } });
+  const sprites = { 'item_-1': 'Crate', item_3: 'Spring' };
+
+  const parser = lesson2.createSegmenter(makeStore(roots, sprites));
+  parser.extractSegment({ block: crateStep.id }); // current: every sim step
+  check(
+    'lesson2 Crate only: Spring blocks keep the current segment',
+    parser.extractSegment({ block: 'spring-flag' }) === EVERY &&
+      parser.extractSegment({ block: 'spring-if' }) === EVERY &&
+      parser.extractSegment({ block: 'spring-draw' }) === EVERY
+  );
+  check(
+    'lesson2 Crate only: Crate blocks are still segmented',
+    parser.extractSegment({ block: crateIf.id }) === COND &&
+      parser.extractSegment({ block: crateIf.next.contained[1].id }) === UNDER
   );
 }
 

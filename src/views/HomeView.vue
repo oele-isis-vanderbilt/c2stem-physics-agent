@@ -21,6 +21,7 @@ import c2stemTruckLogo from "@/assets/c2stem_truck.png";
 // import farmTruckLogo from "@/assets/farm.png";
 import inquiryLogo from "@/assets/a-magnifier-graph.png";
 import pushcartLogo from "@/assets/c2stem_pushcart.png";
+import springmassLogo from "@/assets/c2stem_springmass.png";
 
 export default {
   name: "HomeView",
@@ -44,17 +45,29 @@ export default {
         "Truck: Problem Solving",
         "Inquiry",
         "Push cart: Problem Solving",
+        "Spring-mass: Problem Solving",
       ],
       description: [
         "Complete your computational model lessons",
         "Scientific inquiry lessons",
         "Complete your computational model lessons",
+        "Complete your computational model lessons",
       ],
-      route: ["ConstructAgent", "InquiryHome", "ConstructAgent"],
+      route: [
+        "ConstructAgent",
+        "InquiryHome",
+        "ConstructAgent",
+        "ConstructAgent",
+      ],
       // lessonId picks the lesson's scoring (services/scoring)
-      routeQueries: [{ lessonId: "truck" }, {}, { lessonId: "lesson1" }],
+      routeQueries: [
+        { lessonId: "truck" },
+        {},
+        { lessonId: "lesson1" },
+        { lessonId: "lesson2" },
+      ],
       // route: ["ConstructAgent", "ConstructAgent", "ConstructAgent"],
-      logo: [c2stemTruckLogo, inquiryLogo, pushcartLogo],
+      logo: [c2stemTruckLogo, inquiryLogo, pushcartLogo, springmassLogo],
       // logo: [c2stemTruckLogo, droneLogo, droneLogo],
       routeParams: [
         {
@@ -66,6 +79,11 @@ export default {
         {
           userID: "oele",
           projectName: "Pushcart",
+          source: "https://physics.c2stem.org",
+        },
+        {
+          userID: "oele",
+          projectName: "Springmass",
           source: "https://physics.c2stem.org",
         },
         // {

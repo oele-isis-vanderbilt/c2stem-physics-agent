@@ -320,5 +320,234 @@ scoreCase('stop if nested inside release if', copy(loadFixture('nested-if-v3').t
   check('filter: truck keeps every script', scoring.visibleRoots(scoring.getLesson('truck'), store).length === roots.length);
 }
 
+// ---- Lesson 2 ----------------------------------------------------------------
+
+const lesson2 = scoring.getLesson('lesson2');
+const ITEMS2 = [...lesson2.physicsItems, ...lesson2.computingItems];
+
+function scoreCase2(name, roots, zeros = []) {
+  const score = lesson2.scoreTree(roots);
+  const wrong = ITEMS2.filter((key) => score[key] !== (zeros.includes(key) ? 0 : 1));
+  check(
+    `lesson2: ${name}`,
+    wrong.length === 0,
+    wrong.map((key) => `      ${key}: got ${score[key]}, expected ${zeros.includes(key) ? 0 : 1}`).join('\n')
+  );
+  return score;
+}
+
+// First node (block or literal) under `node`, inputs included, that passes `test`
+function find(node, test) {
+  if (!node || typeof node !== 'object') return null;
+  if (test(node)) return node;
+  const next = node.next || {};
+  for (const child of [...(next.contained || []), next.next]) {
+    const hit = find(child, test);
+    if (hit) return hit;
+  }
+  return null;
+}
+const product = (a, b) => block('reportProduct', [a, b]);
+
+// Crate tree of the expert, with handles to the parts the cases edit
+function springExpert() {
+  const roots = copy(loadFixture('springmass-expert-v3').treeRoots);
+  const flag = roots.find((r) => r.name === 'receiveGo');
+  const step = roots.find((r) => r.name === 'doSimulationStep');
+  const stopIf = script(step).find((b) => b.name === 'doIf');
+  return { roots, flag, step, stopIf };
+}
+const flagBlock = (t, name) => script(t.flag).find((b) => b.name === name);
+const stepBlock = (t, name) => script(t.step).find((b) => b.name === name);
+const flagVar = (t, name) => script(t.flag).find(isSetVar(name));
+const stepVar = (t, name) => script(t.step).find(isSetVar(name));
+
+{
+  const score = scoreCase2('expert scores 26/26', springExpert().roots);
+  check(
+    'lesson2: expert mastery 19 / 7 / 26',
+    score.physics_mastery === 19 && score.computing_mastery === 7 && score.overall_mastery === 26,
+    JSON.stringify(score)
+  );
+  check('lesson2: initialScore has every item at 0', ITEMS2.every((k) => lesson2.initialScore()[k] === 0));
+}
+
+{
+  const score = scoreCase2('empty project scores 0', [], ITEMS2);
+  check('lesson2: empty mastery is 0', score.overall_mastery === 0);
+}
+
+{
+  const t = springExpert();
+  flagVar(t, 'spring stiffness').next.contained[1].name = '15';
+  scoreCase2('spring stiffness 15 instead of 10', t.roots, ['initialize_spring_stiffness']);
+}
+
+{
+  const t = springExpert();
+  flagVar(t, 'initial displacement').next.contained[1].name = '0';
+  scoreCase2('initial displacement 0', t.roots, ['initialize_initial_displacement']);
+}
+
+{
+  const t = springExpert();
+  flagVar(t, 'initial displacement').next.contained[1].name = '-0.2';
+  scoreCase2('initial displacement -0.2 (compression)', t.roots);
+}
+
+{
+  const t = springExpert();
+  flagVar(t, 'initial displacement').next.contained[0].name = 'intial displacement';
+  find(flagBlock(t, 'setPhysicsXPosition'), (n) => n.name === 'var: initial displacement').name =
+    'var: intial displacement';
+  scoreCase2('misspelled "intial displacement" is not accepted', t.roots, [
+    'initialize_initial_displacement',
+    'initialize_position',
+    'initialization_order',
+  ]);
+}
+
+{
+  const t = springExpert();
+  flagBlock(t, 'setPhysicsXPosition').next.contained[0] = literal(0.2);
+  scoreCase2('x position typed as 0.2 instead of the variable', t.roots, ['initialize_position']);
+}
+
+{
+  const t = springExpert();
+  find(stepBlock(t, 'setXNetForce'), (n) => n.name === 'physicsXPosition').name = 'var: initial displacement';
+  scoreCase2('step net force uses initial displacement', t.roots, ['update_net_force']);
+}
+
+{
+  const t = springExpert();
+  find(flagBlock(t, 'setXNetForce'), (n) => n.name === 'physicsXPosition').name = 'var: initial displacement';
+  scoreCase2('initial net force uses initial displacement', t.roots, ['initialize_net_force']);
+}
+
+{
+  const t = springExpert();
+  const setNet = flagBlock(t, 'setXNetForce');
+  setNet.next.contained[0] = setNet.next.contained[0].next.contained[1]; // k × x, no −1
+  scoreCase2('initial net force without the −1', t.roots, ['initialize_net_force']);
+}
+
+{
+  const t = springExpert();
+  const setNet = stepBlock(t, 'setXNetForce');
+  const kx = setNet.next.contained[0].next.contained[1];
+  setNet.next.contained[0] = block('reportDifference', [literal(0), kx]);
+  scoreCase2('step net force as 0 − k × x', t.roots);
+}
+
+{
+  const t = springExpert();
+  const pe = stepVar(t, 'potential energy');
+  const k = find(pe, (n) => n.name === 'var: spring stiffness');
+  const x = find(pe, (n) => n.name === 'physicsXPosition');
+  pe.next.contained[1] = product(product(product(literal(0.5), k), x), copy(x));
+  scoreCase2('step potential energy as 0.5 × k × x × x', t.roots);
+}
+
+{
+  const t = springExpert();
+  flagBlock(t, 'setXAcceleration').next.contained[0] = literal(0);
+  scoreCase2('initial acceleration 0 (only net force / mass scores)', t.roots, ['initialize_acceleration']);
+}
+
+{
+  const t = springExpert();
+  flagVar(t, 'kinetic energy').next.contained[1] = literal(0);
+  scoreCase2('initial kinetic energy typed as 0', t.roots, ['initialize_kinetic_energy']);
+}
+
+{
+  const t = springExpert();
+  find(stepVar(t, 'kinetic energy'), (n) => n.name === 'xVelocity').name = 'physicsXPosition';
+  scoreCase2('step kinetic energy with x position instead of velocity', t.roots, ['update_kinetic_energy']);
+}
+
+{
+  const t = springExpert();
+  const blocks = script(t.step);
+  const v = blocks.findIndex((b) => b.name === 'changeXVelocity');
+  const x = blocks.findIndex((b) => b.name === 'changePhysicsXPosition');
+  [blocks[v], blocks[x]] = [blocks[x], blocks[v]];
+  setScript(t.step, blocks);
+  scoreCase2('position updated before velocity', t.roots, [
+    'update_order_force_acceleration_velocity_position',
+  ]);
+}
+
+{
+  const t = springExpert();
+  const blocks = script(t.step);
+  const net = blocks.findIndex((b) => b.name === 'setXNetForce');
+  const acc = blocks.findIndex((b) => b.name === 'setXAcceleration');
+  [blocks[net], blocks[acc]] = [blocks[acc], blocks[net]];
+  setScript(t.step, blocks);
+  scoreCase2('acceleration updated before net force', t.roots, [
+    'update_order_force_acceleration_velocity_position',
+  ]);
+}
+
+{
+  const t = springExpert();
+  const blocks = script(t.flag);
+  const setNet = blocks.find((b) => b.name === 'setXNetForce');
+  setScript(t.flag, [setNet, ...blocks.filter((b) => b !== setNet)]);
+  scoreCase2('net force set before x position', t.roots, ['initialization_order']);
+}
+
+{
+  const t = springExpert();
+  const blocks = script(t.flag);
+  const pe = flagVar(t, 'potential energy');
+  const rest = blocks.filter((b) => b !== pe);
+  rest.splice(rest.findIndex((b) => b.name === 'setPhysicsXPosition'), 0, pe);
+  setScript(t.flag, rest);
+  scoreCase2('potential energy set before x position', t.roots, ['initialization_order']);
+}
+
+{
+  const t = springExpert();
+  const cond = t.stopIf.next.contained[0]; // (8 < time)
+  cond.name = 'reportGreaterThan';
+  cond.next.contained.reverse(); // (time > 8)
+  scoreCase2('stop written as time > 8', t.roots);
+}
+
+{
+  const t = springExpert();
+  t.stopIf.next.contained[0].next.contained[0].name = '4';
+  scoreCase2('stop at time > 4 instead of 8', t.roots, ['stop_condition']);
+}
+
+{
+  const t = springExpert();
+  setScript(t.flag, script(t.flag).filter((b) => b.name !== 'startSimulation'));
+  scoreCase2('no start simulation', t.roots, ['start_simulation_at_end']);
+}
+
+{
+  const t = springExpert();
+  setScript(t.step, [t.stopIf, ...script(t.step).filter((b) => b !== t.stopIf)]);
+  scoreCase2('stop if at the top of the step', t.roots, ['stop_if_at_bottom']);
+}
+
+{
+  // The Spring sprite's own scripts are not scored
+  const t = springExpert();
+  const springFlag = block('receiveGo');
+  springFlag.ownerId = 'item_3';
+  setScript(springFlag, [block('setMass', [literal(1)])]);
+  const roots = [...t.roots, springFlag];
+  const store = makeStore({ treeRoots: roots, sprites: { 'item_-1': 'Crate', item_3: 'Spring' } });
+  const visible = scoring.visibleRoots(lesson2, store);
+  check('lesson2 filter: only Crate scripts are scored', visible.length === 2 && !visible.includes(springFlag));
+  lesson2.createScorer(store).updateScore(scoring.generateState(lesson2, store), visible);
+  check('lesson2 filter: Crate + Spring project scores 26/26', store.getters.getScore.overall_mastery === 26);
+}
+
 console.log(failures ? `\n${failures} check(s) failed` : '\nAll checks passed');
 process.exit(failures ? 1 : 0);
