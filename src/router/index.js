@@ -13,6 +13,7 @@ import InquiryLessonView from "@/views/InquiryLessonView.vue";
 import InquiryAuthorHomeView from "@/views/InquiryAuthorHomeView.vue";
 import InquiryAuthorEditView from "@/views/InquiryAuthorEditView.vue";
 import InquiryProgressView from "@/views/InquiryProgressView.vue";
+import DataTablesAdminView from "@/views/DataTablesAdminView.vue";
 
 function islogin(to, from, next) {
   if (!store.state.user) {
@@ -114,6 +115,16 @@ const routes = [
     path: "/logs",
     name: "logs",
     component: LogView,
+  },
+  {
+    path: "/datatables/admin",
+    name: "dataTablesAdmin",
+    component: DataTablesAdminView,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: "C2STEM | Data tables",
+    },
   },
   {
     path: "/dashboard",

@@ -9,6 +9,11 @@
       :embed="false"
       :inert="focusSecondsLeft > 0"
     ></iframe-loader>
+    <!-- Data table for the lesson; frozen with the workspace while CoSMo's message is new -->
+    <data-tool
+      :lesson-id="$route.query.lessonId"
+      :frozen="focusSecondsLeft > 0"
+    ></data-tool>
     <button
       type="button"
       class="btn btn-dark btn-lg rounded-circle chat-btn bottom-0 end-0 btn-pulse"
@@ -66,6 +71,7 @@
  * @requires ../components/IframeLoader.vue to display a c2stem environment in an iframe.
  */
 import IframeLoader from "../components/IframeLoader.vue";
+import DataTool from "../components/DataTool.vue";
 import { Collapse } from "bootstrap";
 import ASTController from "../services/ASTController";
 // import Websockets from "@/services/Websockets";
@@ -81,6 +87,7 @@ export default {
   name: "ConstructWAgent",
   components: {
     IframeLoader,
+    DataTool,
   },
   data() {
     return {

@@ -34,6 +34,7 @@
  * When clicked removes credentials of current user.
  */
 import authService from "@/services/Auth.js";
+import { flushDataTools } from "@/datatool";
 
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
@@ -66,6 +67,9 @@ export default {
       try {
         // Close any open inquiry lesson: saves its answers and sends its events
         await this.$store.dispatch("inquiry/closeLesson");
+
+        // Send the data table's last save and events while the token is still there
+        await flushDataTools();
 
         // If on Construct or ConstructAgent page and there's a project, save it first
         if (

@@ -28,7 +28,23 @@
             currentRouteName === 'ConstructAgent')
         "
       ></reset-project>
+      <button
+        v-if="loggedIn && hasDataTable"
+        type="button"
+        class="btn btn-primary btn-lg ms-3"
+        @click="emitter.emit('data-tool-toggle')"
+      >
+        <i class="bi bi-table me-1"></i> Data table
+      </button>
       <div class="bttn-auth ms-2 me-2">
+        <button
+          v-if="loggedIn && isAdmin && currentRouteName !== 'dataTablesAdmin'"
+          type="button"
+          class="btn btn-primary btn-lg me-3"
+          @click="$router.push('/datatables/admin')"
+        >
+          Data tables
+        </button>
         <button
           v-if="loggedIn && isAdmin && currentRouteName !== 'dashboard'"
           type="button"
@@ -63,6 +79,7 @@
 import Logout from "./Logout.vue";
 import Simulation from "../services/Simulation";
 import ResetProject from "./ResetProject.vue";
+import { getDataTable } from "@/datatool/tasks";
 
 export default {
   name: "ClassHeader",
@@ -82,6 +99,13 @@ export default {
     },
     isAdmin() {
       return this.$store.state.role === "admin";
+    },
+    // The lesson open in ConstructAgent has a data table (src/datatool/tasks.js)
+    hasDataTable() {
+      return (
+        this.currentRouteName === "ConstructAgent" &&
+        Boolean(getDataTable(this.$route.query.lessonId))
+      );
     },
   },
   methods: {
