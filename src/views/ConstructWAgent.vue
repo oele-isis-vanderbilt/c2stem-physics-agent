@@ -31,17 +31,16 @@
     <!-- Holds the workspace while CoSMo's message is new; the chat window stays above it and usable -->
     <div v-if="focusSecondsLeft > 0" class="focus-overlay">
       <div class="focus-banner">
-        CoSMo has a message for you. Take a moment to read it ({{
-          focusSecondsLeft
-        }})
+        CoSMo has a message for you ({{ focusSecondsLeft }})
       </div>
     </div>
+    <!-- Raised with a style, not a class: a class binding would replace the class list and drop Bootstrap's "show" -->
     <div
-      class="collapse bottom-0 end-0"
-      :class="{ 'focus-raised': focusSecondsLeft > 0 }"
+      class="collapse"
+      :style="focusSecondsLeft > 0 ? focusRaisedStyle : null"
       id="collapseWindow"
     >
-      <div class="card card-body mb-5">
+      <div class="card card-body p-0 chat-card">
         <iframe
           v-if="getChatURL.length !== 0"
           :src="getChatURL"
@@ -104,6 +103,8 @@ export default {
       autoSaveInterval: null,
       focusSecondsLeft: 0,
       focusTimer: null,
+      // Keeps the chat window above the focus overlay (1040) during the hold
+      focusRaisedStyle: { zIndex: 1050, boxShadow: "0 0 0 4px #8270ba" },
       sessionEnded: false,
     };
   },
@@ -637,17 +638,26 @@ strong {
   color: aliceblue;
 }
 
+/* Sized to the browser window, above the CoSMo button and over the nav bar */
 #collapseWindow {
-  position: absolute;
-  width: 30%;
-  max-height: 90%;
-  margin: 60px;
-  left: 60%;
+  position: fixed;
+  right: 24px;
+  bottom: 130px;
+  /* Above the nav bar (1020), below the data table (1030) and CoSMo's overlay (1040) */
+  z-index: 1025;
+  width: min(480px, calc(100vw - 48px));
+  height: min(800px, calc(100vh - 146px));
   overflow: hidden;
   transition: height 0.35s ease;
 }
 .card {
   height: 100%;
+}
+/* No white frame: the dark chat page fills the card, clipped to its rounded corners */
+.chat-card {
+  overflow: hidden;
+  background: transparent;
+  border: 0;
 }
 .session-ended {
   position: fixed;
@@ -671,16 +681,15 @@ strong {
   backdrop-filter: blur(2px);
 }
 .focus-banner {
-  margin-top: 24px;
-  padding: 12px 20px;
+  margin: 24px 16px 0;
+  max-width: min(560px, calc(100vw - 32px));
+  height: auto; /* App.vue sets every div to height: 100% */
+  padding: 10px 16px;
   border-radius: 8px;
   background: #8270ba;
   color: white;
-  font-size: large;
-}
-#collapseWindow.focus-raised {
-  z-index: 1050;
-  box-shadow: 0 0 0 4px #8270ba;
+  font-size: 1rem;
+  text-align: center;
 }
 .chat-btn {
   position: absolute;
