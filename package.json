@@ -15,7 +15,7 @@
     "ast-viewer": "python -m http.server 8010 --bind 127.0.0.1"
   },
   "dependencies": {
-    "@c2stem/data-plot": "github:oele-isis-vanderbilt/c2stem-data-plot#v0.1.1",
+    "@c2stem/data-plot": "github:oele-isis-vanderbilt/c2stem-data-plot#v0.2.0",
     "@popperjs/core": "^2.11.8",
     "axios": "^1.8.4",
     "bootstrap": "^5.3.3",
