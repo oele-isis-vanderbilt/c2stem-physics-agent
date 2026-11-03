@@ -1,0 +1,852 @@
+{
+  "name": "balldrop-expert-v3",
+  "parser": "v3",
+  "sprites": {
+    "item_-1": "Ball"
+  },
+  "treeRoots": [
+    {
+      "id": "x1",
+      "name": "receiveGo",
+      "ownerId": "item_-1",
+      "next": {
+        "contained": [],
+        "next": {
+          "id": "x2",
+          "name": "setMass",
+          "ownerId": "item_-1",
+          "next": {
+            "contained": [
+              {
+                "name": "1",
+                "ownerId": "",
+                "next": {
+                  "contained": [],
+                  "underlay": []
+                }
+              }
+            ],
+            "next": {
+              "id": "x3",
+              "name": "doSetVar",
+              "ownerId": "item_-1",
+              "next": {
+                "contained": [
+                  {
+                    "name": "restitution",
+                    "ownerId": "",
+                    "next": {
+                      "contained": [],
+                      "underlay": []
+                    }
+                  },
+                  {
+                    "name": "0.8",
+                    "ownerId": "",
+                    "next": {
+                      "contained": [],
+                      "underlay": []
+                    }
+                  }
+                ],
+                "next": {
+                  "id": "x4",
+                  "name": "setDeltaTime",
+                  "ownerId": "item_-1",
+                  "next": {
+                    "contained": [
+                      {
+                        "name": "0.1",
+                        "ownerId": "",
+                        "next": {
+                          "contained": [],
+                          "underlay": []
+                        }
+                      }
+                    ],
+                    "next": {
+                      "id": "x5",
+                      "name": "doSetVar",
+                      "ownerId": "item_-1",
+                      "next": {
+                        "contained": [
+                          {
+                            "name": "time",
+                            "ownerId": "",
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          },
+                          {
+                            "name": "0",
+                            "ownerId": "",
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          }
+                        ],
+                        "next": {
+                          "id": "x6",
+                          "name": "setPhysicsYPosition",
+                          "ownerId": "item_-1",
+                          "next": {
+                            "contained": [
+                              {
+                                "name": "7.8",
+                                "ownerId": "",
+                                "next": {
+                                  "contained": [],
+                                  "underlay": []
+                                }
+                              }
+                            ],
+                            "next": {
+                              "id": "x7",
+                              "name": "setYVelocity",
+                              "ownerId": "item_-1",
+                              "next": {
+                                "contained": [
+                                  {
+                                    "name": "0",
+                                    "ownerId": "",
+                                    "next": {
+                                      "contained": [],
+                                      "underlay": []
+                                    }
+                                  }
+                                ],
+                                "next": {
+                                  "id": "x8",
+                                  "name": "setYAcceleration",
+                                  "ownerId": "item_-1",
+                                  "next": {
+                                    "contained": [
+                                      {
+                                        "id": "x9",
+                                        "name": "reportProduct",
+                                        "ownerId": "item_-1",
+                                        "next": {
+                                          "contained": [
+                                            {
+                                              "name": "-1",
+                                              "ownerId": "",
+                                              "next": {
+                                                "contained": [],
+                                                "underlay": []
+                                              }
+                                            },
+                                            {
+                                              "id": "x10",
+                                              "name": "var: gravity",
+                                              "ownerId": "item_-1",
+                                              "next": {
+                                                "contained": [],
+                                                "next": null,
+                                                "underlay": []
+                                              }
+                                            }
+                                          ],
+                                          "next": null,
+                                          "underlay": []
+                                        }
+                                      }
+                                    ],
+                                    "next": {
+                                      "id": "x11",
+                                      "name": "doSetVar",
+                                      "ownerId": "item_-1",
+                                      "next": {
+                                        "contained": [
+                                          {
+                                            "name": "potential energy",
+                                            "ownerId": "",
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          },
+                                          {
+                                            "id": "x12",
+                                            "name": "reportProduct",
+                                            "ownerId": "item_-1",
+                                            "next": {
+                                              "contained": [
+                                                {
+                                                  "id": "x13",
+                                                  "name": "mass",
+                                                  "ownerId": "item_-1",
+                                                  "next": {
+                                                    "contained": [],
+                                                    "next": null,
+                                                    "underlay": []
+                                                  }
+                                                },
+                                                {
+                                                  "id": "x14",
+                                                  "name": "reportProduct",
+                                                  "ownerId": "item_-1",
+                                                  "next": {
+                                                    "contained": [
+                                                      {
+                                                        "id": "x15",
+                                                        "name": "var: gravity",
+                                                        "ownerId": "item_-1",
+                                                        "next": {
+                                                          "contained": [],
+                                                          "next": null,
+                                                          "underlay": []
+                                                        }
+                                                      },
+                                                      {
+                                                        "id": "x16",
+                                                        "name": "physicsYPosition",
+                                                        "ownerId": "item_-1",
+                                                        "next": {
+                                                          "contained": [],
+                                                          "next": null,
+                                                          "underlay": []
+                                                        }
+                                                      }
+                                                    ],
+                                                    "next": null,
+                                                    "underlay": []
+                                                  }
+                                                }
+                                              ],
+                                              "next": null,
+                                              "underlay": []
+                                            }
+                                          }
+                                        ],
+                                        "next": {
+                                          "id": "x17",
+                                          "name": "doSetVar",
+                                          "ownerId": "item_-1",
+                                          "next": {
+                                            "contained": [
+                                              {
+                                                "name": "kinetic energy",
+                                                "ownerId": "",
+                                                "next": {
+                                                  "contained": [],
+                                                  "underlay": []
+                                                }
+                                              },
+                                              {
+                                                "id": "x18",
+                                                "name": "reportProduct",
+                                                "ownerId": "item_-1",
+                                                "next": {
+                                                  "contained": [
+                                                    {
+                                                      "name": "0.5",
+                                                      "ownerId": "",
+                                                      "next": {
+                                                        "contained": [],
+                                                        "underlay": []
+                                                      }
+                                                    },
+                                                    {
+                                                      "id": "x19",
+                                                      "name": "reportProduct",
+                                                      "ownerId": "item_-1",
+                                                      "next": {
+                                                        "contained": [
+                                                          {
+                                                            "id": "x20",
+                                                            "name": "mass",
+                                                            "ownerId": "item_-1",
+                                                            "next": {
+                                                              "contained": [],
+                                                              "next": null,
+                                                              "underlay": []
+                                                            }
+                                                          },
+                                                          {
+                                                            "id": "x21",
+                                                            "name": "reportPower",
+                                                            "ownerId": "item_-1",
+                                                            "next": {
+                                                              "contained": [
+                                                                {
+                                                                  "id": "x22",
+                                                                  "name": "yVelocity",
+                                                                  "ownerId": "item_-1",
+                                                                  "next": {
+                                                                    "contained": [],
+                                                                    "next": null,
+                                                                    "underlay": []
+                                                                  }
+                                                                },
+                                                                {
+                                                                  "name": "2",
+                                                                  "ownerId": "",
+                                                                  "next": {
+                                                                    "contained": [],
+                                                                    "underlay": []
+                                                                  }
+                                                                }
+                                                              ],
+                                                              "next": null,
+                                                              "underlay": []
+                                                            }
+                                                          }
+                                                        ],
+                                                        "next": null,
+                                                        "underlay": []
+                                                      }
+                                                    }
+                                                  ],
+                                                  "next": null,
+                                                  "underlay": []
+                                                }
+                                              }
+                                            ],
+                                            "next": {
+                                              "id": "x23",
+                                              "name": "startSimulation",
+                                              "ownerId": "item_-1",
+                                              "next": {
+                                                "contained": [],
+                                                "next": null,
+                                                "underlay": []
+                                              }
+                                            },
+                                            "underlay": []
+                                          }
+                                        },
+                                        "underlay": []
+                                      }
+                                    },
+                                    "underlay": []
+                                  }
+                                },
+                                "underlay": []
+                              }
+                            },
+                            "underlay": []
+                          }
+                        },
+                        "underlay": []
+                      }
+                    },
+                    "underlay": []
+                  }
+                },
+                "underlay": []
+              }
+            },
+            "underlay": []
+          }
+        },
+        "underlay": []
+      }
+    },
+    {
+      "id": "x24",
+      "name": "doSimulationStep",
+      "ownerId": "item_-1",
+      "next": {
+        "contained": [],
+        "next": {
+          "id": "x25",
+          "name": "changeYVelocity",
+          "ownerId": "item_-1",
+          "next": {
+            "contained": [
+              {
+                "id": "x26",
+                "name": "reportProduct",
+                "ownerId": "item_-1",
+                "next": {
+                  "contained": [
+                    {
+                      "id": "x27",
+                      "name": "yAcceleration",
+                      "ownerId": "item_-1",
+                      "next": {
+                        "contained": [],
+                        "next": null,
+                        "underlay": []
+                      }
+                    },
+                    {
+                      "id": "x28",
+                      "name": "deltaTime",
+                      "ownerId": "item_-1",
+                      "next": {
+                        "contained": [],
+                        "next": null,
+                        "underlay": []
+                      }
+                    }
+                  ],
+                  "next": null,
+                  "underlay": []
+                }
+              }
+            ],
+            "next": {
+              "id": "x29",
+              "name": "changePhysicsYPosition",
+              "ownerId": "item_-1",
+              "next": {
+                "contained": [
+                  {
+                    "id": "x30",
+                    "name": "reportProduct",
+                    "ownerId": "item_-1",
+                    "next": {
+                      "contained": [
+                        {
+                          "id": "x31",
+                          "name": "yVelocity",
+                          "ownerId": "item_-1",
+                          "next": {
+                            "contained": [],
+                            "next": null,
+                            "underlay": []
+                          }
+                        },
+                        {
+                          "id": "x32",
+                          "name": "deltaTime",
+                          "ownerId": "item_-1",
+                          "next": {
+                            "contained": [],
+                            "next": null,
+                            "underlay": []
+                          }
+                        }
+                      ],
+                      "next": null,
+                      "underlay": []
+                    }
+                  }
+                ],
+                "next": {
+                  "id": "x33",
+                  "name": "doIf",
+                  "ownerId": "item_-1",
+                  "next": {
+                    "contained": [
+                      {
+                        "id": "x34",
+                        "name": "reportOr",
+                        "ownerId": "item_-1",
+                        "next": {
+                          "contained": [
+                            {
+                              "id": "x35",
+                              "name": "reportLessThan",
+                              "ownerId": "item_-1",
+                              "next": {
+                                "contained": [
+                                  {
+                                    "id": "x36",
+                                    "name": "physicsYPosition",
+                                    "ownerId": "item_-1",
+                                    "next": {
+                                      "contained": [],
+                                      "next": null,
+                                      "underlay": []
+                                    }
+                                  },
+                                  {
+                                    "name": "0",
+                                    "ownerId": "",
+                                    "next": {
+                                      "contained": [],
+                                      "underlay": []
+                                    }
+                                  }
+                                ],
+                                "next": null,
+                                "underlay": []
+                              }
+                            },
+                            {
+                              "id": "x37",
+                              "name": "reportEquals",
+                              "ownerId": "item_-1",
+                              "next": {
+                                "contained": [
+                                  {
+                                    "id": "x38",
+                                    "name": "physicsYPosition",
+                                    "ownerId": "item_-1",
+                                    "next": {
+                                      "contained": [],
+                                      "next": null,
+                                      "underlay": []
+                                    }
+                                  },
+                                  {
+                                    "name": "0",
+                                    "ownerId": "",
+                                    "next": {
+                                      "contained": [],
+                                      "underlay": []
+                                    }
+                                  }
+                                ],
+                                "next": null,
+                                "underlay": []
+                              }
+                            }
+                          ],
+                          "next": null,
+                          "underlay": []
+                        }
+                      },
+                      {
+                        "id": "x39",
+                        "name": "setYVelocity",
+                        "ownerId": "item_-1",
+                        "next": {
+                          "contained": [
+                            {
+                              "id": "x40",
+                              "name": "reportProduct",
+                              "ownerId": "item_-1",
+                              "next": {
+                                "contained": [
+                                  {
+                                    "name": "-1",
+                                    "ownerId": "",
+                                    "next": {
+                                      "contained": [],
+                                      "underlay": []
+                                    }
+                                  },
+                                  {
+                                    "id": "x41",
+                                    "name": "reportProduct",
+                                    "ownerId": "item_-1",
+                                    "next": {
+                                      "contained": [
+                                        {
+                                          "id": "x42",
+                                          "name": "yVelocity",
+                                          "ownerId": "item_-1",
+                                          "next": {
+                                            "contained": [],
+                                            "next": null,
+                                            "underlay": []
+                                          }
+                                        },
+                                        {
+                                          "id": "x43",
+                                          "name": "var: restitution",
+                                          "ownerId": "item_-1",
+                                          "next": {
+                                            "contained": [],
+                                            "next": null,
+                                            "underlay": []
+                                          }
+                                        }
+                                      ],
+                                      "next": null,
+                                      "underlay": []
+                                    }
+                                  }
+                                ],
+                                "next": null,
+                                "underlay": []
+                              }
+                            }
+                          ],
+                          "next": {
+                            "id": "x44",
+                            "name": "setPhysicsYPosition",
+                            "ownerId": "item_-1",
+                            "next": {
+                              "contained": [
+                                {
+                                  "name": "0",
+                                  "ownerId": "",
+                                  "next": {
+                                    "contained": [],
+                                    "underlay": []
+                                  }
+                                }
+                              ],
+                              "next": {
+                                "id": "x45",
+                                "name": "doIf",
+                                "ownerId": "item_-1",
+                                "next": {
+                                  "contained": [
+                                    {
+                                      "id": "x46",
+                                      "name": "reportLessThan",
+                                      "ownerId": "item_-1",
+                                      "next": {
+                                        "contained": [
+                                          {
+                                            "id": "x47",
+                                            "name": "reportMonadic",
+                                            "ownerId": "item_-1",
+                                            "next": {
+                                              "contained": [
+                                                {
+                                                  "name": "abs",
+                                                  "ownerId": "",
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                },
+                                                {
+                                                  "id": "x48",
+                                                  "name": "yVelocity",
+                                                  "ownerId": "item_-1",
+                                                  "next": {
+                                                    "contained": [],
+                                                    "next": null,
+                                                    "underlay": []
+                                                  }
+                                                }
+                                              ],
+                                              "next": null,
+                                              "underlay": []
+                                            }
+                                          },
+                                          {
+                                            "name": "0.4",
+                                            "ownerId": "",
+                                            "next": {
+                                              "contained": [],
+                                              "underlay": []
+                                            }
+                                          }
+                                        ],
+                                        "next": null,
+                                        "underlay": []
+                                      }
+                                    },
+                                    {
+                                      "id": "x49",
+                                      "name": "stopSimulation",
+                                      "ownerId": "item_-1",
+                                      "next": {
+                                        "contained": [],
+                                        "next": null,
+                                        "underlay": []
+                                      }
+                                    }
+                                  ],
+                                  "next": null,
+                                  "underlay": []
+                                }
+                              },
+                              "underlay": []
+                            }
+                          },
+                          "underlay": []
+                        }
+                      }
+                    ],
+                    "next": {
+                      "id": "x50",
+                      "name": "doSetVar",
+                      "ownerId": "item_-1",
+                      "next": {
+                        "contained": [
+                          {
+                            "name": "potential energy",
+                            "ownerId": "",
+                            "next": {
+                              "contained": [],
+                              "underlay": []
+                            }
+                          },
+                          {
+                            "id": "x51",
+                            "name": "reportProduct",
+                            "ownerId": "item_-1",
+                            "next": {
+                              "contained": [
+                                {
+                                  "id": "x52",
+                                  "name": "mass",
+                                  "ownerId": "item_-1",
+                                  "next": {
+                                    "contained": [],
+                                    "next": null,
+                                    "underlay": []
+                                  }
+                                },
+                                {
+                                  "id": "x53",
+                                  "name": "reportProduct",
+                                  "ownerId": "item_-1",
+                                  "next": {
+                                    "contained": [
+                                      {
+                                        "id": "x54",
+                                        "name": "var: gravity",
+                                        "ownerId": "item_-1",
+                                        "next": {
+                                          "contained": [],
+                                          "next": null,
+                                          "underlay": []
+                                        }
+                                      },
+                                      {
+                                        "id": "x55",
+                                        "name": "physicsYPosition",
+                                        "ownerId": "item_-1",
+                                        "next": {
+                                          "contained": [],
+                                          "next": null,
+                                          "underlay": []
+                                        }
+                                      }
+                                    ],
+                                    "next": null,
+                                    "underlay": []
+                                  }
+                                }
+                              ],
+                              "next": null,
+                              "underlay": []
+                            }
+                          }
+                        ],
+                        "next": {
+                          "id": "x56",
+                          "name": "doSetVar",
+                          "ownerId": "item_-1",
+                          "next": {
+                            "contained": [
+                              {
+                                "name": "kinetic energy",
+                                "ownerId": "",
+                                "next": {
+                                  "contained": [],
+                                  "underlay": []
+                                }
+                              },
+                              {
+                                "id": "x57",
+                                "name": "reportProduct",
+                                "ownerId": "item_-1",
+                                "next": {
+                                  "contained": [
+                                    {
+                                      "name": "0.5",
+                                      "ownerId": "",
+                                      "next": {
+                                        "contained": [],
+                                        "underlay": []
+                                      }
+                                    },
+                                    {
+                                      "id": "x58",
+                                      "name": "reportProduct",
+                                      "ownerId": "item_-1",
+                                      "next": {
+                                        "contained": [
+                                          {
+                                            "id": "x59",
+                                            "name": "mass",
+                                            "ownerId": "item_-1",
+                                            "next": {
+                                              "contained": [],
+                                              "next": null,
+                                              "underlay": []
+                                            }
+                                          },
+                                          {
+                                            "id": "x60",
+                                            "name": "reportPower",
+                                            "ownerId": "item_-1",
+                                            "next": {
+                                              "contained": [
+                                                {
+                                                  "id": "x61",
+                                                  "name": "yVelocity",
+                                                  "ownerId": "item_-1",
+                                                  "next": {
+                                                    "contained": [],
+                                                    "next": null,
+                                                    "underlay": []
+                                                  }
+                                                },
+                                                {
+                                                  "name": "2",
+                                                  "ownerId": "",
+                                                  "next": {
+                                                    "contained": [],
+                                                    "underlay": []
+                                                  }
+                                                }
+                                              ],
+                                              "next": null,
+                                              "underlay": []
+                                            }
+                                          }
+                                        ],
+                                        "next": null,
+                                        "underlay": []
+                                      }
+                                    }
+                                  ],
+                                  "next": null,
+                                  "underlay": []
+                                }
+                              }
+                            ],
+                            "next": {
+                              "id": "x62",
+                              "name": "doChangeVar",
+                              "ownerId": "item_-1",
+                              "next": {
+                                "contained": [
+                                  {
+                                    "name": "time",
+                                    "ownerId": "",
+                                    "next": {
+                                      "contained": [],
+                                      "underlay": []
+                                    }
+                                  },
+                                  {
+                                    "id": "x63",
+                                    "name": "deltaTime",
+                                    "ownerId": "item_-1",
+                                    "next": {
+                                      "contained": [],
+                                      "next": null,
+                                      "underlay": []
+                                    }
+                                  }
+                                ],
+                                "next": null,
+                                "underlay": []
+                              }
+                            },
+                            "underlay": []
+                          }
+                        },
+                        "underlay": []
+                      }
+                    },
+                    "underlay": []
+                  }
+                },
+                "underlay": []
+              }
+            },
+            "underlay": []
+          }
+        },
+        "underlay": []
+      }
+    }
+  ],
+  "expected": "[when green flag clicked]\n[set mass to (1) kg]\n[set (restitution) to (0.8)]\n[set DeltaT to (0.1)]\n[set (time) to (0)]\n[set y_position to (7.8)]\n[set y_velocity to (0)]\n[set y_acceleration to ((-1) (×) (gravity))]\n[set (potentialenergy) to ((mass in kg) (×) ((gravity) (×) (y_position)))]\n[set (kineticenergy) to ((0.5) (×) ((mass in kg) (×) ((y_velocity) (power) (2))))]\n[start simulation]\n\n[simulation step]\n[change y_velocity by ((y_acceleration) (×) (DeltaT))]\n[change y_position by ((y_velocity) (×) (DeltaT))]\n[if (((y_position) (<) (0)) (or) ((y_position) (=) (0)))]\n\t[set y_velocity to ((-1) (×) ((y_velocity) (×) (restitution)))]\n\t[set y_position to (0)]\n\t[if (((abs) of (y_velocity)) (<) (0.4))]\n\t\t[stop simulation]\n[set (potentialenergy) to ((mass in kg) (×) ((gravity) (×) (y_position)))]\n[set (kineticenergy) to ((0.5) (×) ((mass in kg) (×) ((y_velocity) (power) (2))))]\n[change (time) by (DeltaT)]\n\n"
+}

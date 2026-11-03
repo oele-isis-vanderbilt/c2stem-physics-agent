@@ -13,12 +13,14 @@
 import truck from "@/services/scoring/lessons/truck";
 import lesson1 from "@/services/scoring/lessons/lesson1";
 import lesson2 from "@/services/scoring/lessons/lesson2";
+import lesson3 from "@/services/scoring/lessons/lesson3";
 import tree from "@/services/scoring/treeUtils";
 
 const LESSONS = {
   [truck.id]: truck,
   [lesson1.id]: lesson1,
   [lesson2.id]: lesson2,
+  [lesson3.id]: lesson3,
 };
 
 const DEFAULT_LESSON = truck.id;

@@ -549,5 +549,380 @@ const stepVar = (t, name) => script(t.step).find(isSetVar(name));
   check('lesson2 filter: Crate + Spring project scores 26/26', store.getters.getScore.overall_mastery === 26);
 }
 
+// ---- Lesson 3 ----------------------------------------------------------------
+
+const lesson3 = scoring.getLesson('lesson3');
+const ITEMS3 = [...lesson3.physicsItems, ...lesson3.computingItems];
+
+function scoreCase3(name, roots, zeros = []) {
+  const score = lesson3.scoreTree(roots);
+  const wrong = ITEMS3.filter((key) => score[key] !== (zeros.includes(key) ? 0 : 1));
+  check(
+    `lesson3: ${name}`,
+    wrong.length === 0,
+    wrong.map((key) => `      ${key}: got ${score[key]}, expected ${zeros.includes(key) ? 0 : 1}`).join('\n')
+  );
+  return score;
+}
+
+// Ball tree of the saved expert, with handles to the parts the cases edit
+function ballExpert() {
+  const roots = copy(loadFixture('balldrop-expert-v3').treeRoots);
+  const flag = roots.find((r) => r.name === 'receiveGo');
+  const step = roots.find((r) => r.name === 'doSimulationStep');
+  const collisionIf = script(step).find((b) => b.name === 'doIf');
+  const stopIf = ifBody(collisionIf).find((b) => b.name === 'doIf');
+  return { roots, flag, step, collisionIf, stopIf };
+}
+
+{
+  const score = scoreCase3('expert scores 24/24', ballExpert().roots);
+  check(
+    'lesson3: expert mastery 17 / 7 / 24',
+    score.physics_mastery === 17 && score.computing_mastery === 7 && score.overall_mastery === 24,
+    JSON.stringify(score)
+  );
+  check('lesson3: initialScore has every item at 0', ITEMS3.every((k) => lesson3.initialScore()[k] === 0));
+}
+
+{
+  const score = scoreCase3('empty project scores 0', [], ITEMS3);
+  check('lesson3: empty mastery is 0', score.overall_mastery === 0);
+}
+
+// Replaces "set y_position" with the blocks given
+function setPositionBlocks(t, blocks) {
+  const script3 = script(t.flag);
+  const at = script3.findIndex((b) => b.name === 'setPhysicsYPosition');
+  script3.splice(at, 1, ...blocks);
+  setScript(t.flag, script3);
+}
+const setY = (y) => block('setPhysicsYPosition', [literal(y)]);
+const setXY = (x, y) => block('setPhysicsPosition', [literal(x), literal(y)]);
+
+for (const [name, blocks, zeros] of [
+  ['set position y 7.8', () => [setXY(0, 7.8)], []],
+  ['set position y 7.8125 (exact answer)', () => [setXY(0, 7.8125)], []],
+  ['set position x 3, y 7.8 (x is not scored)', () => [setXY(3, 7.8)], []],
+  ['set position y 5', () => [setXY(0, 5)], ['initialize_position']],
+  ['set position x 7.8, y 0 (x and y swapped)', () => [setXY(7.8, 0)], ['initialize_position']],
+  ['set position y left empty', () => [setXY(0, '')], ['initialize_position']],
+  ['set y_position 7.8', () => [setY(7.8)], []],
+  ['set y_position 7.8125 (exact answer)', () => [setY(7.8125)], []],
+  ['set y_position 7.8 written as 7.80', () => [setY('7.80')], []],
+  ['set y_position 5', () => [setY(5)], ['initialize_position']],
+  ['set y_position left empty', () => [setY('')], ['initialize_position']],
+  ['no position block', () => [], ['initialize_position']],
+  ['set x_position 7.8 is not y', () => [block('setPhysicsXPosition', [literal(7.8)])], ['initialize_position']],
+  ['set position y 0, then set y_position 7.8', () => [setXY(0, 0), setY(7.8)], []],
+  ['set y_position 7.8, then set position y 0', () => [setY(7.8), setXY(0, 0)], ['initialize_position']],
+  ['set position y 7.8, then set y_position 0', () => [setXY(0, 7.8), setY(0)], ['initialize_position']],
+]) {
+  const t = ballExpert();
+  setPositionBlocks(t, blocks());
+  scoreCase3(`drop height: ${name}`, t.roots, zeros);
+}
+
+{
+  // set y_position in the step (back to the floor) is not the drop height
+  const t = ballExpert();
+  setPositionBlocks(t, []);
+  check(
+    'lesson3: drop height: set y_position 0 in the collision if does not count',
+    lesson3.scoreTree(t.roots).initialize_position === 0
+  );
+}
+
+{
+  const t = ballExpert();
+  flagBlock(t, 'setDeltaTime').next.contained[0].name = '0.02';
+  scoreCase3('Δt 0.02 instead of 0.1', t.roots, ['initialize_deltaT']);
+}
+
+{
+  const t = ballExpert();
+  flagVar(t, 'restitution').next.contained[1].name = '1';
+  scoreCase3('restitution 1 instead of 0.8', t.roots, ['initialize_restitution']);
+}
+
+// Initial y acceleration: scored by its value
+const gravityVar = () => block('var: gravity');
+const massR = () => block('mass');
+const yR = () => block('physicsYPosition');
+const vR = () => block('yVelocity');
+const dtR = () => block('deltaTime');
+const neg = (node) => product(literal(-1), node);
+
+for (const [name, value, zeros] of [
+  ['−1 × gravity', () => neg(gravityVar()), []],
+  ['−9.8 typed', () => literal(-9.8), []],
+  ['−9.81 typed', () => literal(-9.81), []],
+  ['0 − 9.8', () => block('reportDifference', [literal(0), literal(9.8)]), []],
+  ['0 − gravity', () => block('reportDifference', [literal(0), gravityVar()]), []],
+  ['the gravity reporter', () => block('yGravity'), []],
+  ['gravity variable, wrong sign', () => gravityVar(), ['initialize_acceleration']],
+  ['9.8 typed, wrong sign', () => literal(9.8), ['initialize_acceleration']],
+  ['−5 typed', () => literal(-5), ['initialize_acceleration']],
+  ['left empty', () => literal(''), ['initialize_acceleration']],
+]) {
+  const t = ballExpert();
+  flagBlock(t, 'setYAcceleration').next.contained[0] = value();
+  scoreCase3(`acceleration: ${name}`, t.roots, zeros);
+}
+
+{
+  const t = ballExpert();
+  setScript(t.flag, script(t.flag).filter((b) => b.name !== 'setYAcceleration'));
+  scoreCase3('acceleration: no block', t.roots, ['initialize_acceleration']);
+}
+
+{
+  // Value through other blocks: net force set first, then force / mass
+  const t = ballExpert();
+  const blocks = script(t.flag);
+  const at = blocks.findIndex((b) => b.name === 'setYAcceleration');
+  blocks.splice(
+    at,
+    1,
+    block('setYNetForce', [product(massR(), block('yGravity'))]),
+    block('setYAcceleration', [block('reportQuotient', [block('yNetForce'), massR()])])
+  );
+  setScript(t.flag, blocks);
+  scoreCase3('acceleration: net force / mass', t.roots);
+}
+
+{
+  const t = ballExpert();
+  const blocks = script(t.flag);
+  const at = blocks.findIndex((b) => b.name === 'setYAcceleration');
+  blocks[at] = block('setYAcceleration', [block('reportQuotient', [block('yNetForce'), massR()])]);
+  setScript(t.flag, blocks);
+  scoreCase3('acceleration: net force never set', t.roots, ['initialize_acceleration']);
+}
+
+// Energy: a formula is required, and potential energy must be positive
+const PE = 'potential energy';
+const KE = 'kinetic energy';
+const PE_ITEMS = ['initialize_potential_energy', 'update_potential_energy'];
+const KE_ITEMS = ['initialize_kinetic_energy', 'update_kinetic_energy'];
+
+for (const [name, value, zeros] of [
+  ['mass × 9.8 × y', () => product(massR(), product(literal(9.8), yR())), []],
+  ['y × gravity × mass', () => product(product(yR(), gravityVar()), massR()), []],
+  ['mass × 9.81 × y', () => product(massR(), product(literal(9.81), yR())), []],
+  ['−1 × reporter × mass × y', () => product(neg(block('yGravity')), product(massR(), yR())), []],
+  ['−1 × gravity × mass × y is negative', () => product(neg(gravityVar()), product(massR(), yR())), PE_ITEMS],
+  ['mass × y, no gravity', () => product(massR(), yR()), PE_ITEMS],
+  ['gravity × y, no mass', () => product(gravityVar(), yR()), PE_ITEMS],
+  ['76.44 typed', () => literal(76.44), PE_ITEMS],
+]) {
+  const t = ballExpert();
+  flagVar(t, PE).next.contained[1] = value();
+  stepVar(t, PE).next.contained[1] = value();
+  scoreCase3(`potential energy: ${name}`, t.roots, zeros);
+}
+
+for (const [name, value, zeros] of [
+  ['v × v × mass × 0.5', () => product(product(vR(), vR()), product(massR(), literal(0.5))), []],
+  ['mass × v² / 2', () => block('reportQuotient', [product(massR(), block('reportPower', [vR(), literal(2)])), literal(2)]), []],
+  ['0 typed', () => literal(0), KE_ITEMS],
+  ['mass × v', () => product(massR(), vR()), KE_ITEMS],
+  ['no 0.5', () => product(massR(), product(vR(), vR())), KE_ITEMS],
+]) {
+  const t = ballExpert();
+  flagVar(t, KE).next.contained[1] = value();
+  stepVar(t, KE).next.contained[1] = value();
+  scoreCase3(`kinetic energy: ${name}`, t.roots, zeros);
+}
+
+{
+  const t = ballExpert();
+  setScript(t.flag, script(t.flag).filter((b) => !isSetVar(PE)(b) && !isSetVar(KE)(b)));
+  scoreCase3('energy set only in the step', t.roots, ['initialize_potential_energy', 'initialize_kinetic_energy']);
+}
+
+{
+  const t = ballExpert();
+  setScript(t.step, script(t.step).filter((b) => !isSetVar(PE)(b) && !isSetVar(KE)(b)));
+  scoreCase3('energy set only in the initialization', t.roots, ['update_potential_energy', 'update_kinetic_energy']);
+}
+
+// Velocity update: acceleration × Δt, or −9.8 × Δt built any way
+for (const [name, value, zeros] of [
+  ['−9.8 × Δt', () => product(literal(-9.8), dtR()), []],
+  ['(−1 × gravity) × Δt', () => product(neg(gravityVar()), dtR()), []],
+  ['9.8 × Δt, wrong sign', () => product(literal(9.8), dtR()), ['update_velocity']],
+  ['−0.98 typed', () => literal(-0.98), ['update_velocity']],
+  ['acceleration only', () => block('yAcceleration'), ['update_velocity']],
+]) {
+  const t = ballExpert();
+  script(t.step).find((b) => b.name === 'changeYVelocity').next.contained[0] = value();
+  scoreCase3(`velocity update: ${name}`, t.roots, zeros);
+}
+
+{
+  const t = ballExpert();
+  t.collisionIf.next.contained[0] = block('reportLessThan', [block('physicsYPosition'), literal(0)]);
+  scoreCase3('collision written as y < 0', t.roots);
+}
+
+{
+  const t = ballExpert();
+  t.collisionIf.next.contained[0] = block('reportGreaterThan', [literal(0), block('physicsYPosition')]);
+  scoreCase3('collision written as 0 > y', t.roots);
+}
+
+{
+  const t = ballExpert();
+  t.collisionIf.next.contained[0] = block('reportEquals', [block('physicsYPosition'), literal(0)]);
+  scoreCase3('collision as y = 0 only misses the floor', t.roots, ['collision_condition']);
+}
+
+{
+  const t = ballExpert();
+  t.collisionIf.next.contained[0] = block('reportLessThan', [block('physicsYPosition'), literal(5)]);
+  scoreCase3('collision at y < 5', t.roots, ['collision_condition']);
+}
+
+{
+  const t = ballExpert();
+  const setV = ifBody(t.collisionIf).find((b) => b.name === 'setYVelocity');
+  const v = find(setV, (n) => n.name === 'yVelocity');
+  const e = find(setV, (n) => n.name === 'var: restitution');
+  setV.next.contained[0] = product(product(literal(-1), v), e);
+  scoreCase3('bounce velocity as (−1 × v) × e', t.roots);
+}
+
+{
+  const t = ballExpert();
+  const setV = ifBody(t.collisionIf).find((b) => b.name === 'setYVelocity');
+  setV.next.contained[0] = find(setV, (n) => n.name === 'yVelocity');
+  scoreCase3('bounce velocity without −1 × e', t.roots, ['update_velocity_on_collision']);
+}
+
+{
+  const t = ballExpert();
+  const setV = ifBody(t.collisionIf).find((b) => b.name === 'setYVelocity');
+  setIfBody(t.collisionIf, ifBody(t.collisionIf).filter((b) => b !== setV));
+  setScript(t.step, [setV, ...script(t.step)]);
+  scoreCase3('bounce velocity outside the collision if', t.roots, ['update_velocity_on_collision']);
+}
+
+for (const [name, value, zeros] of [
+  ['−(1 + e) × v', () => product(neg(block('reportSum', [literal(1), block('var: restitution')])), vR()), []],
+  ['−v', () => neg(vR()), ['update_velocity_on_collision']],
+]) {
+  const t = ballExpert();
+  const body = ifBody(t.collisionIf);
+  body[body.findIndex((b) => b.name === 'setYVelocity')] = block('changeYVelocity', [value()]);
+  setIfBody(t.collisionIf, body);
+  scoreCase3(`bounce velocity by change: ${name}`, t.roots, zeros);
+}
+
+{
+  const t = ballExpert();
+  t.stopIf.next.contained[0].next.contained[1].name = '0.3';
+  scoreCase3('stop threshold 0.3 never stops the ball at Δt 0.1', t.roots, ['stop_condition']);
+}
+
+{
+  const t = ballExpert();
+  t.stopIf.next.contained[0].next.contained[1].name = '0.37';
+  scoreCase3('stop threshold 0.37 never stops the ball from 7.8', t.roots, ['stop_condition']);
+}
+
+{
+  const t = ballExpert();
+  t.stopIf.next.contained[0].next.contained[1].name = '0.38';
+  scoreCase3('stop threshold 0.38 is accepted', t.roots);
+}
+
+{
+  const t = ballExpert();
+  t.stopIf.next.contained[0].next.contained[1].name = '0.5';
+  scoreCase3('stop threshold 0.5 is accepted', t.roots);
+}
+
+{
+  const t = ballExpert();
+  t.stopIf.next.contained[0].next.contained[1].name = '2';
+  scoreCase3('stop threshold 2 is too large', t.roots, ['stop_condition']);
+}
+
+{
+  const t = ballExpert();
+  const cond = t.stopIf.next.contained[0]; // (abs(v) < 0.5)
+  cond.name = 'reportGreaterThan';
+  cond.next.contained.reverse(); // (0.5 > abs(v))
+  scoreCase3('stop written as 0.5 > abs(v)', t.roots);
+}
+
+{
+  const t = ballExpert();
+  const cond = t.stopIf.next.contained[0];
+  cond.next.contained[0] = block('yVelocity');
+  scoreCase3('stop without abs', t.roots, ['stop_condition']);
+}
+
+{
+  const t = ballExpert();
+  const blocks = script(t.step);
+  const v = blocks.findIndex((b) => b.name === 'changeYVelocity');
+  const y = blocks.findIndex((b) => b.name === 'changePhysicsYPosition');
+  [blocks[v], blocks[y]] = [blocks[y], blocks[v]];
+  setScript(t.step, blocks);
+  scoreCase3('position updated before velocity', t.roots, ['update_order_velocity_position']);
+}
+
+{
+  const t = ballExpert();
+  setScript(t.step, [t.collisionIf, ...script(t.step).filter((b) => b !== t.collisionIf)]);
+  scoreCase3('collision if above the updates', t.roots, ['updates_above_collision_if']);
+}
+
+{
+  const t = ballExpert();
+  setIfBody(t.collisionIf, ifBody(t.collisionIf).filter((b) => b !== t.stopIf));
+  setScript(t.step, [...script(t.step), t.stopIf]);
+  scoreCase3('stop if after the collision if, not inside it', t.roots, ['stop_if_inside_collision_if']);
+}
+
+{
+  const t = ballExpert();
+  setIfBody(t.stopIf, []);
+  scoreCase3('stop if with no stop simulation', t.roots, ['stop_simulation_inside_stop_if']);
+}
+
+{
+  const t = ballExpert();
+  const stop = ifBody(t.stopIf)[0];
+  setIfBody(t.collisionIf, [...ifBody(t.collisionIf).filter((b) => b !== t.stopIf), stop]);
+  scoreCase3('stop simulation directly in the collision if', t.roots, [
+    'stop_condition',
+    'stop_if_inside_collision_if',
+    'stop_simulation_inside_stop_if',
+  ]);
+}
+
+{
+  const t = ballExpert();
+  setScript(t.flag, script(t.flag).filter((b) => b.name !== 'startSimulation'));
+  scoreCase3('no start simulation', t.roots, ['start_simulation_at_end']);
+}
+
+{
+  // Scripts of another sprite are not scored
+  const t = ballExpert();
+  const otherFlag = block('receiveGo');
+  otherFlag.ownerId = 'item_3';
+  setScript(otherFlag, [block('setMass', [literal(4)])]);
+  const roots = [...t.roots, otherFlag];
+  const store = makeStore({ treeRoots: roots, sprites: { 'item_-1': 'Ball', item_3: 'Other' } });
+  const visible = scoring.visibleRoots(lesson3, store);
+  check('lesson3 filter: only Ball scripts are scored', visible.length === 2 && !visible.includes(otherFlag));
+  lesson3.createScorer(store).updateScore(scoring.generateState(lesson3, store), visible);
+  check('lesson3 filter: Ball + other sprite scores 24/24', store.getters.getScore.overall_mastery === 24);
+}
+
 console.log(failures ? `\n${failures} check(s) failed` : '\nAll checks passed');
 process.exit(failures ? 1 : 0);

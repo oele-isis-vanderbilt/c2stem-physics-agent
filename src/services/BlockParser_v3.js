@@ -2,6 +2,7 @@
 //  - true/false blocks show their value instead of "(no value)"
 //  - variable names in set/change blocks drop spaces, like variable reporters
 //  - nested bodies (if inside if, ...) are indented one tab per level
+//  - "set position to x: y:" and "abs of ..." show their values instead of "(no value)"
 import MapBlocks from "@/services/MapBlocks";
 
 export default {
@@ -28,6 +29,7 @@ export default {
       "%b and %b",
       "%b or %b",
       "not %b",
+      "%fun of %n", // reportMonadic: abs of ...
       "%bool", // reportBoolean: true / false
       "%phy of %spr", // Add this block
       "set %var to %s", // Add doSetVar
@@ -36,6 +38,7 @@ export default {
       // Physics/Motion blocks
       "set x_position to %n",
       "set y_position to %n",
+      "set position to x: %n y: %n",
       "change x_position by %n",
       "change y_position by %n",
       "set x_velocity to %n",

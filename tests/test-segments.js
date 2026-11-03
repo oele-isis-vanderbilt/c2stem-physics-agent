@@ -5,6 +5,8 @@
  *  - Lesson 1: C2STEM docs/lesson1_segment.png on the Pushcart_expert Cart tree
  *  - Lesson 2: C2STEM docs/lesson2_segmentation.png on the Springmass expert
  *    Crate tree
+ *  - Lesson 3: C2STEM docs/lesson3_segment_update.png on the Balldrop expert
+ *    Ball tree
  *
  * Usage:  npm run test:segments
  */
@@ -338,6 +340,103 @@ compare('lesson2 expert: every block in its picture segment', loadRoots('springm
       parser.extractSegment({ block: crateIf.next.contained[1].id }) === UNDER
   );
 }
+
+// ---- Lesson 3: every block of the Ball drop expert ------------------------------
+// Picture: C2STEM docs/lesson3_segment_update.png
+
+compare('lesson3 expert: every block in its segment', loadRoots('balldrop-expert-v3'), [
+  // Initializing Variables
+  ...inSegment(
+    [
+      ['receiveGo'],
+      ['setMass'],
+      ['doSetVar'],
+      ['setDeltaTime'],
+      ['doSetVar'],
+      ['setPhysicsYPosition'],
+      ['setYVelocity'],
+      ['setYAcceleration'],
+      ['reportProduct'],
+      ['var: gravity'],
+      ['doSetVar'],
+      ['reportProduct'],
+      ['mass'],
+      ['reportProduct'],
+      ['var: gravity'],
+      ['physicsYPosition'],
+      ['doSetVar'],
+      ['reportProduct'],
+      ['reportProduct'],
+      ['mass'],
+      ['reportPower'],
+      ['yVelocity'],
+      ['startSimulation'],
+    ],
+    INIT
+  ),
+  // Updating Variables, Each Simulation Step
+  ...inSegment(
+    [
+      ['doSimulationStep'],
+      ['changeYVelocity'],
+      ['reportProduct'],
+      ['yAcceleration'],
+      ['deltaTime'],
+      ['changePhysicsYPosition'],
+      ['reportProduct'],
+      ['yVelocity'],
+      ['deltaTime'],
+    ],
+    EVERY
+  ),
+  // Collision if: Conditional Statements
+  ...inSegment(
+    [
+      ['doIf'],
+      ['reportOr'],
+      ['reportLessThan'],
+      ['physicsYPosition'],
+      ['reportEquals'],
+      ['physicsYPosition'],
+    ],
+    COND
+  ),
+  // Its body: Updating Variables, Under Conditions
+  ...inSegment(
+    [
+      ['setYVelocity'],
+      ['reportProduct'],
+      ['reportProduct'],
+      ['yVelocity'],
+      ['var: restitution'],
+      ['setPhysicsYPosition'],
+    ],
+    UNDER
+  ),
+  // Stop if nested in the body: Conditional Statements, stop simulation under it
+  ...inSegment([['doIf'], ['reportLessThan'], ['reportMonadic'], ['yVelocity']], COND),
+  ['stopSimulation', UNDER],
+  // Updating Variables, Each Simulation Step
+  ...inSegment(
+    [
+      ['doSetVar'],
+      ['reportProduct'],
+      ['mass'],
+      ['reportProduct'],
+      ['var: gravity'],
+      ['physicsYPosition'],
+      ['doSetVar'],
+      ['reportProduct'],
+      ['reportProduct'],
+      ['mass'],
+      ['reportPower'],
+      ['yVelocity'],
+      ['doChangeVar'],
+      ['deltaTime'],
+    ],
+    EVERY
+  ),
+]);
 
 console.log(failures ? `\n${failures} check(s) failed` : '\nAll checks passed');
 process.exit(failures ? 1 : 0);
