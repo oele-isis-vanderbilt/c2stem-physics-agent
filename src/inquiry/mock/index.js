@@ -8,12 +8,14 @@ import lesson1a from "./lessons/lesson-1a.json";
 import lesson1b from "./lessons/lesson-1b.json";
 import lesson2 from "./lessons/lesson-2.json";
 import lesson3 from "./lessons/lesson-3.json";
+import lesson4 from "./lessons/lesson-4.json";
 
 const LESSONS = [
   { id: "mock-1a", content: lesson1a },
   { id: "mock-1b", content: lesson1b },
   { id: "mock-2", content: lesson2 },
   { id: "mock-3", content: lesson3 },
+  { id: "mock-4", content: lesson4 },
 ];
 
 function hoursAgo(hours) {

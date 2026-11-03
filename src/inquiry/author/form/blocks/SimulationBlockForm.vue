@@ -54,11 +54,69 @@
           :for="`${group.field}-${block.id}-${v.key}`"
         >
           {{ v.label || v.key }}<span v-if="v.unit"> ({{ v.unit }})</span>
-          <span v-if="sim && !mapped(group.mapping, v.key)" class="text-danger">
+          <span v-if="v.role === 'calculated'" class="text-muted">
+            · calculated
+          </span>
+          <span
+            v-else-if="sim && !mapped(group.mapping, v.key)"
+            class="text-danger"
+          >
             · not linked to the project yet
           </span>
         </label>
+        <div
+          v-if="group.field === 'outputs' && listOf('outputs').includes(v.key)"
+          class="form-check form-switch beside"
+        >
+          <input
+            :id="`readout-${block.id}-${v.key}`"
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            :checked="isReadout(v.key)"
+            @change="setReadout(v.key, $event.target.checked)"
+          />
+          <label class="form-check-label" :for="`readout-${block.id}-${v.key}`">
+            Beside the stage
+          </label>
+        </div>
+        <div
+          v-if="
+            group.field === 'inputs' &&
+            calculatedVariables.length &&
+            listOf('inputs').includes(v.key)
+          "
+          class="under-slider"
+        >
+          <div class="field-sublabel">Show under this slider</div>
+          <div v-for="c in calculatedVariables" :key="c.key" class="form-check">
+            <input
+              :id="`detail-${block.id}-${v.key}-${c.key}`"
+              class="form-check-input"
+              type="checkbox"
+              :checked="detailsOf(v.key).includes(c.key)"
+              @change="setDetail(v.key, c.key, $event.target.checked)"
+            />
+            <label
+              class="form-check-label"
+              :for="`detail-${block.id}-${v.key}-${c.key}`"
+            >
+              {{ c.label || c.key }}<span v-if="c.unit"> ({{ c.unit }})</span>
+            </label>
+          </div>
+        </div>
       </div>
+      <p
+        v-if="group.field === 'inputs' && !calculatedVariables.length"
+        class="field-hint"
+      >
+        To show values under a slider, such as Cart B&rsquo;s mass under a mass
+        ratio, add a calculated variable under Variables.
+      </p>
+      <p v-if="group.field === 'outputs'" class="field-hint">
+        Every ticked value is a Results column. Switch off &ldquo;Beside the
+        stage&rdquo; to keep one out of the box next to the simulation.
+      </p>
     </fieldset>
 
     <fieldset class="field">
@@ -159,8 +217,9 @@ import TextField from "../fields/TextField.vue";
 import blockForm from "../blockForm";
 
 /**
- * Simulation block: which input variables are sliders, which outputs are
- * shown, the graph, and how many runs students need.
+ * Simulation block: which input variables are sliders and which calculated
+ * values show under each, which outputs are Results columns and which of
+ * those show beside the stage, the graph, and how many runs students need.
  */
 export default {
   name: "SimulationBlockForm",
@@ -189,8 +248,16 @@ export default {
         },
       ].map((group) => ({
         ...group,
-        variables: this.variables.filter((v) => v.role === group.role),
+        // Calculated values can be Results columns too
+        variables: this.variables.filter(
+          (v) =>
+            v.role === group.role ||
+            (group.field === "outputs" && v.role === "calculated")
+        ),
       }));
+    },
+    calculatedVariables() {
+      return this.variables.filter((v) => v.role === "calculated");
     },
     recordedLabels() {
       const columns = ((this.series && this.series.columns) || []).filter(
@@ -218,18 +285,67 @@ export default {
       const v = this.variables.find((variable) => variable.key === key);
       return v ? v.label || key : key;
     },
+    /** Keys in the lesson's variable order, unknown ones last. */
+    inOrder(keys) {
+      const chosen = new Set(keys);
+      const order = this.variables.map((v) => v.key);
+      return [
+        ...order.filter((k) => chosen.has(k)),
+        ...[...chosen].filter((k) => !order.includes(k)),
+      ];
+    },
     /** Ticks keep the lesson's variable order. */
     toggle(field, key, on) {
       const chosen = new Set(this.listOf(field));
       if (on) chosen.add(key);
       else chosen.delete(key);
-      const order = this.variables.map((v) => v.key);
-      const list = [
-        ...order.filter((k) => chosen.has(k)),
-        ...[...chosen].filter((k) => !order.includes(k)),
-      ];
+      const list = this.inOrder(chosen);
       this.edit((block) => {
         block[field] = list;
+        if (on) return;
+        // An unticked output leaves the box; an unticked slider loses its values
+        if (field === "outputs" && Array.isArray(block.readouts)) {
+          block.readouts = block.readouts.filter((k) => k !== key);
+        }
+        if (field === "inputs" && block.sliderDetails) {
+          delete block.sliderDetails[key];
+          if (!Object.keys(block.sliderDetails).length)
+            delete block.sliderDetails;
+        }
+      }, true);
+    },
+    /** With no readouts list, every output shows beside the stage. */
+    isReadout(key) {
+      const readouts = this.block.readouts;
+      return Array.isArray(readouts) ? readouts.includes(key) : true;
+    },
+    setReadout(key, on) {
+      const outputs = this.listOf("outputs");
+      const shown = new Set(outputs.filter((k) => this.isReadout(k)));
+      if (on) shown.add(key);
+      else shown.delete(key);
+      const list = this.inOrder(shown);
+      this.edit((block) => {
+        // Showing them all is the default, so a list is only kept when it says less
+        if (outputs.every((k) => shown.has(k))) delete block.readouts;
+        else block.readouts = list;
+      }, true);
+    },
+    detailsOf(slider) {
+      const details = this.block.sliderDetails;
+      return (details && details[slider]) || [];
+    },
+    setDetail(slider, key, on) {
+      const chosen = new Set(this.detailsOf(slider));
+      if (on) chosen.add(key);
+      else chosen.delete(key);
+      const list = this.inOrder(chosen);
+      this.edit((block) => {
+        const details = { ...(block.sliderDetails || {}) };
+        if (list.length) details[slider] = list;
+        else delete details[slider];
+        if (Object.keys(details).length) block.sliderDetails = details;
+        else delete block.sliderDetails;
       }, true);
     },
     setGraph(on) {
@@ -283,6 +399,15 @@ export default {
   font-size: 14px;
   font-weight: 500;
   margin: 4px 0 2px;
+}
+.beside {
+  margin: 0 0 4px 1.5rem;
+  font-size: 13px;
+}
+.under-slider {
+  margin: 0 0 8px 1.5rem;
+  padding-left: 8px;
+  border-left: 3px solid var(--inq-line, #ddd8ea);
 }
 .max-y {
   display: flex;

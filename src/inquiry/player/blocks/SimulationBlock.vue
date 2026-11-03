@@ -6,7 +6,9 @@
       <div class="sim-controls sim-panel">
         <div v-for="v in inputs" :key="v.key" class="mb-2">
           <label :for="`${block.id}-${v.key}`" class="form-label mb-0">
-            {{ v.label }}: <strong>{{ values[v.key] }}</strong> {{ v.unit }}
+            {{ v.label }}:
+            <strong>{{ v.prefix || "" }}{{ values[v.key] }}</strong>
+            {{ v.unit }}
           </label>
           <input
             :id="`${block.id}-${v.key}`"
@@ -18,6 +20,17 @@
             :step="v.step || 'any'"
             :disabled="readOnly || running"
           />
+          <div
+            v-if="detailsOf(v.key).length"
+            class="sim-details"
+            aria-live="polite"
+          >
+            <div v-for="d in detailsOf(v.key)" :key="d.key">
+              {{ d.label }}:
+              <strong>{{ format(calculated[d.key], d) }}</strong>
+              {{ d.unit }}
+            </div>
+          </div>
         </div>
         <button
           type="button"
@@ -62,11 +75,11 @@
             :disabled="!hasSeries"
             @click="open('graph')"
           >
-            Graph
+            Time graph
           </button>
-          <div v-for="o in outputs" :key="o.key">
+          <div v-for="o in readouts" :key="o.key">
             {{ o.label }}:
-            <strong>{{ format(latest && latest.outputs[o.key], o) }}</strong>
+            <strong>{{ format(latest && valueOf(latest, o), o) }}</strong>
             {{ latest && o.unit ? o.unit : "" }}
           </div>
         </div>
@@ -94,14 +107,14 @@
     <dialog
       ref="dialog"
       class="sim-dialog"
-      :aria-label="dialog === 'graph' ? 'Graph' : 'Results'"
+      :aria-label="dialog === 'graph' ? 'Time graph' : 'Results'"
       @click="closeOnBackdrop"
       @close="dialog = null"
     >
       <div class="sim-dialog-body">
         <div class="d-flex align-items-center mb-2">
           <h3 class="h5 mb-0 me-auto">
-            {{ dialog === "graph" ? "Graph" : "Results" }}
+            {{ dialog === "graph" ? "Time graph" : "Results" }}
           </h3>
           <button
             type="button"
@@ -131,7 +144,7 @@
                   {{ format(r.inputs[v.key], v) }}
                 </td>
                 <td v-for="o in outputs" :key="o.key">
-                  {{ format(r.outputs[o.key], o) }}
+                  {{ format(valueOf(r, o), o) }}
                 </td>
               </tr>
             </tbody>
@@ -153,6 +166,7 @@
 </template>
 
 <script>
+import { calculate } from "../../formula";
 import { fillRefs, minRunsOf, runsOf } from "../lesson";
 import { NetsBloxSim, projectUrl } from "../sim/netsblox";
 import RunGraph from "../sim/RunGraph.vue";
@@ -178,6 +192,11 @@ function stepDecimals(v) {
  * { runs: [{ inputs, outputs, series, at }] }; Next waits for minRuns.
  * The graph shows graph.y at first; with graph.choose students pick from
  * every recorded output, up to graph.maxY at once.
+ *
+ * Calculated variables are worked out from the sliders with their formula:
+ * live under the sliders named in sliderDetails, and saved with each run for
+ * the ones in outputs. readouts, when set, picks which outputs show beside
+ * the stage; Results always has them all.
  */
 export default {
   name: "SimulationBlock",
@@ -216,6 +235,16 @@ export default {
     },
     outputs() {
       return this.block.outputs.map(this.variable);
+    },
+    /** The outputs shown beside the stage: block.readouts, or all of them. */
+    readouts() {
+      const keys = this.block.readouts;
+      if (!Array.isArray(keys)) return this.outputs;
+      return this.outputs.filter((o) => keys.includes(o.key));
+    },
+    /** Every calculated variable's value for the sliders as they are now. */
+    calculated() {
+      return this.workOut(this.values);
     },
     /** Variables the graph may show: graph.y, or every recorded output if students choose. */
     graphVariables() {
@@ -313,7 +342,14 @@ export default {
       this.status = "running";
       this.error = null;
       try {
-        const { outputs, series } = await adapter.run(inputs);
+        const result = await adapter.run(inputs);
+        const { series } = result;
+        // Calculated Results columns are saved with the run, for exports
+        const worked = this.workOut(inputs);
+        const outputs = { ...result.outputs };
+        for (const o of this.outputs) {
+          if (o.role === "calculated") outputs[o.key] = worked[o.key];
+        }
         const run = { inputs, outputs, series, at: new Date().toISOString() };
         // Build on the live answer, as two runs may be saved before a render
         const saved = runsOf(this.ctx.answers[this.block.id]);
@@ -346,12 +382,35 @@ export default {
     heading(v) {
       return v.unit ? `${v.label} (${v.unit})` : v.label;
     },
+    /** { key: value } of the lesson's calculated variables for these slider settings. */
+    workOut(inputs) {
+      const out = {};
+      for (const v of this.ctx.lesson.variables || []) {
+        if (v.role === "calculated") out[v.key] = calculate(v.formula, inputs);
+      }
+      return out;
+    },
+    /** The calculated variables shown under a slider. */
+    detailsOf(key) {
+      const details = this.block.sliderDetails;
+      const keys = (details && details[key]) || [];
+      return keys.map(this.variable);
+    },
+    /** A run's value of an output; calculated ones saved before they existed are worked out. */
+    valueOf(run, v) {
+      const saved = run.outputs && run.outputs[v.key];
+      if (saved !== undefined || v.role !== "calculated") return saved;
+      return calculate(v.formula, run.inputs || {});
+    },
     /** A value for display: a slider setting as precise as its step, results to 2 decimals. */
     format(n, v) {
       if (n === undefined || n === null || n === "") return "—";
-      if (typeof n !== "number") return String(n);
+      const prefix = (v && v.prefix) || "";
+      if (typeof n !== "number") return `${prefix}${n}`;
       const digits = v && v.role === "input" ? stepDecimals(v) : 2;
-      return n.toLocaleString(undefined, { maximumFractionDigits: digits });
+      return `${prefix}${n.toLocaleString(undefined, {
+        maximumFractionDigits: digits,
+      })}`;
     },
   },
 };
@@ -450,6 +509,14 @@ export default {
 }
 .sim-readouts {
   line-height: 1.9;
+}
+/* Calculated values under a slider, updated as it moves */
+.sim-details {
+  margin: -2px 0 4px;
+  padding-left: 10px;
+  border-left: 3px solid var(--inq-line, #ddd8ea);
+  font-size: 14px;
+  line-height: 1.6;
 }
 .sim-status {
   color: var(--inq-muted, #5c5670);

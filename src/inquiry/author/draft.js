@@ -7,6 +7,7 @@
  * positions, so it still points at the same thing after a move or an undo.
  */
 
+import { formulaMentions, renameInFormula } from "../formula";
 import { headersOf, trialsOf } from "../player/lesson";
 
 export const BLOCK_TYPES = [
@@ -447,14 +448,32 @@ export function variableUses(draft, key) {
       uses.push("the recorded-over-time columns");
     }
   }
+  for (const v of variablesOf(draft)) {
+    if (v.role === "calculated" && formulaMentions(v.formula, key)) {
+      uses.push(`the formula of ${v.label || v.key}`);
+    }
+  }
   for (const { block, p, s } of simulationBlocks(draft)) {
-    const lists = [block.inputs, block.outputs, block.graph && block.graph.y];
-    if (lists.some((list) => Array.isArray(list) && list.includes(key))) {
+    const lists = [
+      block.inputs,
+      block.outputs,
+      block.readouts,
+      block.graph && block.graph.y,
+      ...Object.values(detailsOf(block)),
+    ];
+    if (
+      key in detailsOf(block) ||
+      lists.some((list) => Array.isArray(list) && list.includes(key))
+    ) {
       uses.push(`the Simulation block on page ${p + 1}, step ${s + 1}`);
     }
   }
   return uses;
 }
+
+/** A Simulation block's calculated values under each slider: { slider: [keys] }. */
+const detailsOf = (block) =>
+  isObject(block.sliderDetails) ? block.sliderDetails : {};
 
 /** A mapping object with one property renamed, in the same place. */
 function renameProperty(object, from, to) {
@@ -480,10 +499,23 @@ export function renameVariable(draft, from, to) {
       sim.timeSeries.columns = swap(sim.timeSeries.columns, from, to);
     }
   }
+  for (const variable of variablesOf(draft)) {
+    if (variable.role === "calculated" && variable.formula) {
+      variable.formula = renameInFormula(variable.formula, from, to);
+    }
+  }
   for (const { block } of simulationBlocks(draft)) {
     block.inputs = swap(block.inputs, from, to);
     block.outputs = swap(block.outputs, from, to);
+    if (block.readouts) block.readouts = swap(block.readouts, from, to);
     if (block.graph) block.graph.y = swap(block.graph.y, from, to);
+    if (isObject(block.sliderDetails)) {
+      block.sliderDetails = Object.fromEntries(
+        Object.entries(renameProperty(block.sliderDetails, from, to)).map(
+          ([slider, keys]) => [slider, swap(keys, from, to)]
+        )
+      );
+    }
   }
 }
 
@@ -495,9 +527,21 @@ function dropFromBlocks(draft, key) {
         block[field] = block[field].filter((k) => k !== key);
       }
     }
+    if (Array.isArray(block.readouts)) {
+      block.readouts = block.readouts.filter((k) => k !== key);
+    }
     if (block.graph && Array.isArray(block.graph.y)) {
       block.graph.y = block.graph.y.filter((k) => k !== key);
       if (!block.graph.y.length) delete block.graph;
+    }
+    if (isObject(block.sliderDetails)) {
+      const details = {};
+      for (const [slider, keys] of Object.entries(block.sliderDetails)) {
+        const kept = Array.isArray(keys) ? keys.filter((k) => k !== key) : [];
+        if (slider !== key && kept.length) details[slider] = kept;
+      }
+      if (Object.keys(details).length) block.sliderDetails = details;
+      else delete block.sliderDetails;
     }
   }
 }
@@ -518,19 +562,41 @@ export function removeVariable(draft, key) {
 }
 
 /**
- * Makes a variable an input or an output. Its mapping moves across, and
- * simulation blocks stop listing it where it no longer fits.
+ * Makes a variable an input, an output or a calculated value. Its mapping
+ * moves across (a calculated value has none, as it comes from its formula),
+ * and simulation blocks stop listing it where it no longer fits.
  */
 export function setVariableRole(draft, key, role) {
   const variable = variablesOf(draft).find((v) => v.key === key);
   if (!variable || variable.role === role) return;
+  const was = variable.role;
   variable.role = role;
   const sim = draft.simulation;
-  const [from, to] =
-    role === "input" ? ["outputs", "inputs"] : ["inputs", "outputs"];
-  if (sim && isObject(sim[from]) && key in sim[from]) {
-    sim[to] = { ...sim[to], [key]: sim[from][key] };
-    delete sim[from][key];
+  if (role === "calculated") {
+    for (const field of ["min", "max", "step", "default"]) {
+      delete variable[field];
+    }
+    if (typeof variable.formula !== "string") variable.formula = "";
+    if (sim) {
+      if (isObject(sim.inputs)) delete sim.inputs[key];
+      if (isObject(sim.outputs)) delete sim.outputs[key];
+    }
+  } else {
+    delete variable.formula;
+    if (role === "input" && !("min" in variable)) {
+      Object.assign(variable, { min: 0, max: 10, step: 1, default: 5 });
+    }
+    const [from, to] =
+      role === "input" ? ["outputs", "inputs"] : ["inputs", "outputs"];
+    if (
+      was !== "calculated" &&
+      sim &&
+      isObject(sim[from]) &&
+      key in sim[from]
+    ) {
+      sim[to] = { ...sim[to], [key]: sim[from][key] };
+      delete sim[from][key];
+    }
   }
   dropFromBlocks(draft, key);
 }

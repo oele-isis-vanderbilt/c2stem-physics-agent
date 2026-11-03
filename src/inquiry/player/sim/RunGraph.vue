@@ -176,7 +176,28 @@ const QUANTITIES = {
   s: "Time",
   N: "Force",
   kg: "Mass",
+  "kg·m/s": "Momentum",
+  "kg m/s": "Momentum",
 };
+
+/**
+ * The axis name of a graph of several variables: their shared last word when
+ * they have one ("Cart A velocity", "Cart B velocity" → "Velocity"), else the
+ * usual name of their unit.
+ */
+function quantityOf(group) {
+  const last = group.vars.map((v) =>
+    String(v.label || "")
+      .trim()
+      .split(/\s+/)
+      .pop()
+      .toLowerCase()
+  );
+  if (last[0] && last.every((word) => word === last[0])) {
+    return last[0].charAt(0).toUpperCase() + last[0].slice(1);
+  }
+  return QUANTITIES[group.unit] || "Value";
+}
 
 /** Rounded tick values from min up to the first one at or past max. */
 function ticks(min, max, count = 5) {
@@ -296,13 +317,14 @@ export default {
       const top = this.M.top;
       const y = (v) =>
         top + plotHeight - ((v - min) / (max - min || 1)) * plotHeight;
+      // "Cart A velocity and cart B velocity": only the first letter is lowered
       const names = group.vars.map((v, n) =>
-        n ? v.label.toLowerCase() : v.label
+        n ? v.label.charAt(0).toLowerCase() + v.label.slice(1) : v.label
       );
       const unit = group.unit ? ` (${group.unit})` : "";
       const axis =
         group.vars.length > 1
-          ? `${QUANTITIES[group.unit] || "Value"}${unit}`
+          ? `${quantityOf(group)}${unit}`
           : `${group.vars[0].label}${unit}`;
       const last = this.runs.length - 1;
       const lines = [];

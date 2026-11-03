@@ -1,0 +1,429 @@
+{
+  "schemaVersion": 1,
+  "title": "Lesson 4: Cart collision",
+  "description": "Two shopping carts collide head-on. Change how heavy and how fast Cart B is compared with Cart A, and investigate how the carts' velocities, momentum and kinetic energy change in the collision. Built from inquiry_oct_31.pptx slides 41-48. Media values marked REPLACE_ME are placeholders.",
+  "variables": [
+    {
+      "key": "massRatio",
+      "label": "Cart Mass Ratio",
+      "role": "input",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 1,
+      "prefix": "1 : "
+    },
+    {
+      "key": "velocityRatio",
+      "label": "Initial Velocity Ratio",
+      "role": "input",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 1,
+      "prefix": "1 : "
+    },
+    {
+      "key": "cartAMass",
+      "label": "Cart A Mass",
+      "unit": "kg",
+      "role": "calculated",
+      "formula": "1"
+    },
+    {
+      "key": "cartBMass",
+      "label": "Cart B Mass",
+      "unit": "kg",
+      "role": "calculated",
+      "formula": "1 * massRatio"
+    },
+    {
+      "key": "cartAVelocity",
+      "label": "Cart A Velocity",
+      "unit": "m/s",
+      "role": "calculated",
+      "formula": "10"
+    },
+    {
+      "key": "cartBVelocity",
+      "label": "Cart B Velocity",
+      "unit": "m/s",
+      "role": "calculated",
+      "formula": "10 * velocityRatio"
+    },
+    {
+      "key": "finalVelocityA",
+      "label": "Final Velocity for Cart A",
+      "unit": "m/s",
+      "role": "output"
+    },
+    {
+      "key": "finalVelocityB",
+      "label": "Final Velocity for Cart B",
+      "unit": "m/s",
+      "role": "output"
+    },
+    {
+      "key": "totalKineticEnergy",
+      "label": "Total Kinetic Energy",
+      "unit": "J",
+      "role": "output"
+    },
+    {
+      "key": "totalMomentum",
+      "label": "Total Momentum",
+      "unit": "kg·m/s",
+      "role": "output"
+    },
+    {
+      "key": "velocityA",
+      "label": "Cart A velocity",
+      "unit": "m/s",
+      "role": "output"
+    },
+    {
+      "key": "velocityB",
+      "label": "Cart B velocity",
+      "unit": "m/s",
+      "role": "output"
+    },
+    {
+      "key": "momentumA",
+      "label": "Cart A momentum",
+      "unit": "kg·m/s",
+      "role": "output"
+    },
+    {
+      "key": "momentumB",
+      "label": "Cart B momentum",
+      "unit": "kg·m/s",
+      "role": "output"
+    },
+    {
+      "key": "kineticEnergyA",
+      "label": "Cart A kinetic energy",
+      "unit": "J",
+      "role": "output"
+    },
+    {
+      "key": "kineticEnergyB",
+      "label": "Cart B kinetic energy",
+      "unit": "J",
+      "role": "output"
+    },
+    {
+      "key": "elapsedTime",
+      "label": "Time",
+      "unit": "s",
+      "role": "output"
+    }
+  ],
+  "simulation": {
+    "key": "cartCollision",
+    "adapter": "netsblox",
+    "source": "https://physics.c2stem.org",
+    "owner": "NaveedMohd",
+    "project": "ssmv_26_inquiry4",
+    "inputs": {
+      "massRatio": "mass ratio",
+      "velocityRatio": "velocity ratio"
+    },
+    "outputs": {
+      "finalVelocityA": "cart A velocity",
+      "finalVelocityB": "cart B velocity",
+      "totalKineticEnergy": "total kinetic energy",
+      "totalMomentum": "total momentum",
+      "velocityA": "cart A velocity",
+      "velocityB": "cart B velocity",
+      "momentumA": "cart A momentum",
+      "momentumB": "cart B momentum",
+      "kineticEnergyA": "cart A kinetic energy",
+      "kineticEnergyB": "cart B kinetic energy",
+      "elapsedTime": "time"
+    },
+    "timeSeries": {
+      "variable": "run log",
+      "columns": [
+        "time",
+        "velocityA",
+        "velocityB",
+        "momentumA",
+        "momentumB",
+        "kineticEnergyA",
+        "kineticEnergyB"
+      ]
+    },
+    "run": {
+      "mode": "greenFlag"
+    },
+    "done": {
+      "mode": "poll",
+      "variable": "time",
+      "timeoutMs": 120000
+    }
+  },
+  "pages": [
+    {
+      "id": "orientation",
+      "phase": "Orientation & Conceptualization",
+      "steps": [
+        {
+          "id": "orientation-s1",
+          "blocks": [
+            {
+              "id": "orientation-media",
+              "type": "media",
+              "items": [
+                {
+                  "url": "REPLACE_ME/cart-collision-1.gif",
+                  "kind": "gif",
+                  "alt": "Two carts of the same mass move towards each other at the same speed, collide and bounce apart."
+                },
+                {
+                  "url": "REPLACE_ME/cart-collision-2.gif",
+                  "kind": "gif",
+                  "alt": "Two carts collide; Cart B is loaded with groceries and is heavier. Cart A bounces back fast and Cart B stops."
+                }
+              ]
+            },
+            {
+              "id": "orientation-prompt",
+              "type": "text",
+              "md": "Observe the animations above. In the animations, two carts collide with each other. In the animation on the right, one cart is heavier than the other.\n\nWhat do you observe? What is causing the differences?"
+            },
+            {
+              "id": "orientation-observe",
+              "type": "freeText",
+              "key": "observation",
+              "placeholder": "I observe... I think this is happening because..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hypothesis",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "hypothesis-s1",
+          "blocks": [
+            {
+              "id": "hypothesis-intro",
+              "type": "text",
+              "md": "Let's design another experiment. We will examine two carts colliding with each other; assume there is no friction on the floor.\n\nFill in the blanks and tables below:"
+            },
+            {
+              "id": "hypothesis-statement",
+              "type": "freeText",
+              "key": "hypothesisStatement",
+              "prompt": "My hypothesis is:",
+              "rows": 2
+            },
+            {
+              "id": "hypothesis-variables",
+              "type": "hypotheses",
+              "key": "hypotheses",
+              "statement": false,
+              "controlledCount": 1,
+              "minHypotheses": 1,
+              "maxHypotheses": 1,
+              "ivOptions": [
+                {
+                  "id": "massRatio",
+                  "label": "Mass Ratio"
+                },
+                {
+                  "id": "velocityRatio",
+                  "label": "Initial Velocity Ratio"
+                }
+              ],
+              "dvOptions": [
+                {
+                  "id": "finalVelocityA",
+                  "label": "Final Velocity for Cart A"
+                },
+                {
+                  "id": "finalVelocityB",
+                  "label": "Final Velocity for Cart B"
+                },
+                {
+                  "id": "totalKineticEnergy",
+                  "label": "Total Kinetic Energy"
+                },
+                {
+                  "id": "totalMomentum",
+                  "label": "Total Momentum"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "design-s1",
+          "blocks": [
+            {
+              "id": "design-intro",
+              "type": "text",
+              "md": "Let's design another experiment examining two carts colliding with each other.\n\nFill in the blanks and tables below:"
+            },
+            {
+              "id": "design-table",
+              "type": "trialTable",
+              "key": "experimentDesign",
+              "hypothesesFrom": "hypotheses",
+              "title": "Experiment:",
+              "comparePrompt": "We compare the resulting values of:",
+              "minTrials": 3,
+              "maxTrials": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run",
+      "phase": "Investigation",
+      "steps": [
+        {
+          "id": "run-s1",
+          "blocks": [
+            {
+              "id": "run-intro",
+              "type": "text",
+              "md": "Let's run your experiment with the simulation below! You can return to the previous step as needed to review your experiment design. Since there is no friction, each simulation will end after 10 seconds have passed.\n\nThe data from each trial will be recorded. You can access them by clicking on the Results button. (Your experiment results from the previous activities can also be accessed.)\n\nWhile experimenting, pay special attention to the kinetic energy and momentum of the carts on the graph."
+            },
+            {
+              "id": "run-simulation",
+              "type": "simulation",
+              "key": "collisionRuns",
+              "inputs": [
+                "massRatio",
+                "velocityRatio"
+              ],
+              "outputs": [
+                "finalVelocityA",
+                "finalVelocityB",
+                "totalKineticEnergy",
+                "totalMomentum"
+              ],
+              "graph": {
+                "x": "time",
+                "y": [
+                  "velocityA",
+                  "velocityB",
+                  "momentumA",
+                  "momentumB",
+                  "kineticEnergyA",
+                  "kineticEnergyB"
+                ]
+              },
+              "includeTrialsFrom": [
+                "cartPush",
+                "cartFriction",
+                "ballDrop",
+                "wallCollision"
+              ],
+              "minRuns": 3,
+              "readouts": [
+                "finalVelocityA",
+                "finalVelocityB"
+              ],
+              "sliderDetails": {
+                "massRatio": [
+                  "cartAMass",
+                  "cartBMass"
+                ],
+                "velocityRatio": [
+                  "cartAVelocity",
+                  "cartBVelocity"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "discussion",
+      "phase": "Discussion",
+      "steps": [
+        {
+          "id": "discussion-s1",
+          "blocks": [
+            {
+              "id": "discussion-intro",
+              "type": "text",
+              "md": "Let's reflect on the results. You can go back to the simulation as needed by clicking on the Back button.\n\nYour hypothesis: **{{hypothesisStatement}}**"
+            },
+            {
+              "id": "discussion-data",
+              "type": "freeText",
+              "key": "resultsData",
+              "prompt": "What was the result of your experiment? Explain the data from your results. Does the data support your hypothesis? If not, what would be your new hypothesis? Cite your results when explaining your reasoning."
+            },
+            {
+              "id": "discussion-why",
+              "type": "freeText",
+              "key": "whyResults",
+              "prompt": "Why did the results happen? What theory or concept explains this phenomenon?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "phase": "Conclusion",
+      "steps": [
+        {
+          "id": "conclusion-s1",
+          "blocks": [
+            {
+              "id": "conclusion-intro",
+              "type": "text",
+              "md": "To conclude, write a statement with a claim, evidence, and reasoning.\n\n- The **claim** should be about the collision of the two carts: what was your hypothesis?\n- The **evidence** should include your experiment results. Be specific about the experiments you ran!\n- The **reasoning** should mention the physics concepts that explain your results."
+            },
+            {
+              "id": "conclusion-cer",
+              "type": "freeText",
+              "key": "cer",
+              "placeholder": "Enter here...",
+              "rows": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "formative",
+      "phase": "Formative Assessment",
+      "steps": [
+        {
+          "id": "formative-s1",
+          "blocks": [
+            {
+              "id": "formative-intro",
+              "type": "text",
+              "md": "Let's end with a quick test of your understanding."
+            },
+            {
+              "id": "formative-heavier-cart",
+              "type": "freeText",
+              "key": "heavierCart",
+              "prompt": "Suppose two carts are colliding with each other. If we double the mass of Cart B, how would the carts' movement after the collision be affected? Point out the variables that would be affected or unaffected, and explain how and why that would be the case.",
+              "placeholder": "Enter here...",
+              "rows": 6
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

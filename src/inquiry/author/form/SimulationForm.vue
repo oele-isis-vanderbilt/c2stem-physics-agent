@@ -382,9 +382,12 @@ export default {
     sim() {
       return this.draft.simulation || null;
     },
+    /** Inputs and outputs; calculated values come from a formula, not the project. */
     variables() {
       const list = this.draft.variables;
-      return Array.isArray(list) ? list.filter((v) => v && v.key) : [];
+      return Array.isArray(list)
+        ? list.filter((v) => v && v.key && v.role !== "calculated")
+        : [];
     },
     runMode() {
       return (this.sim.run && this.sim.run.mode) || "greenFlag";

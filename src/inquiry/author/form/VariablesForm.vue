@@ -2,7 +2,9 @@
   <div class="variables-form">
     <p class="field-hint mb-3">
       Inputs are the sliders students set; outputs are what the simulation
-      measures. Link each one to the project under Physics project.
+      measures. Link each one to the project under Physics project. Calculated
+      values are worked out from the sliders with a formula, e.g. to show Cart
+      B's mass under a mass-ratio slider.
     </p>
     <p v-if="!variables.length" class="field-hint">No variables yet.</p>
 
@@ -32,7 +34,11 @@
             :uses="usesOf(v.key).length"
             :taken="otherKeys(v.key)"
             taken-message="Another variable has this name."
-            hint="Links the variable to the project and to Simulation blocks."
+            :hint="
+              v.role === 'calculated'
+                ? 'Worked out from its formula, not linked to the project.'
+                : 'Links the variable to the project and to Simulation blocks.'
+            "
             :invalid="invalid(`variables/${i}/key`)"
             @commit="(key) => rename(i, v.key, key)"
           />
@@ -60,6 +66,7 @@
             >
               <option value="input">Input (slider)</option>
               <option value="output">Output (measured)</option>
+              <option value="calculated">Calculated (from sliders)</option>
             </select>
           </div>
           <template v-if="v.role === 'input'">
@@ -78,6 +85,32 @@
               />
             </div>
           </template>
+          <div v-if="v.role === 'calculated'" class="variable-wide">
+            <text-field
+              label="Formula"
+              :model-value="v.formula || ''"
+              placeholder="e.g. 10 * velocityRatio"
+              :invalid="!formulaCheck(v).ok"
+              @update:model-value="(text) => setField(i, 'formula', text, true)"
+            />
+            <p
+              class="formula-note"
+              :class="formulaCheck(v).ok ? 'formula-ok' : 'field-error'"
+              role="status"
+            >
+              {{ formulaCheck(v).text }}
+            </p>
+          </div>
+          <div class="variable-wide">
+            <text-field
+              label="Shown before the value (optional)"
+              :model-value="v.prefix || ''"
+              :placeholder="v.role === 'input' ? 'e.g. 1 : ' : ''"
+              :hint="prefixHint(v)"
+              :invalid="invalid(`variables/${i}/prefix`)"
+              @update:model-value="(text) => setField(i, 'prefix', text)"
+            />
+          </div>
         </div>
       </li>
     </ol>
@@ -96,6 +129,13 @@
     >
       + Add output
     </button>
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-purple ms-2"
+      @click="add('calculated')"
+    >
+      + Add calculated
+    </button>
   </div>
 </template>
 
@@ -103,6 +143,7 @@
 import KeyField from "./fields/KeyField.vue";
 import RowTools from "./fields/RowTools.vue";
 import TextField from "./fields/TextField.vue";
+import { calculate, checkFormula } from "../../formula";
 import {
   newVariableKey,
   removeVariable,
@@ -140,6 +181,9 @@ export default {
       return Array.isArray(this.draft.variables)
         ? this.draft.variables.filter((v) => v && typeof v === "object")
         : [];
+    },
+    sliders() {
+      return this.variables.filter((v) => v.role === "input" && v.key);
     },
   },
   methods: {
@@ -206,12 +250,59 @@ export default {
     add(role) {
       this.edit((draft) => {
         if (!Array.isArray(draft.variables)) draft.variables = [];
-        const label = role === "input" ? "New input" : "New output";
+        const label = {
+          input: "New input",
+          output: "New output",
+          calculated: "New calculated value",
+        }[role];
         const variable = { key: newVariableKey(draft, label), label, role };
         if (role === "input")
           Object.assign(variable, { min: 0, max: 10, step: 1, default: 5 });
+        if (role === "calculated") {
+          const first = this.sliders[0];
+          variable.formula = first ? first.key : "";
+        }
         draft.variables.push(variable);
       }, true);
+    },
+    /**
+     * What the formula field says: what the formula uses and its value with
+     * the sliders at their starting values, or what to fix.
+     */
+    formulaCheck(v) {
+      const check = checkFormula(v.formula, this.sliders);
+      if (!check.ok) return { ok: false, text: check.message };
+      const start = Object.fromEntries(
+        this.sliders.map((s) => [
+          s.key,
+          s.default !== undefined ? s.default : s.min,
+        ])
+      );
+      const value = calculate(v.formula, start);
+      const used = check.names
+        .map((key) => {
+          const s = this.sliders.find((slider) => slider.key === key);
+          return (s && s.label) || key;
+        })
+        .join(", ");
+      const shown =
+        value === null
+          ? "can't be worked out (e.g. it divides by zero)"
+          : `${(v.prefix || "") + Number(value.toFixed(6))}${
+              v.unit ? ` ${v.unit}` : ""
+            }`;
+      return {
+        ok: true,
+        text: `✓ ${
+          used ? `Uses ${used}. ` : "A fixed value. "
+        }With the sliders at their starting values: ${shown}.`,
+      };
+    },
+    prefixHint(v) {
+      const example = v.role === "input" ? "3" : "2.5";
+      return v.prefix
+        ? `Shown as “${v.label || v.key}: ${v.prefix}${example}”.`
+        : "E.g. “1 : ” to show a ratio as 1 : 3. Leave empty for a plain number.";
     },
   },
 };
@@ -249,6 +340,20 @@ export default {
 }
 .lesson-form .role-output {
   background: #e7f4ec;
+  color: #1e6b3a;
+}
+.lesson-form .role-calculated {
+  background: #fde9d4;
+  color: #8a4a0b;
+}
+.lesson-form .variable-wide {
+  grid-column: 1 / -1;
+}
+.lesson-form p.formula-note {
+  margin: -6px 0 10px;
+  font-size: 13px;
+}
+.lesson-form .formula-ok {
   color: #1e6b3a;
 }
 .lesson-form .variable-grid {
