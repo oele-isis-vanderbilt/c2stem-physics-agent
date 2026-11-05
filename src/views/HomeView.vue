@@ -44,7 +44,6 @@ export default {
     return {
       names: [
         "Inquiry",
-        "Push cart: Problem Solving",
         "Spring-mass: Problem Solving",
         "Ball drop: Problem Solving",
       ],
@@ -52,11 +51,9 @@ export default {
         "Scientific inquiry lessons",
         "Complete your computational model lessons",
         "Complete your computational model lessons",
-        "Complete your computational model lessons",
       ],
       route: [
         "InquiryHome",
-        "ConstructAgent",
         "ConstructAgent",
         "ConstructAgent",
       ],
@@ -64,12 +61,11 @@ export default {
       routeQueries: [
         // { lessonId: "truck" },
         {},
-        { lessonId: "lesson1" },
         { lessonId: "lesson2" },
         { lessonId: "lesson3" },
       ],
       // route: ["ConstructAgent", "ConstructAgent", "ConstructAgent"],
-      logo: [inquiryLogo, pushcartLogo, springmassLogo, balldropLogo],
+      logo: [inquiryLogo, springmassLogo, balldropLogo],
       // logo: [c2stemTruckLogo, droneLogo, droneLogo],
       routeParams: [
         // {
@@ -78,11 +74,6 @@ export default {
         //   source: "https://physics.c2stem.org",
         // },
         {},
-        {
-          userID: "oele",
-          projectName: "Pushcart",
-          source: "https://physics.c2stem.org",
-        },
         {
           userID: "oele",
           projectName: "Springmass",
