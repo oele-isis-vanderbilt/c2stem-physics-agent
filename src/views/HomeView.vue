@@ -20,7 +20,7 @@ import LessonCard from "../components/LessonCard.vue";
 // import droneLogo from "@/assets/drone.png";
 // import farmTruckLogo from "@/assets/farm.png";
 import inquiryLogo from "@/assets/a-magnifier-graph.png";
-import pushcartLogo from "@/assets/c2stem_pushcart.png";
+// import pushcartLogo from "@/assets/c2stem_pushcart.png";
 import springmassLogo from "@/assets/c2stem_springmass.png";
 import balldropLogo from "@/assets/c2stem_balldrop.png";
 
@@ -52,11 +52,7 @@ export default {
         "Complete your computational model lessons",
         "Complete your computational model lessons",
       ],
-      route: [
-        "InquiryHome",
-        "ConstructAgent",
-        "ConstructAgent",
-      ],
+      route: ["InquiryHome", "ConstructAgent", "ConstructAgent"],
       // lessonId picks the lesson's scoring (services/scoring)
       routeQueries: [
         // { lessonId: "truck" },
